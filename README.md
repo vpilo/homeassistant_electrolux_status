@@ -1,13 +1,12 @@
 # Home Assistant Electrolux Care Integration (Not Official)
 
-[![Validate with HACS](https://github.com/mauro-midolo/homeassistant_electrolux_status/actions/workflows/hacs.yml/badge.svg)](https://github.com/mauro-midolo/homeassistant_electrolux_status/actions/workflows/hacs.yml)
-[![Validate with hassfest](https://github.com/mauro-midolo/homeassistant_electrolux_status/actions/workflows/hassfest.yml/badge.svg)](https://github.com/mauro-midolo/homeassistant_electrolux_status/actions/workflows/hassfest.yml)
+[![Validate with HACS](https://github.com/albaintor/homeassistant_electrolux_status/actions/workflows/hacs.yml/badge.svg)](https://github.com/albaintor/homeassistant_electrolux_status/actions/workflows/hacs.yml)
+[![Validate with hassfest](https://github.com/albaintor/homeassistant_electrolux_status/actions/workflows/hassfest.yml/badge.svg)](https://github.com/albaintor/homeassistant_electrolux_status/actions/workflows/hassfest.yml)
 
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=mauro-midolo_homeassistant_electrolux_status&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=mauro-midolo_homeassistant_electrolux_status)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=mauro-midolo_homeassistant_electrolux_status&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=mauro-midolo_homeassistant_electrolux_status)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=mauro-midolo_homeassistant_electrolux_status&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=mauro-midolo_homeassistant_electrolux_status)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=albaintor_homeassistant_electrolux_status&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=albaintor_homeassistant_electrolux_status)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=albaintor_homeassistant_electrolux_status&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=albaintor_homeassistant_electrolux_status)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=albaintor_homeassistant_electrolux_status&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=albaintor_homeassistant_electrolux_status)
 
-[![Donate](https://img.shields.io/static/v1?label=PayPal&message=Buy%20Me%20a%20Coffee&color=green&logo=PayPal)](https://paypal.me/mauromi?country.x=IT&locale.x=it_IT)
 ## ⚠️ Important Notice: the old API support has been discontinued. I am working on a new integration with new APIs. 
 The current alpha release is a quick and dirty adaptation of the former integration with very limited support (some entities are missing, no commands can be sent to the appliance and for some people the integration won't start at all).
 I am currectly rewriting the model to adapt it to the new APIs and I hope to release a new version in the next few days
