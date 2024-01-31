@@ -8,11 +8,11 @@
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=mauro-midolo_homeassistant_electrolux_status&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=mauro-midolo_homeassistant_electrolux_status)
 
 [![Donate](https://img.shields.io/static/v1?label=PayPal&message=Buy%20Me%20a%20Coffee&color=green&logo=PayPal)](https://paypal.me/mauromi?country.x=IT&locale.x=it_IT)
-## ⚠️ Important Notice: API Changes and Library Discontinuation
+## ⚠️ Important Notice: the old API support has been discontinued. I am working on a new integration with new APIs. 
+The current alpha release is a quick and dirty adaptation of the former integration with very limited support (some entities are missing, no commands can be sent to the appliance and for some people the integration won't start at all).
+I am currectly rewriting the model to adapt it to the new APIs and I hope to release a new version in the next few days
 
-**Attention:** The APIs provided by Electrolux have undergone significant changes, and the library "pyelectroluxconnect" that this project previously relied on has been discontinued.
-
-I am currently working on a migration plan to adapt to the new APIs. Please be aware that the current state may be affected, and I recommend users to regularly monitor this repository for updates.
+As the former project has been deleted, you will need to delete the existing HACS integration and add a new repository in HACS : https://github.com/albaintor/homeassistant_electrolux_status
 
 If you are interested in contributing to the project and assisting with the integration of the new APIs, your contributions are more than welcome! Feel free to fork the repository, make changes, and submit a pull request.
 
@@ -47,6 +47,7 @@ Tested with Electrolux and AEG washer-dryer, but probably could be used with som
 - AEG FSE76738P - 7000 GlassCare
 
 ## Prerequisites
+THIS PART IS NOT CLEAR AT THIS STATE WITH THE NEW APIs
 All devices need configured and Alias set (otherwise the home assistant integration raises the authentication error) into following applications (depends on device type and region):
 - My Electrolux Care/My AEG Care (EMEA region)
 - Electrolux Kitchen/AEG Kitchen (EMEA region)
@@ -61,10 +62,4 @@ All devices need configured and Alias set (otherwise the home assistant integrat
 
 ## Disclaimer
 This Home Assistant integration was not made by Electrolux. It is not official, not developed, and not supported by Electrolux.
-
-## Support the project with a donation
-This project is open source and free, but if you want to support us and help us continue to maintain and improve it, you can make a donation through PayPal. 
-Any contribution, no matter how small, is greatly appreciated and will help us keep the project active and healthy. Thank you for your support!
-
-[![Donate](https://img.shields.io/static/v1?label=PayPal&message=Buy%20Me%20a%20Coffee&color=green&logo=PayPal)](https://paypal.me/mauromi?country.x=IT&locale.x=it_IT)
 
