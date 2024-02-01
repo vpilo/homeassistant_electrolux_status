@@ -1,22 +1,23 @@
 """Binary sensor platform for Electrolux Status."""
 from homeassistant.components.binary_sensor import BinarySensorEntity
 
+from .const import BINARY_SENSOR, DOMAIN
 from .entity import ElectroluxEntity
 
+import logging
 
-# async def async_setup_entry(hass, entry, async_add_devices):
-#     """Setup binary sensor platform."""
-#     coordinator = hass.data[DOMAIN][entry.entry_id]
-#     appliances = coordinator.data.get('appliances', None)
-#
-#     if appliances is not None:
-#         for appliance_id, appliance in appliances.appliances.items():
-#             async_add_devices(
-#                 [
-#                     ElectroluxBinarySensor(coordinator, entry, appliance_id, entity.entity_type, entity.attr, entity.source)
-#                     for entity in appliance.entities if entity.entity_type == BINARY_SENSOR
-#                 ]
-#             )
+_LOGGER: logging.Logger = logging.getLogger(__package__)
+
+
+async def async_setup_entry(hass, entry, async_add_entities):
+    """Setup sensor platform."""
+    coordinator = hass.data[DOMAIN][entry.entry_id]
+    appliances = coordinator.data.get('appliances', None)
+    if appliances is not None:
+        for appliance_id, appliance in appliances.appliances.items():
+            entities = [entity for entity in appliance.entities if entity.entity_type == BINARY_SENSOR]
+            _LOGGER.debug("Electrolux add %d binary sensors to registry for appliance %s", len(entities), appliance_id)
+            async_add_entities(entities)
 
 
 class ElectroluxBinarySensor(ElectroluxEntity, BinarySensorEntity):
@@ -25,4 +26,4 @@ class ElectroluxBinarySensor(ElectroluxEntity, BinarySensorEntity):
     @property
     def is_on(self):
         """Return true if the binary_sensor is on."""
-        return self.get_value()
+        return self.extract_value()

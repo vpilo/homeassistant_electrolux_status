@@ -1,4 +1,7 @@
 """The electrolux Status constants."""
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.const import UnitOfTime, UnitOfTemperature, UnitOfPower
 from homeassistant.helpers.entity import EntityCategory
 
 # Base component constants
@@ -44,48 +47,60 @@ DEFAULT_LANGUAGE = "English"
 #   min / max / step for type = number
 # }
 
-sensors = {
-# Sensor Name: [value field, device class, unit]
-# Device state sensors
-    None: {
-        # "timeToEnd": [None, None, UnitOfTime.MINUTES],
-        # "runningTime": [None, None, UnitOfTime.MINUTES],
-        # "cyclePhase": [None, None, None],
-        # "cycleSubPhase": ["string", None, None],
-        # "applianceState": [None, None, None],
-        # "displayTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
-        # "displayFoodProbeTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
-        # "sensorTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
-        # "defrostTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
-        # "targetMicrowavePower": ["numberValue", SensorDeviceClass.ENERGY, UnitOfPower.WATT],
-        # "ovenProcessIdentifier": ["valueTransl", None, None],
-        # "remoteControl": [None, None, None],
-        # "defaultExtraRinse": ["numberValue", None, None],
+Catalog = {
+        "timeToEnd": [{"access": "read","type": "number"}, None, None, UnitOfTime.SECONDS, None],
+        "runningTime": [{"access": "read","type": "number"}, None, None, UnitOfTime.SECONDS, None],
+        "cyclePhase": [{"access": "read","type": "string"}, None, None, None, None],
+        "cycleSubPhase": [{"access": "read","type": "string"}, None, None, None, None],
+        "applianceState": [{"access": "read","type": "string"}, None, None, None, None],
+        "displayTemperature": [{"access": "read","type": "string"}, None, SensorDeviceClass.TEMPERATURE, None, None],
+        "displayFoodProbeTemperature": [{"access": "read","type": "number"}, None, SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS, None],
+        "sensorTemperature": [{"access": "read","type": "number"}, None, SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS, None],
+        "defrostTemperature": [{"access": "read","type": "number"}, None, SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS, None],
+        "targetMicrowavePower": [{"access": "read","type": "number"}, None, SensorDeviceClass.ENERGY, UnitOfPower.WATT, None],
+        "ovenProcessIdentifier": [{"access": "read","type": "string"}, None, None, None, None],
+        "remoteControl": [{"access": "read","type": "string"}, None, None, None, None],
+        "defaultExtraRinse": [{"access": "readwrite","type": "string", "values": {"EXTRA_RINSE_1": {},"EXTRA_RINSE_OFF": {}}}, None, None, None, None],
+        "analogTemperature": [{"access": "readwrite","type": "string", "values": {"20_CELSIUS": {},"30_CELSIUS": {},"40_CELSIUS": {},"50_CELSIUS": {},"60_CELSIUS": {},"90_CELSIUS": {},"COLD": {}}}, "userSelections", None, None, None],
         # "targetTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
-        # "startTime": [None, None, UnitOfTime.MINUTES],
-        # "analogTemperature": ["numberValue", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
-        # "waterSoftenerMode": [None, None, None],
-        # "steamValue": ["valTransl", None, None],
+        "startTime": [{"access": "readwrite","type": "number","max": 72000,"min": 0,"step": 1800}, None, None, UnitOfTime.SECONDS, None],
+        "waterSoftenerMode": [{"access": "read","type": "string"}, None, None, None, None],
+        "steamValue": [{"access": "read","type": "string","values": {"STEAM_MAX": {},"STEAM_MED": {},"STEAM_MIN": {},"STEAM_OFF": {}}}, "userSelections", None, None, None],
+        "analogSpinSpeed": [{"access": "readwrite","type": "string","values": {"0_RPM": {},"1000_RPM": {},"1200_RPM": {},"1400_RPM": {},"1600_RPM": {},"400_RPM": {},"600_RPM": {},"800_RPM": {},"DISABLED": {"disabled": True}}}, "userSelections", None, None, None],
+        "programUID": [{"access": "read","type": "string"}, "userSelections", None, None, None],
+        "doorState": [{"access": "read","type": "string"}, None, BinarySensorDeviceClass.DOOR, None, None],
+        "doorLock": [{"access": "read","type": "string"}, None, BinarySensorDeviceClass.LOCK, None, None],
+        "uiLockMode": [{"access": "readwrite","type": "boolean"}, None, None, None, None],
+        "endOfCycleSound": [{"access": "readwrite","type": "string","values": {"NO_SOUND": {},"SHORT_SOUND": {}}}, None, None, None, None],
+        "preWashPhase": [{"access": "read","type": "boolean"}, None, None, None, None],
         # "eLUXTimeManagerLevel": ["valTransl", None, None],
-        # "analogSpinSpeed": ["valTransl", None, None],
         # "waterTankWarningMode": [None, None, None],
         # "dryingTime": [None, None, None],
         # "humidityTarget": ["valTransl", None, None],
         # "antiCreaseValue": [None, None, None],
         # "drynessValue": ["valTransl", None, None],
-        # "programUID": ["valTransl", None, None]
-    },
-# Device diagnostic sensors
-    EntityCategory.DIAGNOSTIC : {
+        # "programUID": ["valTransl", None, None],
         # "sensorHumidity": ["numberValue", SensorDeviceClass.HUMIDITY, PERCENTAGE, None],
         # "ambientTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS, None],
-        # "applianceTotalWorkingTime": [None, None, UnitOfTime.MINUTES],
-        # "totalCycleCounter": [None, None, None],
+        "applianceTotalWorkingTime": [{"access": "read", "type": "number"}, None, None, UnitOfTime.MINUTES, EntityCategory.DIAGNOSTIC],
+        "totalCycleCounter": [{"access": "read", "type": "number"}, None, None, None, EntityCategory.DIAGNOSTIC],
+        "waterHardness": [{"access": "read", "type": "string"}, None, None, None, EntityCategory.DIAGNOSTIC],
+        "applianceMode": [{"access": "read", "type": "string"}, None, None, None, EntityCategory.DIAGNOSTIC],
         # "rinseAidLevel": [None, None, None],
-        # "waterHardness": ["valueTransl", None, None],
         # "fCTotalWashCyclesCount": [None, None, None],
         # "fCTotalWashingTime": [None, None, None],
         # "applianceMode": [None, None, None],
+}
+
+sensors = {
+# Sensor Name: [capability, category, device class, unit]
+# Device state sensors
+    None: {
+
+    },
+# Device diagnostic sensors
+    EntityCategory.DIAGNOSTIC: {
+
     }
 }
 
@@ -94,12 +109,7 @@ sensors_binary = {
 # Sensor Name: [value field, device class, invert]
 # Device state sensors
     None: {
-        # "doorState": ["numberValue", BinarySensorDeviceClass.DOOR, None],
-        # "doorLock":  ["numberValue", BinarySensorDeviceClass.LOCK, True],
-        # "uiLockMode": ["numberValue", None, None],
-        # "endOfCycleSound": ["numberValue", None, None],
         # "defaultSoftPlus": ["numberValue", None, None],
-        # "preWashPhase": ["numberValue", None, None],
         # "rinseHold": ["numberValue", None, None],
         # "nightCycle": ["numberValue", None, None],
         # "stain": ["numberValue", None, None],

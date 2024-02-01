@@ -53,6 +53,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     if not await coordinator.async_login():
         raise ConfigEntryAuthFailed
 
+    hass.data[DOMAIN][entry.entry_id] = coordinator
+
     # Initialize entities
     await coordinator.setup_entities()
 
@@ -68,8 +70,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     if not coordinator.last_update_success:
         raise ConfigEntryNotReady
-
-    hass.data[DOMAIN][entry.entry_id] = coordinator
 
     coordinator.platforms.extend(PLATFORMS)
     # Call async_setup_entry in entity files
@@ -108,30 +108,38 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
         try:
             appliances_json: list[ApplienceStatusResponse] = await self.api.get_appliances_list()
             _LOGGER.debug("Electrolux update appliances %s", json.dumps(appliances_json))
-            for appliance in appliances_json:
-                appliance_id = appliance.get('applianceId')
-                connection_state = appliance.get('connectionState')
-                # appliance_state = appliance.get('properties').get('reported').get('applianceState')
+            for appliance_json in appliances_json:
+                appliance_id = appliance_json.get('applianceId')
+                connection_status = appliance_json.get('connectionState')
                 # appliance_profile = await self.hass.async_add_executor_job(self.api.getApplianceProfile, appliance)
-                appliance_name = appliance.get('applianceData').get('applianceName')
-                appliance_infos = await self.api.get_appliances_info([appliance.get('applianceId')])
-                appliance_capabilities = await self.api.get_appliance_capabilities(appliance.get('applianceId'))
-                appliance_status = await self.api.get_appliance_status(appliance.get('applianceId'))
+                appliance_name = appliance_json.get('applianceData').get('applianceName')
+                appliance_infos = await self.api.get_appliances_info([appliance_id])
+                appliance_state = None
+                try:
+                    appliance_capabilities = await self.api.get_appliance_capabilities(appliance_id)
+                except Exception as exception:
+                    _LOGGER.exception(exception)
+                    _LOGGER.warning("Unable to retrieve capabilities, we are going on our own")
+                    appliance_capabilities = None
+                    # Extract appliance state if no capabilities returned
+                    appliance_state = await self.api.get_appliance_status(appliance_id)
+
+                appliance_status = await self.api.get_appliance_status(appliance_id)
                 appliance_info = None if len(appliance_infos) == 0 else appliance_infos[0]
                 appliance_model = appliance_info.get('model') if appliance_info else ""
                 brand = appliance_info.get('brand') if appliance_info else ""
                 # appliance_profile not reported
-                app = Appliance(coordinator=self,
-                                pnc_id=appliance_id,
-                                name=appliance_name,
-                                brand=brand,
-                                model=appliance_model)
-                appliances.appliances[appliance_name] = app
-                for applianceId, applianceItem in self.data['appliances'].get_appliances().items():
-                    _LOGGER.debug("Electrolux TEST %s %s %s", applianceId, applianceItem.brand, applianceItem.name)
+                appliance = Appliance(coordinator=self,
+                                      pnc_id=appliance_id,
+                                      name=appliance_name,
+                                      brand=brand,
+                                      model=appliance_model,
+                                      state=appliance_state)
+                appliances.appliances[appliance_id] = appliance
 
-                app.setup(ElectroluxLibraryEntity(name=appliance_name, status=connection_state, state=appliance_status,
-                                                  appliance_info=appliance_info, capabilities=appliance_capabilities))
+                appliance.setup(ElectroluxLibraryEntity(name=appliance_name, status=connection_status,
+                                                        state=appliance_status, appliance_info=appliance_info,
+                                                        capabilities=appliance_capabilities))
                 _LOGGER.debug("Electrolux appliance capabilities %s", json.dumps(appliance_capabilities))
             _LOGGER.debug("Electrolux found appliance %s", ", ".join(list(appliances.appliances.keys())))
             return self.data
@@ -156,6 +164,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
             except Exception as exception:
                 _LOGGER.exception(exception)
                 raise UpdateFailed() from exception
+        return self.data
 
     # async def _async_update_data(self):
     #     """Update data via library."""

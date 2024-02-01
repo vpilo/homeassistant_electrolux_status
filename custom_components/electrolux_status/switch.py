@@ -1,24 +1,22 @@
 """Switch platform for Electrolux Status."""
 from homeassistant.components.switch import SwitchEntity
 
+from .const import SWITCH, DOMAIN
 from .entity import ElectroluxEntity
 import logging
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
-# async def async_setup_entry(hass, entry, async_add_devices):
-#     """Setup binary sensor platform."""
-#     coordinator = hass.data[DOMAIN][entry.entry_id]
-#     appliances = coordinator.data.get('appliances', None)
-#
-#     if appliances is not None:
-#         for appliance_id, appliance in appliances.appliances.items():
-#             async_add_devices(
-#                 [
-#                     ElectroluxSwitch(coordinator, entry, appliance_id, entity.entity_type, entity.attr, entity.source)
-#                     for entity in appliance.entities if entity.entity_type == SWITCH
-#                 ]
-#             )
+
+async def async_setup_entry(hass, entry, async_add_entities):
+    """Setup sensor platform."""
+    coordinator = hass.data[DOMAIN][entry.entry_id]
+    appliances = coordinator.data.get('appliances', None)
+    if appliances is not None:
+        for appliance_id, appliance in appliances.appliances.items():
+            entities = [entity for entity in appliance.entities if entity.entity_type == SWITCH]
+            _LOGGER.debug("Electrolux add %d sensors to registry for appliance %s", len(entities), appliance_id)
+            async_add_entities(entities)
 
 
 class ElectroluxSwitch(ElectroluxEntity, SwitchEntity):
@@ -27,7 +25,7 @@ class ElectroluxSwitch(ElectroluxEntity, SwitchEntity):
     @property
     def is_on(self):
         """Return true if the binary_sensor is on."""
-        return self.get_value()
+        return self.extract_value()
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
