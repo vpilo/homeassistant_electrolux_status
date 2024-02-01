@@ -1,10 +1,4 @@
 """The electrolux Status constants."""
-from homeassistant.const import UnitOfTime
-from homeassistant.const import UnitOfTemperature
-from homeassistant.const import UnitOfPower
-from homeassistant.const import PERCENTAGE
-from homeassistant.components.sensor import SensorDeviceClass
-from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.helpers.entity import EntityCategory
 
 # Base component constants
@@ -22,7 +16,10 @@ BINARY_SENSOR_DEVICE_CLASS = "connectivity"
 BINARY_SENSOR = "binary_sensor"
 SENSOR = "sensor"
 BUTTON = "button"
-PLATFORMS = [BINARY_SENSOR, SENSOR, BUTTON]
+SELECT = "select"
+SWITCH = "switch"
+NUMBER = "number"
+PLATFORMS = [BINARY_SENSOR, SENSOR, BUTTON, SELECT, SWITCH, NUMBER]
 
 # Configuration and options
 CONF_ENABLED = "enabled"
@@ -51,44 +48,44 @@ sensors = {
 # Sensor Name: [value field, device class, unit]
 # Device state sensors
     None: {
-        "timeToEnd": [None, None, UnitOfTime.MINUTES],
-        "runningTime": [None, None, UnitOfTime.MINUTES],
-        "cyclePhase": [None, None, None],
-        "cycleSubPhase": ["string", None, None],
-        "applianceState": [None, None, None],
-        "displayTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
-        "displayFoodProbeTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
-        "sensorTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
-        "defrostTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
-        "targetMicrowavePower": ["numberValue", SensorDeviceClass.ENERGY, UnitOfPower.WATT],
-        "ovenProcessIdentifier": ["valueTransl", None, None],
-        "remoteControl": [None, None, None],
-        "defaultExtraRinse": ["numberValue", None, None],
-        "targetTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
-        "startTime": [None, None, UnitOfTime.MINUTES],
-        "analogTemperature": ["numberValue", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
-        "waterSoftenerMode": [None, None, None],
-        "steamValue": ["valTransl", None, None],
-        "eLUXTimeManagerLevel": ["valTransl", None, None],
-        "analogSpinSpeed": ["valTransl", None, None],
-        "waterTankWarningMode": [None, None, None],
-        "dryingTime": [None, None, None],
-        "humidityTarget": ["valTransl", None, None],
-        "antiCreaseValue": [None, None, None],
-        "drynessValue": ["valTransl", None, None],
-        "programUID": ["valTransl", None, None]
+        # "timeToEnd": [None, None, UnitOfTime.MINUTES],
+        # "runningTime": [None, None, UnitOfTime.MINUTES],
+        # "cyclePhase": [None, None, None],
+        # "cycleSubPhase": ["string", None, None],
+        # "applianceState": [None, None, None],
+        # "displayTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
+        # "displayFoodProbeTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
+        # "sensorTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
+        # "defrostTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
+        # "targetMicrowavePower": ["numberValue", SensorDeviceClass.ENERGY, UnitOfPower.WATT],
+        # "ovenProcessIdentifier": ["valueTransl", None, None],
+        # "remoteControl": [None, None, None],
+        # "defaultExtraRinse": ["numberValue", None, None],
+        # "targetTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
+        # "startTime": [None, None, UnitOfTime.MINUTES],
+        # "analogTemperature": ["numberValue", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
+        # "waterSoftenerMode": [None, None, None],
+        # "steamValue": ["valTransl", None, None],
+        # "eLUXTimeManagerLevel": ["valTransl", None, None],
+        # "analogSpinSpeed": ["valTransl", None, None],
+        # "waterTankWarningMode": [None, None, None],
+        # "dryingTime": [None, None, None],
+        # "humidityTarget": ["valTransl", None, None],
+        # "antiCreaseValue": [None, None, None],
+        # "drynessValue": ["valTransl", None, None],
+        # "programUID": ["valTransl", None, None]
     },
 # Device diagnostic sensors
     EntityCategory.DIAGNOSTIC : {
-        "sensorHumidity": ["numberValue", SensorDeviceClass.HUMIDITY, PERCENTAGE, None],
-        "ambientTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS, None],
-        "applianceTotalWorkingTime": [None, None, UnitOfTime.MINUTES],
-        "totalCycleCounter": [None, None, None],
-        "rinseAidLevel": [None, None, None],
-        "waterHardness": ["valueTransl", None, None],
-        "fCTotalWashCyclesCount": [None, None, None],
-        "fCTotalWashingTime": [None, None, None],
-        "applianceMode": [None, None, None],
+        # "sensorHumidity": ["numberValue", SensorDeviceClass.HUMIDITY, PERCENTAGE, None],
+        # "ambientTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS, None],
+        # "applianceTotalWorkingTime": [None, None, UnitOfTime.MINUTES],
+        # "totalCycleCounter": [None, None, None],
+        # "rinseAidLevel": [None, None, None],
+        # "waterHardness": ["valueTransl", None, None],
+        # "fCTotalWashCyclesCount": [None, None, None],
+        # "fCTotalWashingTime": [None, None, None],
+        # "applianceMode": [None, None, None],
     }
 }
 
@@ -97,29 +94,29 @@ sensors_binary = {
 # Sensor Name: [value field, device class, invert]
 # Device state sensors
     None: {
-        "doorState": ["numberValue", BinarySensorDeviceClass.DOOR, None],
-        "doorLock":  ["numberValue", BinarySensorDeviceClass.LOCK, True],
-        "uiLockMode": ["numberValue", None, None],
-        "endOfCycleSound": ["numberValue", None, None],
-        "defaultSoftPlus": ["numberValue", None, None],
-        "preWashPhase": ["numberValue", None, None],
-        "rinseHold": ["numberValue", None, None],
-        "nightCycle": ["numberValue", None, None],
-        "stain": ["numberValue", None, None],
-        "wMEconomy": ["numberValue", None, None],
-        "anticreaseWSteam": ["numberValue", None, None],
-        "anticreaseNoSteam": ["numberValue", None, None],
-        "refresh": ["numberValue", None, None],
-        "reversePlus": ["numberValue", None, None],
-        "delicate": ["numberValue", None, None],
-        "tDEnergyLabel": ["numberValue", None, None],
-        "tDEconomy_Eco": ["numberValue", None, None],
-        "tDEconomy_Night": ["numberValue", None, None],
+        # "doorState": ["numberValue", BinarySensorDeviceClass.DOOR, None],
+        # "doorLock":  ["numberValue", BinarySensorDeviceClass.LOCK, True],
+        # "uiLockMode": ["numberValue", None, None],
+        # "endOfCycleSound": ["numberValue", None, None],
+        # "defaultSoftPlus": ["numberValue", None, None],
+        # "preWashPhase": ["numberValue", None, None],
+        # "rinseHold": ["numberValue", None, None],
+        # "nightCycle": ["numberValue", None, None],
+        # "stain": ["numberValue", None, None],
+        # "wMEconomy": ["numberValue", None, None],
+        # "anticreaseWSteam": ["numberValue", None, None],
+        # "anticreaseNoSteam": ["numberValue", None, None],
+        # "refresh": ["numberValue", None, None],
+        # "reversePlus": ["numberValue", None, None],
+        # "delicate": ["numberValue", None, None],
+        # "tDEnergyLabel": ["numberValue", None, None],
+        # "tDEconomy_Eco": ["numberValue", None, None],
+        # "tDEconomy_Night": ["numberValue", None, None],
     },
 # Device diagnostic sensors
     EntityCategory.DIAGNOSTIC : {
-        "tankA_reserve": ["numberValue", BinarySensorDeviceClass.PROBLEM, False],
-        "tankB_reserve": ["numberValue", BinarySensorDeviceClass.PROBLEM, False],
+        # "tankA_reserve": ["numberValue", BinarySensorDeviceClass.PROBLEM, False],
+        # "tankB_reserve": ["numberValue", BinarySensorDeviceClass.PROBLEM, False],
     }
 }
 
