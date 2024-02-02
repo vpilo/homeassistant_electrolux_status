@@ -1,17 +1,14 @@
 # Home Assistant Electrolux Care Integration (Not Official)
 
-[![Donate](https://img.shields.io/static/v1?label=PayPal&message=Buy%20Me%20a%20Coffee&color=green&logo=PayPal&style=for-the-badge)](https://paypal.me/mauromi?country.x=IT&locale.x=it_IT)
+[![Validate with HACS](https://github.com/albaintor/homeassistant_electrolux_status/actions/workflows/hacs.yml/badge.svg)](https://github.com/albaintor/homeassistant_electrolux_status/actions/workflows/hacs.yml)
+[![Validate with hassfest](https://github.com/albaintor/homeassistant_electrolux_status/actions/workflows/hassfest.yml/badge.svg)](https://github.com/albaintor/homeassistant_electrolux_status/actions/workflows/hassfest.yml)
 
-[![GitHub Release][releases-shield]][releases]
-[![License][license-shield]](LICENSE)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=albaintor_homeassistant_electrolux_status&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=albaintor_homeassistant_electrolux_status)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=albaintor_homeassistant_electrolux_status&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=albaintor_homeassistant_electrolux_status)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=albaintor_homeassistant_electrolux_status&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=albaintor_homeassistant_electrolux_status)
 
-[![hacs][hacsbadge]][hacs]
-[![Project Maintenance][maintenance-shield]][user_profile]
-## ⚠️ Important Notice: API Changes and Library Discontinuation
-
-**Attention:** The APIs provided by Electrolux have undergone significant changes, and the library "pyelectroluxconnect" that this project previously relied on has been discontinued.
-
-I am currently working on a migration plan to adapt to the new APIs. Please be aware that the current state may be affected, and I recommend users to regularly monitor this repository for updates.
+## ⚠️ This new integration is based on new APIs and may be unstable. Use it at your own risks 
+As the former project has been deleted, you will need to delete the existing HACS integration and add a new repository in HACS : https://github.com/albaintor/homeassistant_electrolux_status
 
 If you are interested in contributing to the project and assisting with the integration of the new APIs, your contributions are more than welcome! Feel free to fork the repository, make changes, and submit a pull request.
 
@@ -21,8 +18,6 @@ Thank you for your understanding and support.
 This is an integration to Home Assistant to communicate with the Electrolux Connectivity Platform (ECP), Electrolux owned brands, like: Electrolux, AEG, Frigidaire, Husqvarna.
 
 Tested with Electrolux and AEG washer-dryer, but probably could be used with some internet connected ovens, diswashers, fridges, airconditioners.
-
-
 
 ### Supported and tested devices
 
@@ -45,8 +40,10 @@ Tested with Electrolux and AEG washer-dryer, but probably could be used with som
 - AEG L8FEC96QS - 8000 Series Ökomix Autodose
 - AEG L9WBA61BC - 9000 Series ÖKOKombi DualSense SensiDry
 - AEG BPE558370M - SteamBake 6000
+- AEG FSE76738P - 7000 GlassCare
 
 ## Prerequisites
+THIS PART IS NOT CLEAR AT THIS STATE WITH THE NEW APIs
 All devices need configured and Alias set (otherwise the home assistant integration raises the authentication error) into following applications (depends on device type and region):
 - My Electrolux Care/My AEG Care (EMEA region)
 - Electrolux Kitchen/AEG Kitchen (EMEA region)
@@ -59,25 +56,6 @@ All devices need configured and Alias set (otherwise the home assistant integrat
 2. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Electrolux status".
 3. Insert the Electrolux Care Application credentials
 
-## Thanks
-This integration uses the following Python Library:
-* [https://pypi.org/project/pyelectroluxconnect/](https://pypi.org/project/pyelectroluxconnect/)
-
 ## Disclaimer
 This Home Assistant integration was not made by Electrolux. It is not official, not developed, and not supported by Electrolux.
-
-## Support the project with a donation
-This project is open source and free, but if you want to support us and help us continue to maintain and improve it, you can make a donation through PayPal. 
-Any contribution, no matter how small, is greatly appreciated and will help us keep the project active and healthy. Thank you for your support!
-
-[![Donate](https://img.shields.io/static/v1?label=PayPal&message=Buy%20Me%20a%20Coffee&color=green&logo=PayPal&style=for-the-badge)](https://paypal.me/mauromi?country.x=IT&locale.x=it_IT)
-
-[hacs]: https://hacs.xyz
-[releases]: https://github.com/mauro-midolo/homeassistant_electrolux_status/releases
-[releases-shield]: https://img.shields.io/github/v/release/mauro-midolo/homeassistant_electrolux_status?style=for-the-badge
-[license-shield]: https://img.shields.io/github/license/mauro-midolo/homeassistant_electrolux_status.svg?style=for-the-badge
-[hacsbadge]: https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge
-[maintenance-shield]: https://img.shields.io/badge/maintainer-%40mauromidolo-blue.svg?style=for-the-badge
-[user_profile]: https://github.com/mauro-midolo
-
 

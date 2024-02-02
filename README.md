@@ -7,10 +7,7 @@
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=albaintor_homeassistant_electrolux_status&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=albaintor_homeassistant_electrolux_status)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=albaintor_homeassistant_electrolux_status&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=albaintor_homeassistant_electrolux_status)
 
-## ⚠️ Important Notice: the old API support has been discontinued. I am working on a new integration with new APIs. 
-The current alpha release is a quick and dirty adaptation of the former integration with very limited support (some entities are missing, no commands can be sent to the appliance and for some people the integration won't start at all).
-I am currectly rewriting the model to adapt it to the new APIs and I hope to release a new version in the next few days
-
+## ⚠️ This new integration is based on new APIs and may be unstable. Use it at your own risks 
 As the former project has been deleted, you will need to delete the existing HACS integration and add a new repository in HACS : https://github.com/albaintor/homeassistant_electrolux_status
 
 If you are interested in contributing to the project and assisting with the integration of the new APIs, your contributions are more than welcome! Feel free to fork the repository, make changes, and submit a pull request.
