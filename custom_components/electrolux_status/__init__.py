@@ -109,24 +109,20 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
             appliances_json: list[ApplienceStatusResponse] = await self.api.get_appliances_list()
             _LOGGER.debug("Electrolux update appliances %s", json.dumps(appliances_json))
             for appliance_json in appliances_json:
+                appliance_capabilities = None
                 appliance_id = appliance_json.get('applianceId')
                 connection_status = appliance_json.get('connectionState')
                 # appliance_profile = await self.hass.async_add_executor_job(self.api.getApplianceProfile, appliance)
                 appliance_name = appliance_json.get('applianceData').get('applianceName')
                 appliance_infos = await self.api.get_appliances_info([appliance_id])
-                appliance_state = None
+                appliance_state = await self.api.get_appliance_status(appliance_id)
+                _LOGGER.debug("Electrolux get_appliance_status result", appliance_state)
                 try:
                     appliance_capabilities = await self.api.get_appliance_capabilities(appliance_id)
                     _LOGGER.debug("Electrolux appliance capabilities %s", json.dumps(appliance_capabilities))
                 except Exception as exception:
-                    #_LOGGER.exception(exception)
                     _LOGGER.warning("Electrolux unable to retrieve capabilities, we are going on our own")
-                    appliance_capabilities = None
-                    # Extract appliance state if no capabilities returned
-                    appliance_state = await self.api.get_appliance_status(appliance_id)
-                    _LOGGER.debug("Electrolux get_appliance_status result", appliance_state)
 
-                appliance_status = await self.api.get_appliance_status(appliance_id)
                 appliance_info = None if len(appliance_infos) == 0 else appliance_infos[0]
                 appliance_model = appliance_info.get('model') if appliance_info else ""
                 brand = appliance_info.get('brand') if appliance_info else ""
@@ -140,7 +136,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                 appliances.appliances[appliance_id] = appliance
 
                 appliance.setup(ElectroluxLibraryEntity(name=appliance_name, status=connection_status,
-                                                        state=appliance_status, appliance_info=appliance_info,
+                                                        state=appliance_state, appliance_info=appliance_info,
                                                         capabilities=appliance_capabilities))
             _LOGGER.debug("Electrolux found appliance %s", ", ".join(list(appliances.appliances.keys())))
             return self.data

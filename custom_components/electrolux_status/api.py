@@ -80,7 +80,7 @@ class ElectroluxLibraryEntity:
                 if access == "readwrite":
                     return SWITCH
             case _:
-                if access == "read":
+                if access == "read" and type in ["number", "int", "boolean", "string"]:
                     return SENSOR
                 if type == "int" or type == "number":
                     return NUMBER
