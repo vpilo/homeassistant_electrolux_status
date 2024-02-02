@@ -61,7 +61,7 @@ Catalog: dict[str, [dict, str, str, str, str]] = {
         "ovenProcessIdentifier": [{"access": "read","type": "string"}, None, None, None, None],
         "remoteControl": [{"access": "read","type": "string"}, None, None, None, None],
         "defaultExtraRinse": [{"access": "readwrite","type": "string", "values": {"EXTRA_RINSE_1": {},"EXTRA_RINSE_OFF": {}}}, None, None, None, None],
-        "analogTemperature": [{"access": "readwrite","type": "string", "values": {"20_CELSIUS": {},"30_CELSIUS": {},"40_CELSIUS": {},"50_CELSIUS": {},"60_CELSIUS": {},"90_CELSIUS": {},"COLD": {}}}, "userSelections", None, None, None],
+        "analogTemperature": [{"access": "readwrite","type": "string", "values": {"20_CELSIUS": {},"30_CELSIUS": {},"40_CELSIUS": {},"50_CELSIUS": {},"60_CELSIUS": {},"90_CELSIUS": {},"95_CELSIUS": {},"COLD": {}}}, "userSelections", None, None, None],
         # "targetTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
         "startTime": [{"access": "readwrite","type": "number","max": 72000,"min": 0,"step": 1800}, None, None, UnitOfTime.SECONDS, None],
         "waterSoftenerMode": [{"access": "read","type": "string"}, None, None, None, None],
