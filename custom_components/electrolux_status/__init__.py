@@ -167,39 +167,6 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                 raise UpdateFailed() from exception
         return self.data
 
-    # async def _async_update_data(self):
-    #     """Update data via library."""
-    #     await self.async_login()
-    #     found_appliances = {}
-    #     try:
-    #         appliances_json:list[ApplienceStatusResponse] = await self.api.get_appliances_list()
-    #         _LOGGER.debug("Electrolux update appliances %s", json.dumps(appliances_json))
-    #         for appliance in appliances_json:
-    #             connection_state = appliance.get('connectionState')
-    #             # appliance_state = appliance.get('properties').get('reported').get('applianceState')
-    #             # appliance_profile = await self.hass.async_add_executor_job(self.api.getApplianceProfile, appliance)
-    #             appliance_name = appliance.get('applianceData').get('applianceName')
-    #             appliance_infos = await self.api.get_appliances_info([appliance.get('applianceId')])
-    #             appliance_capabilities = await self.api.get_appliance_capabilities(appliance.get('applianceId'))
-    #             appliance_status = await self.api.get_appliance_status(appliance.get('applianceId'))
-    #             appliance_info = None if len(appliance_infos) == 0 else appliance_infos[0]
-    #             appliance_model = appliance_info.get('model') if appliance_info else ""
-    #             brand = appliance_info.get('brand') if appliance_info else ""
-    #             # appliance_profile not reported
-    #             app = Appliance(appliance_name, appliance_status, brand, appliance_model)
-    #             app.setup(ElectroluxLibraryEntity(appliance_name, connection_state, appliance_status,
-    #                                               appliance_info, appliance_capabilities))
-    #             found_appliances[appliance_name] = app
-    #             _LOGGER.debug("Electrolux appliance capabilities %s", json.dumps(appliance_capabilities))
-    #         _LOGGER.debug("Electrolux found appliance %s", ", ".join(list(found_appliances.keys())))
-    #         return {
-    #             "appliances": Appliances(found_appliances)
-    #         }
-    #     except Exception as exception:
-    #         _LOGGER.exception(exception)
-    #         raise UpdateFailed() from exception
-
-
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Handle removal of an entry."""
     coordinator = hass.data[DOMAIN][entry.entry_id]

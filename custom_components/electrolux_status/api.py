@@ -70,7 +70,7 @@ class ElectroluxLibraryEntity:
 
         # List of values ? if values is defined and has at least 1 entry
         values: dict[str, any] | None = capability_def.get("values", None)
-        if access == "readwrite" and isinstance(values, dict) and len(values) > 0:
+        if values and access == "readwrite" and isinstance(values, dict) and len(values) > 0:
             return SELECT
 
         match type:
@@ -86,104 +86,10 @@ class ElectroluxLibraryEntity:
                     return NUMBER
         return None
 
-    # def value_exists(self, attr_name, source):
-    #     _container_attr = []
-    #     for k in self.state:
-    #         for c in self.state[k].get("container", []):
-    #             _container_attr.append(self.state[k]["container"][c].get("name"))
-    #     return (attr_name in self.status) or \
-    #         (attr_name in [self.state[k].get("name") for k in self.state if
-    #                        self.state[k].get("source") == source]) or \
-    #         (attr_name in [self.profile[k].get("name") for k in self.profile if
-    #                        self.profile[k].get("source") == source]) or \
-    #         (attr_name in _container_attr)
-
     def sources_list(self):
         if self.capabilities is None:
             return None
         return [key for key in list(self.capabilities.keys()) if not key.startswith("applianceCareAndMaintenance")]
-        # return list(
-        #     {self.state[k].get("source") for k in self.state if self.state[k].get("source") not in ["NIU", "APL"]}
-        # )
-
-    # def commands_list(self, source):
-    #     commands = list(self.profile[k].get("steps") for k in self.profile if
-    #                     self.profile[k].get("source") == source and self.profile[k].get("name") == "ExecuteCommand")
-    #     if len(commands) > 0:
-    #         return commands[0]
-    #     else:
-    #         return {}
-
-    # def get_command_name(self, command_desc):
-    #     if "transl" in command_desc:
-    #         return command_desc["transl"]
-    #     elif "key" in command_desc:
-    #         return command_desc["key"]
-    #     return None
-
-
-# class ApplianceEntity:
-#     entity_type = None
-#
-#     def __init__(self, name, attr, device_class=None, entity_category=None, source=None) -> None:
-#         self.attr = attr
-#         self.name = name
-#         self.device_class = device_class
-#         self.entity_category = entity_category
-#         self.source = source
-#         self.val_to_send = None
-#         self.icon = None
-#         self._state = None
-#
-#     def setup(self, data: ElectroluxLibraryEntity):
-#         self._state = data.get_value(self.attr, self.source)
-#         return self
-#
-#     def update(self, data: ElectroluxLibraryEntity):
-#         self._state = data.get_value(self.attr, self.source)
-#         return self
-#
-#     def clear_state(self):
-#         self._state = None
-#
-#
-# class ApplianceSensor(ApplianceEntity):
-#     entity_type = SENSOR
-#
-#     def __init__(self, name, attr, unit=None, device_class=None, entity_category=None, source=None) -> None:
-#         super().__init__(name, attr, device_class, entity_category, source)
-#         self.unit = unit
-#
-#     @property
-#     def state(self):
-#         return self._state
-#
-#
-# class ApplianceBinary(ApplianceEntity):
-#     entity_type = BINARY_SENSOR
-#
-#     def __init__(self, name, attr, device_class=None, entity_category=None, invert=False,
-#                  source=None) -> None:
-#         super().__init__(name, attr, device_class, entity_category, source)
-#         self.invert = invert
-#
-#     @property
-#     def state(self):
-#         state = self._state in [1, 'enabled', True, 'Connected', 'connect']
-#         return not state if self.invert else state
-#
-#
-# class ApplianceButton(ApplianceEntity):
-#     entity_type = BUTTON
-#
-#     def __init__(self, name, attr, unit=None, device_class=None, entity_category=None, source=None, val_to_send=None,
-#                  icon=None) -> None:
-#         super().__init__(name, attr, device_class, entity_category, source)
-#         self.val_to_send = val_to_send
-#         self.icon = icon
-#
-#     def setup(self, data: ElectroluxLibraryEntity):
-#         return self
 
 
 class Appliance:
@@ -208,40 +114,7 @@ class Appliance:
                 return item
         return None
 
-    # def get_entity(self, entity_type, entity_attr, entity_source, val_to_send):
-    #     return next(
-    #         entity
-    #         for entity in self.entities
-    #         if
-    #         entity.attr == entity_attr and entity.entity_type == entity_type and entity.source == entity_source and entity.val_to_send == val_to_send
-    #     )
-
     def setup(self, data: ElectroluxLibraryEntity):
-        # TODO
-        # entities = [
-        #     ApplianceBinary(
-        #         name=data.get_name(),
-        #         attr='status',
-        #         device_class=BinarySensorDeviceClass.CONNECTIVITY,
-        #         entity_category=EntityCategory.DIAGNOSTIC,
-        #         source='APL',
-        #     ),
-        #     ApplianceSensor(
-        #         name=f"{data.get_name()} SSID",
-        #         attr='Ssid',
-        #         entity_category=EntityCategory.DIAGNOSTIC,
-        #         source='NIU',
-        #     ),
-        #     ApplianceSensor(
-        #         name=f"{data.get_name()} {data.get_sensor_name('LinkQualityIndicator', 'NIU')}",
-        #         attr='LinkQualityIndicator',
-        #         field='numberValue',
-        #         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
-        #         unit="dBm",
-        #         entity_category=EntityCategory.DIAGNOSTIC,
-        #         source='NIU',
-        #     ),
-        # ]
         self.entities = []
         entities = []
         # Extraction of the capabilities of the connected appliance and mapping to the known entities of the component
@@ -285,41 +158,6 @@ class Appliance:
                 unit = catalog_item[3] if 3 < len(catalog_item) else None
                 entity_category = catalog_item[4] if 4 < len(catalog_item) else None
 
-            # found = False
-            # # For each sensor in the const definition
-            # for sensor_type, sensors_list in sensors.items():
-            #     for sensorName, params in sensors_list.items():
-            #         # Check if the sensor exists in the capabilities
-            #         if sensorName == entity_name:
-            #             found = True
-            #             entities.append(
-            #                 ElectroluxSensor(
-            #                     name=f"{data.get_name()} {data.get_sensor_name(entity_name, capability)}",
-            #                     coordinator=self.coordinator,
-            #                     config_entry=self.coordinator.config_entry,
-            #                     entity_type=SENSOR,
-            #                     entity_attr=entity_name,
-            #                     entity_source=category,
-            #                     pnc_id=self.pnc_id,
-            #                     capability=capability_info
-            #                 )
-            #             )
-            # for sensor_type, sensors_list in sensors_binary.items():
-            #     for sensorName, params in sensors_list.items():
-            #         if sensorName == entity_name:
-            #             found = True
-            #             entities.append(
-            #                 ElectroluxBinarySensor(
-            #                     name=f"{data.get_name()} {data.get_sensor_name(entity_name, capability)}",
-            #                     coordinator=self.coordinator,
-            #                     config_entry=self.coordinator.config_entry,
-            #                     entity_type=SENSOR,
-            #                     entity_attr=entity_name,
-            #                     entity_source=category,
-            #                     pnc_id=self.pnc_id,
-            #                     capability=capability_info
-            #                 )
-            #             )
             if capability == "executeCommand":
                 commands: dict[str, str] = capability_info["values"]
                 commands_keys = list(commands.keys())
