@@ -1,9 +1,10 @@
 """Number platform for Electrolux Status."""
 from homeassistant.components.number import NumberEntity
 from homeassistant.const import UnitOfTime
+from pyelectroluxocp import OneAppApi
 
 from .const import NUMBER, DOMAIN
-from .entity import ElectroluxEntity
+from .entity import ElectroluxEntity, time_seconds_to_minutes
 import logging
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -27,33 +28,40 @@ class ElectroluxNumber(ElectroluxEntity, NumberEntity):
     def native_value(self) -> float | None:
         """Return the value reported by the number."""
         if self.unit == UnitOfTime.SECONDS:
-            return self.extract_value()/60
+            return time_seconds_to_minutes(self.extract_value())
         return self.extract_value()
 
     @property
     def native_max_value(self) -> float | None:
         """Return the max value."""
         if self.unit == UnitOfTime.SECONDS:
-            return self.capability.get("max", 100)/60
+            return time_seconds_to_minutes(self.capability.get("max", 100))
         return self.capability.get("max", 100)
 
     @property
     def native_min_value(self) -> float | None:
         """Return the max value."""
         if self.unit == UnitOfTime.SECONDS:
-            return self.capability.get("min", 0)/60
+            return time_seconds_to_minutes(self.capability.get("min", 0))
         return self.capability.get("min", 0)
 
     @property
     def native_step_value(self) -> float | None:
         """Return the max value."""
         if self.unit == UnitOfTime.SECONDS:
-            return self.capability.get("step", 1)/60
+            return time_seconds_to_minutes(self.capability.get("step", 1))
         return self.capability.get("step", 1)
 
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
-        _LOGGER.error("Not implemented")
+        client: OneAppApi = self.api
+        if self.entity_source:
+            command = { self.entity_source: {self.entity_attr: value}}
+        else:
+            command = {self.entity_attr: value}
+        _LOGGER.debug("Electrolux set value %f", value)
+        result = await client.execute_appliance_command(self.pnc_id, command)
+        _LOGGER.debug("Electrolux set value result %s", result)
 
     @property
     def native_unit_of_measurement(self):

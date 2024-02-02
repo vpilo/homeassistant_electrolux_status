@@ -1,6 +1,6 @@
 from homeassistant.const import UnitOfTime
 
-from .entity import ElectroluxEntity
+from .entity import ElectroluxEntity, time_seconds_to_minutes
 
 from homeassistant.components.sensor import SensorEntity
 from .const import DOMAIN, SENSOR
@@ -28,7 +28,7 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
         """Return the state of the sensor."""
         value = self.extract_value()
         if value is not None and self.unit == UnitOfTime.SECONDS:
-            return value/60
+            return time_seconds_to_minutes(value)
         if isinstance(value, str) and "_" in value:
             value = value.replace("_", " ").title()
         return value

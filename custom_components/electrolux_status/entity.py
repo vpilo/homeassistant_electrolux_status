@@ -1,3 +1,5 @@
+import math
+
 from homeassistant.components.sensor import ENTITY_ID_FORMAT
 from homeassistant.const import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -20,6 +22,14 @@ async def async_setup_entry(hass, entry, async_add_entities):
             entities = [entity for entity in appliance.entities if entity.entity_type == "entity"]
             _LOGGER.debug("Electrolux add %d entities to registry for appliance %s", len(entities), appliance_id)
             async_add_entities(entities)
+
+
+def time_seconds_to_minutes(seconds):
+    if seconds is not None:
+        if seconds == -1:
+            return -1
+        return int(math.ceil((int(seconds) / 60)))
+    return None
 
 
 class ElectroluxEntity(CoordinatorEntity):
@@ -109,4 +119,3 @@ class ElectroluxEntity(CoordinatorEntity):
 
     def update(self, appliance_status: ApplienceStatusResponse):
         self.appliance_status = appliance_status
-
