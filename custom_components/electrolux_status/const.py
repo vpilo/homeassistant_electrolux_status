@@ -95,44 +95,6 @@ Catalog: dict[str, [dict, str, str, str, str]] = {
         # "applianceMode": [None, None, None],
 }
 
-sensors = {
-# Sensor Name: [capability, category, device class, unit]
-# Device state sensors
-    None: {
-
-    },
-# Device diagnostic sensors
-    EntityCategory.DIAGNOSTIC: {
-
-    }
-}
-
-
-sensors_binary = {
-# Sensor Name: [value field, device class, invert]
-# Device state sensors
-    None: {
-        # "defaultSoftPlus": ["numberValue", None, None],
-        # "rinseHold": ["numberValue", None, None],
-        # "nightCycle": ["numberValue", None, None],
-        # "stain": ["numberValue", None, None],
-        # "wMEconomy": ["numberValue", None, None],
-        # "anticreaseWSteam": ["numberValue", None, None],
-        # "anticreaseNoSteam": ["numberValue", None, None],
-        # "refresh": ["numberValue", None, None],
-        # "reversePlus": ["numberValue", None, None],
-        # "delicate": ["numberValue", None, None],
-        # "tDEnergyLabel": ["numberValue", None, None],
-        # "tDEconomy_Eco": ["numberValue", None, None],
-        # "tDEconomy_Night": ["numberValue", None, None],
-    },
-# Device diagnostic sensors
-    EntityCategory.DIAGNOSTIC : {
-        # "tankA_reserve": ["numberValue", BinarySensorDeviceClass.PROBLEM, False],
-        # "tankB_reserve": ["numberValue", BinarySensorDeviceClass.PROBLEM, False],
-    }
-}
-
 icon_mapping = {
     "OFF": "mdi:power-off",
     "ON": "mdi:power-on",

@@ -25,11 +25,14 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class ElectroluxSelect(ElectroluxEntity, SelectEntity):
     """Electrolux Status binary_sensor class."""
 
-
+    def format_value(self, value: str) -> str | None:
+        if value is None:
+            return None
+        return value.replace("_", " ").title()
 
     def __init__(self, coordinator: any, name: str, config_entry,
                  pnc_id: str, entity_type: str, entity_attr, entity_source, capability: dict[str, any], unit,
-                 device_class: str, entity_category: EntityCategory,):
+                 device_class: str, entity_category: EntityCategory, ):
         super().__init__(coordinator=coordinator, capability=capability, name=name, config_entry=config_entry,
                          pnc_id=pnc_id, entity_type=entity_type, entity_attr=entity_attr, entity_source=entity_source,
                          unit=unit, device_class=device_class, entity_category=entity_category)
@@ -39,7 +42,7 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
             entry: dict[str, any] = values_dict[value]
             if "disabled" in entry.keys():
                 continue
-            label = value.replace("_", " ").title()
+            label = self.format_value(value)
             self.options_list[label] = value
 
     # @property
@@ -53,8 +56,11 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
     def current_option(self) -> str:
         value = self.extract_value()
         label = list(self.options_list.keys())[list(self.options_list.values()).index(value)]
+        # TODO : happens when value not in the catalog -> add the value to the list then
         if label is None:
-            return value
+            label = self.format_value(value)
+            self.options_list[label] = value
+            return label
         return label
 
     async def async_select_option(self, option: str) -> None:
@@ -65,7 +71,7 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
         client: OneAppApi = self.api
         command: dict[str, any] = {}
         if self.entity_source:
-            command = { self.entity_source: {self.entity_attr: value}}
+            command = {self.entity_source: {self.entity_attr: value}}
         else:
             command = {self.entity_attr: value}
         _LOGGER.debug("Electrolux select option %s", command)

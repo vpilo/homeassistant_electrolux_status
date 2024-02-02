@@ -2,7 +2,6 @@
   "domain": "electrolux_status",
   "name": "Electrolux Care Integration V2",
   "codeowners": [
-    "@mauro-midolo",
     "@albaintor"
   ],
   "config_flow": true,
@@ -15,6 +14,6 @@
     "pyelectroluxocp"
   ],
   "ssdp": [],
-  "version": "1.3.0",
+  "version": "1.0.0",
   "zeroconf": []
 }
