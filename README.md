@@ -53,7 +53,7 @@ All devices need configured and Alias set (otherwise the home assistant integrat
 
 ## Installation
 1. Click install.
-2. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Electrolux status".
+2. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Electrolux status". If you can't find it, add a personalized depot in HACS > Integrations > 3 dots button on the right and type in https://github.com/albaintor/homeassistant_electrolux_status
 3. Insert the Electrolux Care Application credentials
 
 ## Disclaimer
