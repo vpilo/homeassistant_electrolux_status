@@ -119,11 +119,12 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                     appliance_capabilities = await self.api.get_appliance_capabilities(appliance_id)
                     _LOGGER.debug("Electrolux appliance capabilities %s", json.dumps(appliance_capabilities))
                 except Exception as exception:
-                    _LOGGER.exception(exception)
-                    _LOGGER.warning("Unable to retrieve capabilities, we are going on our own")
+                    #_LOGGER.exception(exception)
+                    _LOGGER.warning("Electrolux unable to retrieve capabilities, we are going on our own")
                     appliance_capabilities = None
                     # Extract appliance state if no capabilities returned
                     appliance_state = await self.api.get_appliance_status(appliance_id)
+                    _LOGGER.debug("Electrolux get_appliance_status result", appliance_state)
 
                 appliance_status = await self.api.get_appliance_status(appliance_id)
                 appliance_info = None if len(appliance_infos) == 0 else appliance_infos[0]
