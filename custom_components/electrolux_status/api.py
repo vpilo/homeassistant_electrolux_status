@@ -5,8 +5,8 @@ import re
 from pyelectroluxocp.apiModels import ApplianceInfoResponse, ApplienceStatusResponse
 
 from .binary_sensor import ElectroluxBinarySensor
+from .button import ElectroluxButtonEntity
 from .const import BINARY_SENSOR, SENSOR, BUTTON, icon_mapping, SELECT, SWITCH, NUMBER, Catalog
-from .entity import ElectroluxButtonEntity
 from .number import ElectroluxNumber
 from .select import ElectroluxSelect
 from .sensor import ElectroluxSensor
@@ -347,16 +347,17 @@ class Appliance:
                     for key, item in Catalog.items():
                         category = item[1]
                         if ((category and reported.get(category, None) and reported.get(category, None).get(key))
-                                or (not category and reported.get(key, None))):
-
+                                or (not category and reported.get(key, None))
+                                or key == "executeCommand"):
                             if category:
-                                capabilities[category+"/"+key] = item[0]
-                                capabilities_names.append(category+"/"+key)
+                                capabilities[category + "/" + key] = item[0]
+                                capabilities_names.append(category + "/" + key)
                             else:
                                 capabilities[key] = item[0]
                                 capabilities_names.append(key)
                     data.capabilities = capabilities
-                    _LOGGER.debug("Electrolux rebuilt capabilities due to API malfunction", json.dumps(capabilities, indent=2))
+                    _LOGGER.debug("Electrolux rebuilt capabilities due to API malfunction",
+                                  json.dumps(capabilities, indent=2))
 
         # For each capability src
         for capability in capabilities_names:
@@ -370,9 +371,8 @@ class Appliance:
             catalog_item = self.getItemFromCatalog(entity_name)
             if catalog_item:
                 device_class = catalog_item[2] if 2 < len(catalog_item) else None
-                entity_category = catalog_item[3] if 3 < len(catalog_item) else None
-                unit = catalog_item[4] if 4 < len(catalog_item) else None
-
+                unit = catalog_item[3] if 3 < len(catalog_item) else None
+                entity_category = catalog_item[4] if 4 < len(catalog_item) else None
 
             # found = False
             # # For each sensor in the const definition
@@ -424,7 +424,9 @@ class Appliance:
                             pnc_id=self.pnc_id,
                             icon=icon_mapping.get(command, "mdi:gesture-tap-button"),
                             val_to_send=command,
-                            capability=capability_info
+                            capability=capability_info,
+                            entity_category=entity_category,
+                            device_class=device_class
                         )
                     )
             # Capability is not defined in the catalog, add it dynamically
@@ -440,7 +442,9 @@ class Appliance:
                         entity_source=category,
                         pnc_id=self.pnc_id,
                         capability=capability_info,
-                        unit=unit
+                        unit=unit,
+                        entity_category=entity_category,
+                        device_class=device_class
                     )
                 )
             if entity_type == BINARY_SENSOR:
@@ -454,7 +458,9 @@ class Appliance:
                         entity_source=category,
                         pnc_id=self.pnc_id,
                         capability=capability_info,
-                        unit=unit
+                        unit=unit,
+                        entity_category=entity_category,
+                        device_class=device_class
                     )
                 )
             if entity_type == SELECT:
@@ -468,7 +474,9 @@ class Appliance:
                         entity_source=category,
                         pnc_id=self.pnc_id,
                         capability=capability_info,
-                        unit=unit
+                        unit=unit,
+                        entity_category=entity_category,
+                        device_class=device_class
                     )
                 )
             if entity_type == NUMBER:
@@ -482,7 +490,9 @@ class Appliance:
                         entity_source=category,
                         pnc_id=self.pnc_id,
                         capability=capability_info,
-                        unit=unit
+                        unit=unit,
+                        entity_category=entity_category,
+                        device_class=device_class
                     )
                 )
             if entity_type == SWITCH:
@@ -496,113 +506,16 @@ class Appliance:
                         entity_source=category,
                         pnc_id=self.pnc_id,
                         capability=capability_info,
-                        unit=unit
+                        unit=unit,
+                        entity_category=entity_category,
+                        device_class=device_class
                     )
                 )
-
-        # for capability in capabilities:
-        #     entity_name = data.get_entity_name(capability)
-        #     category = data.get_category(capability)
-        #
-        #     found = False
-        #     # For each sensor in the const definition
-        #     for sensor_type, sensors_list in sensors.items():
-        #         for sensorName, params in sensors_list.items():
-        #             # Check if the sensor exists in the capabilities
-        #             if sensorName == entity_name:
-        #                 found = True
-        #                 entities.append(
-        #                     ApplianceSensor(
-        #                         name=f"{data.get_name()} {data.get_sensor_name(sensorName, capability)}",
-        #                         attr=entity_name,
-        #                         device_class=params[1],
-        #                         entity_category=sensor_type,
-        #                         unit=params[2],
-        #                         source=category,
-        #                     )
-        #                 )
-        #     for sensor_type, sensors_list in sensors_binary.items():
-        #         for sensorName, params in sensors_list.items():
-        #             if sensorName == entity_name:
-        #                 found = True
-        #                 entities.append(
-        #                     ApplianceBinary(
-        #                         name=f"{data.get_name()} {data.get_sensor_name(sensorName, capability)}",
-        #                         attr=entity_name,
-        #                         device_class=params[1],
-        #                         entity_category=sensor_type,
-        #                         invert=params[2],
-        #                         source=category,
-        #                     )
-        #                 )
-        #     if capability == "executeCommand":
-        #         commands: dict[str, str] = data.capabilities[capability]["values"]
-        #         commands_keys = list(commands.keys())
-        #         found = True
-        #         for command in commands_keys:
-        #             entities.append(
-        #                 ApplianceButton(
-        #                     name=f"{data.get_name()} {command}",
-        #                     attr='ExecuteCommand',
-        #                     val_to_send=command,
-        #                     source=category,
-        #                     icon=icon_mapping.get(command, "mdi:gesture-tap-button"),
-        #                 )
-        #             )
-        #     # Capability is not defined in the catalog, add it dynamically
-        #     if not found:
-        #         entity_type = data.get_entity_type(capability)
-        #         if entity_type == SENSOR:
-        #             entities.append(
-        #                 ApplianceSensor(
-        #                     name=f"{data.get_name()} {data.get_sensor_name(entity_name, capability)}",
-        #                     attr=entity_name,
-        #                     entity_category=None,
-        #                     source=category,
-        #                 )
-        #             )
-        #         if entity_type == BINARY_SENSOR:
-        #             entities.append(
-        #                 ApplianceBinary(
-        #                     name=f"{data.get_name()} {data.get_sensor_name(entity_name, capability)}",
-        #                     attr=entity_name,
-        #                     entity_category=None,
-        #                     source=category,
-        #                 )
-        #             )
-        #         if entity_type == SELECT:
-        #             entities.append(
-        #                 ApplianceEntity(
-        #                     name=f"{data.get_name()} {data.get_sensor_name(entity_name, capability)}",
-        #                     attr=entity_name,
-        #                     entity_category=None,
-        #                     source=category,
-        #                 )
-        #             )
-        #         if entity_type == NUMBER:
-        #             entities.append(
-        #                 ApplianceEntity(
-        #                     name=f"{data.get_name()} {data.get_sensor_name(entity_name, capability)}",
-        #                     attr=entity_name,
-        #                     entity_category=None,
-        #                     source=category,
-        #                 )
-        #             )
-        #         if entity_type == SWITCH:
-        #             entities.append(
-        #                 ApplianceEntity(
-        #                     name=f"{data.get_name()} {data.get_sensor_name(entity_name, capability)}",
-        #                     attr=entity_name,
-        #                     entity_category=None,
-        #                     source=category,
-        #                 )
-        #             )
 
         # Setup each found entities
         self.entities = entities
         for entity in entities:
             entity.setup(data)
-
 
     def update(self, appliance_status: ApplienceStatusResponse):
         for entity in self.entities:

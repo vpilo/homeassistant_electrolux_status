@@ -117,6 +117,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                 appliance_state = None
                 try:
                     appliance_capabilities = await self.api.get_appliance_capabilities(appliance_id)
+                    _LOGGER.debug("Electrolux appliance capabilities %s", json.dumps(appliance_capabilities))
                 except Exception as exception:
                     _LOGGER.exception(exception)
                     _LOGGER.warning("Unable to retrieve capabilities, we are going on our own")
@@ -140,7 +141,6 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                 appliance.setup(ElectroluxLibraryEntity(name=appliance_name, status=connection_status,
                                                         state=appliance_status, appliance_info=appliance_info,
                                                         capabilities=appliance_capabilities))
-                _LOGGER.debug("Electrolux appliance capabilities %s", json.dumps(appliance_capabilities))
             _LOGGER.debug("Electrolux found appliance %s", ", ".join(list(appliances.appliances.keys())))
             return self.data
         except Exception as exception:

@@ -1,5 +1,6 @@
 """Number platform for Electrolux Status."""
 from homeassistant.components.number import NumberEntity
+from homeassistant.const import UnitOfTime
 
 from .const import NUMBER, DOMAIN
 from .entity import ElectroluxEntity
@@ -25,8 +26,30 @@ class ElectroluxNumber(ElectroluxEntity, NumberEntity):
     @property
     def native_value(self) -> float | None:
         """Return the value reported by the number."""
+        if self.unit == UnitOfTime.SECONDS:
+            return self.extract_value()/60
         return self.extract_value()
-        #return self._attr_native_value
+
+    @property
+    def native_max_value(self) -> float | None:
+        """Return the max value."""
+        if self.unit == UnitOfTime.SECONDS:
+            return self.capability.get("max", 100)/60
+        return self.capability.get("max", 100)
+
+    @property
+    def native_min_value(self) -> float | None:
+        """Return the max value."""
+        if self.unit == UnitOfTime.SECONDS:
+            return self.capability.get("min", 0)/60
+        return self.capability.get("min", 0)
+
+    @property
+    def native_step_value(self) -> float | None:
+        """Return the max value."""
+        if self.unit == UnitOfTime.SECONDS:
+            return self.capability.get("step", 1)/60
+        return self.capability.get("step", 1)
 
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
@@ -34,4 +57,6 @@ class ElectroluxNumber(ElectroluxEntity, NumberEntity):
 
     @property
     def native_unit_of_measurement(self):
+        if self.unit == UnitOfTime.SECONDS:
+            return UnitOfTime.MINUTES
         return self.unit

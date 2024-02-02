@@ -1,4 +1,5 @@
 from homeassistant.components.sensor import ENTITY_ID_FORMAT
+from homeassistant.const import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from pyelectroluxocp.apiModels import ApplienceStatusResponse
 
@@ -25,7 +26,8 @@ class ElectroluxEntity(CoordinatorEntity):
     appliance_status: ApplienceStatusResponse
 
     def __init__(self, coordinator: any, name: str, config_entry,
-                 pnc_id: str, entity_type: str, entity_attr, entity_source, capability: dict[str, any], unit):
+                 pnc_id: str, entity_type: str, entity_attr, entity_source, capability: dict[str, any],
+                 unit: str, device_class: str, entity_category: EntityCategory):
         super().__init__(coordinator)
         self.data = None
         self.coordinator = coordinator
@@ -37,6 +39,8 @@ class ElectroluxEntity(CoordinatorEntity):
         self.config_entry = config_entry
         self.pnc_id = pnc_id
         self.unit = unit
+        self._device_class = device_class
+        self._entity_category = entity_category
         _LOGGER.debug("Electrolux new entity %s for appliance %s", name, pnc_id)
         self.entity_id = ENTITY_ID_FORMAT.format(
             f"{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_attr}")
@@ -77,10 +81,13 @@ class ElectroluxEntity(CoordinatorEntity):
         }
 
     @property
+    def entity_category(self) -> EntityCategory | None:
+        return self._entity_category
+
+    @property
     def device_class(self):
         """Return the device class of the sensor."""
-        return None
-        # return self.get_entity.device_class
+        return self._device_class
 
     def extract_value(self):
         """Return the appliance attributes of the entity."""
@@ -103,40 +110,3 @@ class ElectroluxEntity(CoordinatorEntity):
     def update(self, appliance_status: ApplienceStatusResponse):
         self.appliance_status = appliance_status
 
-
-class ElectroluxButtonEntity(ElectroluxEntity):
-    def __init__(self, coordinator: any, name: str, config_entry,
-                 pnc_id: str, entity_type: str, entity_attr, entity_source, capability: dict[str, any],
-                 val_to_send, icon):
-        super().__init__(coordinator=coordinator, capability=capability, name=name, config_entry=config_entry,
-                         pnc_id=pnc_id, entity_type=entity_type, entity_attr=entity_attr, entity_source=entity_source, unit=None)
-        self.val_to_send = val_to_send
-        self.button_icon = icon
-        self.entity_id = ENTITY_ID_FORMAT.format(
-            f"{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_attr}_{self.val_to_send}")
-
-    @property
-    def get_appliance(self):
-        return self.coordinator.data['appliances'].get_appliance(self.pnc_id)
-
-    @property
-    def unique_id(self):
-        """Return a unique ID to use for this entity."""
-        return f"{self.config_entry.entry_id}-{self.val_to_send}-{self.entity_attr}-{self.entity_source}-{self.pnc_id}"
-
-    @property
-    def extra_state_attributes(self):
-        """Return the state attributes."""
-        return {
-            "integration": DOMAIN,
-        }
-
-    @property
-    def icon(self):
-        """Return the icon of the button."""
-        return self.button_icon
-
-    @property
-    def available(self):
-        # available state should depends on connect state
-        return True

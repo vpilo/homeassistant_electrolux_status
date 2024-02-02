@@ -1,3 +1,5 @@
+from homeassistant.const import UnitOfTime
+
 from .entity import ElectroluxEntity
 
 from homeassistant.components.sensor import SensorEntity
@@ -24,8 +26,15 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
     @property
     def native_value(self):
         """Return the state of the sensor."""
-        return self.extract_value()
+        value = self.extract_value()
+        if value is not None and self.unit == UnitOfTime.SECONDS:
+            return value/60
+        if isinstance(value, str) and "_" in value:
+            value = value.replace("_", " ").title()
+        return value
 
     @property
     def native_unit_of_measurement(self):
+        if self.unit == UnitOfTime.SECONDS:
+            return UnitOfTime.MINUTES
         return self.unit
