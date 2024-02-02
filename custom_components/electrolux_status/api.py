@@ -7,6 +7,7 @@ from pyelectroluxocp.apiModels import ApplianceInfoResponse, ApplienceStatusResp
 from .binary_sensor import ElectroluxBinarySensor
 from .button import ElectroluxButtonEntity
 from .const import BINARY_SENSOR, SENSOR, BUTTON, icon_mapping, SELECT, SWITCH, NUMBER, Catalog
+from .entity import ElectroluxEntity
 from .number import ElectroluxNumber
 from .select import ElectroluxSelect
 from .sensor import ElectroluxSensor
@@ -101,6 +102,8 @@ class Appliance:
     def __init__(self, coordinator: any,
                  name: str, pnc_id: str, brand: str, model: str,
                  state: ApplienceStatusResponse) -> None:
+        self.own_capabilties = False
+        self.data = None
         self.coordinator = coordinator
         self.model = model
         self.pnc_id = pnc_id
@@ -114,11 +117,125 @@ class Appliance:
                 return item
         return None
 
+    def update_missing_entities(self):
+        """Add missing entities when no capabilities returned by the API, do it dynamically"""
+        if not self.own_capabilties:
+            return
+        properties = self.state.get("properties")
+        capability = ""
+        if properties:
+            reported = properties.get("reported")
+            if reported:
+                for key, item in Catalog.items():
+                    category = item[1]
+                    if ((category and reported.get(category, None) and reported.get(category, None).get(key))
+                            or (not category and reported.get(key, None))):
+                        found: bool = False
+                        for entity in self.entities:
+                            if entity.entity_attr == key and entity.entity_source == category:
+                                found = True
+                                capability = key if category is None else category + "/" + key
+                                self.data.capabilities[capability] = item[0]
+                                break
+                        if not found:
+                            _LOGGER.debug("Electrolux discovered new entity from extracted data", category, key)
+                            entity = self.get_entity(capability)
+                            if entity:
+                                self.entities.append(entity)
+
+    def get_entity(self, capability: str) -> ElectroluxEntity | None:
+        entity_type = self.data.get_entity_type(capability)
+        entity_name = self.data.get_entity_name(capability)
+        category = self.data.get_category(capability)
+        capability_info: dict[str, any] = self.data.capabilities[capability]
+        device_class = None
+        entity_category = None
+        unit = None
+        # item : capability, category, DeviceClass, Unit, EntityCategory
+        catalog_item = self.getItemFromCatalog(entity_name)
+        if catalog_item:
+            device_class = catalog_item[2] if 2 < len(catalog_item) else None
+            unit = catalog_item[3] if 3 < len(catalog_item) else None
+            entity_category = catalog_item[4] if 4 < len(catalog_item) else None
+
+        if entity_type == SENSOR:
+            return ElectroluxSensor(
+                name=f"{self.data.get_name()} {self.data.get_sensor_name(entity_name, capability)}",
+                coordinator=self.coordinator,
+                config_entry=self.coordinator.config_entry,
+                entity_type=entity_type,
+                entity_attr=entity_name,
+                entity_source=category,
+                pnc_id=self.pnc_id,
+                capability=capability_info,
+                unit=unit,
+                entity_category=entity_category,
+                device_class=device_class
+            )
+        if entity_type == BINARY_SENSOR:
+            return ElectroluxBinarySensor(
+                name=f"{self.data.get_name()} {self.data.get_sensor_name(entity_name, capability)}",
+                coordinator=self.coordinator,
+                config_entry=self.coordinator.config_entry,
+                entity_type=entity_type,
+                entity_attr=entity_name,
+                entity_source=category,
+                pnc_id=self.pnc_id,
+                capability=capability_info,
+                unit=unit,
+                entity_category=entity_category,
+                device_class=device_class
+            )
+        if entity_type == SELECT:
+            return ElectroluxSelect(
+                name=f"{self.data.get_name()} {self.data.get_sensor_name(entity_name, capability)}",
+                coordinator=self.coordinator,
+                config_entry=self.coordinator.config_entry,
+                entity_type=entity_type,
+                entity_attr=entity_name,
+                entity_source=category,
+                pnc_id=self.pnc_id,
+                capability=capability_info,
+                unit=unit,
+                entity_category=entity_category,
+                device_class=device_class
+            )
+        if entity_type == NUMBER:
+            return ElectroluxNumber(
+                name=f"{self.data.get_name()} {self.data.get_sensor_name(entity_name, capability)}",
+                coordinator=self.coordinator,
+                config_entry=self.coordinator.config_entry,
+                entity_type=entity_type,
+                entity_attr=entity_name,
+                entity_source=category,
+                pnc_id=self.pnc_id,
+                capability=capability_info,
+                unit=unit,
+                entity_category=entity_category,
+                device_class=device_class
+            )
+        if entity_type == SWITCH:
+            return ElectroluxSwitch(
+                name=f"{self.data.get_name()} {self.data.get_sensor_name(entity_name, capability)}",
+                coordinator=self.coordinator,
+                config_entry=self.coordinator.config_entry,
+                entity_type=entity_type,
+                entity_attr=entity_name,
+                entity_source=category,
+                pnc_id=self.pnc_id,
+                capability=capability_info,
+                unit=unit,
+                entity_category=entity_category,
+                device_class=device_class
+            )
+        return None
+
     def setup(self, data: ElectroluxLibraryEntity):
+        self.data = data
         self.entities = []
         entities = []
         # Extraction of the capabilities of the connected appliance and mapping to the known entities of the component
-        capabilities_names = data.sources_list()  # [ "applianceState", "autoDosing",..., "userSelections/analogTemperature",...]
+        capabilities_names = self.data.sources_list()  # [ "applianceState", "autoDosing",..., "userSelections/analogTemperature",...]
 
         # No capabilities returned (unstable API) => rebuild them from catalog + sample data
         if capabilities_names is None and self.state:
@@ -139,7 +256,7 @@ class Appliance:
                             else:
                                 capabilities[key] = item[0]
                                 capabilities_names.append(key)
-                    data.capabilities = capabilities
+                    self.data.capabilities = capabilities
                     _LOGGER.debug("Electrolux rebuilt capabilities due to API malfunction",
                                   json.dumps(capabilities, indent=2))
 
@@ -178,88 +295,9 @@ class Appliance:
                             device_class=device_class
                         )
                     )
-            # Capability is not defined in the catalog, add it dynamically
-            entity_type = data.get_entity_type(capability)
-            if entity_type == SENSOR:
-                entities.append(
-                    ElectroluxSensor(
-                        name=f"{data.get_name()} {data.get_sensor_name(entity_name, capability)}",
-                        coordinator=self.coordinator,
-                        config_entry=self.coordinator.config_entry,
-                        entity_type=entity_type,
-                        entity_attr=entity_name,
-                        entity_source=category,
-                        pnc_id=self.pnc_id,
-                        capability=capability_info,
-                        unit=unit,
-                        entity_category=entity_category,
-                        device_class=device_class
-                    )
-                )
-            if entity_type == BINARY_SENSOR:
-                entities.append(
-                    ElectroluxBinarySensor(
-                        name=f"{data.get_name()} {data.get_sensor_name(entity_name, capability)}",
-                        coordinator=self.coordinator,
-                        config_entry=self.coordinator.config_entry,
-                        entity_type=entity_type,
-                        entity_attr=entity_name,
-                        entity_source=category,
-                        pnc_id=self.pnc_id,
-                        capability=capability_info,
-                        unit=unit,
-                        entity_category=entity_category,
-                        device_class=device_class
-                    )
-                )
-            if entity_type == SELECT:
-                entities.append(
-                    ElectroluxSelect(
-                        name=f"{data.get_name()} {data.get_sensor_name(entity_name, capability)}",
-                        coordinator=self.coordinator,
-                        config_entry=self.coordinator.config_entry,
-                        entity_type=entity_type,
-                        entity_attr=entity_name,
-                        entity_source=category,
-                        pnc_id=self.pnc_id,
-                        capability=capability_info,
-                        unit=unit,
-                        entity_category=entity_category,
-                        device_class=device_class
-                    )
-                )
-            if entity_type == NUMBER:
-                entities.append(
-                    ElectroluxNumber(
-                        name=f"{data.get_name()} {data.get_sensor_name(entity_name, capability)}",
-                        coordinator=self.coordinator,
-                        config_entry=self.coordinator.config_entry,
-                        entity_type=entity_type,
-                        entity_attr=entity_name,
-                        entity_source=category,
-                        pnc_id=self.pnc_id,
-                        capability=capability_info,
-                        unit=unit,
-                        entity_category=entity_category,
-                        device_class=device_class
-                    )
-                )
-            if entity_type == SWITCH:
-                entities.append(
-                    ElectroluxSwitch(
-                        name=f"{data.get_name()} {data.get_sensor_name(entity_name, capability)}",
-                        coordinator=self.coordinator,
-                        config_entry=self.coordinator.config_entry,
-                        entity_type=entity_type,
-                        entity_attr=entity_name,
-                        entity_source=category,
-                        pnc_id=self.pnc_id,
-                        capability=capability_info,
-                        unit=unit,
-                        entity_category=entity_category,
-                        device_class=device_class
-                    )
-                )
+            entity = self.get_entity(capability)
+            if entity:
+                entities.append(entity)
 
         # Setup each found entities
         self.entities = entities
@@ -267,6 +305,7 @@ class Appliance:
             entity.setup(data)
 
     def update(self, appliance_status: ApplienceStatusResponse):
+        self.update_missing_entities()
         for entity in self.entities:
             entity.update(appliance_status)
 
