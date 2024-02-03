@@ -61,13 +61,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # Fill in the values for first time
     await coordinator.async_config_entry_first_refresh()
 
-    # Add entities in registry
-    # for applianceId in appliances:
-    #     appliance = appliances[applianceId]
-    #     for entity in appliance.entities:
-    #         _LOGGER.debug("Electrolux add entity to registry %s", entity.name)
-    #         async_add_entities(entity)
-
     if not coordinator.last_update_success:
         raise ConfigEntryNotReady
 
@@ -93,14 +86,15 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
     async def async_login(self) -> bool:
         try:
             # Check that one can extract the appliance list to confirm login
-            await self.hass.async_add_executor_job(self.api.get_appliances_list)
+            token = await self.hass.async_add_executor_job(self.api.get_user_token)
+            if token:
+                return True
         except Exception as ex:
             _LOGGER.error("Could not log in to ElectroluxStatus, %s", ex)
             return False
-        return True
+        return False
 
     async def setup_entities(self):
-        await self.async_login()
         appliances = Appliances({})
         self.data = {
             "appliances": appliances
@@ -146,7 +140,6 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self):
         """Update data via library."""
-        await self.async_login()
         appliances: Appliances = self.data.get('appliances', None)
         # Should not happen
         if appliances is None or len(appliances.get_appliances()) == 0:

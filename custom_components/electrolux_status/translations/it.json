@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Electrolux Status",
-        "description": "Se hai bisogno di aiuto con la configurazione, dai un'occhiata qui: https://github.com/mauro-midolo/homeassistant_electrolux_status",
+        "description": "Se hai bisogno di aiuto con la configurazione, dai un'occhiata qui: https://github.com/albaintor/homeassistant_electrolux_status",
         "data": {
           "username": "Username",
           "password": "Password",

@@ -2,8 +2,10 @@ import math
 
 from homeassistant.components.sensor import ENTITY_ID_FORMAT
 from homeassistant.const import EntityCategory
+from homeassistant.helpers.typing import StateType
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from pyelectroluxocp.apiModels import ApplienceStatusResponse
+from typing import cast
 
 # from .api import Appliance, ElectroluxLibraryEntity
 
@@ -39,6 +41,7 @@ class ElectroluxEntity(CoordinatorEntity):
                  pnc_id: str, entity_type: str, entity_attr, entity_source, capability: dict[str, any],
                  unit: str, device_class: str, entity_category: EntityCategory):
         super().__init__(coordinator)
+        self.root_attribute = "reported"
         self.data = None
         self.coordinator = coordinator
         self._name = name
@@ -55,6 +58,21 @@ class ElectroluxEntity(CoordinatorEntity):
         self.entity_id = ENTITY_ID_FORMAT.format(
             f"{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_attr}")
         self.capability = capability
+
+    @property
+    def available(self) -> bool:
+        appliance = self.get_appliance()
+        if appliance and appliance.connection_state:
+            return True
+        else:
+            return False
+
+    @property
+    def state(self) -> StateType:
+        appliance = self.get_appliance()
+        if appliance:
+            return appliance.connection_state
+        return None
 
     @property
     def name(self):
@@ -104,14 +122,16 @@ class ElectroluxEntity(CoordinatorEntity):
         if self.appliance_status:
             properties = self.appliance_status.get("properties", None)
             if properties:
-                reported = properties.get("reported", None)
-                if reported:
+                root = cast(any, properties)
+                if self.root_attribute:
+                    root = root.get(self.root_attribute, None)
+                if root:
                     if self.entity_source:
-                        category: dict[str, any] | None = reported.get(self.entity_source, None)
+                        category: dict[str, any] | None = root.get(self.entity_source, None)
                         if category:
                             return category.get(self.entity_attr)
                     else:
-                        return reported.get(self.entity_attr, None)
+                        return root.get(self.entity_attr, None)
         return None
 
     def setup(self, data):

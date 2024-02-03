@@ -36,6 +36,10 @@ DEFAULT_NAME = DOMAIN
 DEFAULT_SCAN_INTERVAL = 30
 DEFAULT_LANGUAGE = "English"
 
+# Common entities
+CONNECTION_STATE_ATTRIBUTE = "connectionState"
+ALWAYS_ENABLED_ATTRIBUTES = [CONNECTION_STATE_ATTRIBUTE]
+
 # capabilities model :
 #
 # key = "entry" or "category/entry"
@@ -60,7 +64,7 @@ Catalog: dict[str, [dict, str, str, str, str]] = {
         "targetMicrowavePower": [{"access": "read","type": "number"}, None, SensorDeviceClass.ENERGY, UnitOfPower.WATT, None],
         "ovenProcessIdentifier": [{"access": "read","type": "string"}, None, None, None, None],
         "remoteControl": [{"access": "read","type": "string"}, None, None, None, None],
-        "defaultExtraRinse": [{"access": "readwrite","type": "string", "values": {"EXTRA_RINSE_1": {},"EXTRA_RINSE_OFF": {}}}, None, None, None, None],
+        "defaultExtraRinse": [{"access": "readwrite","type": "string", "values": {"EXTRA_RINSE_1": {},"EXTRA_RINSE_2": {},"EXTRA_RINSE_OFF": {}}}, None, None, None, None],
         "analogTemperature": [{"access": "readwrite","type": "string", "values": {"20_CELSIUS": {},"30_CELSIUS": {},"40_CELSIUS": {},"50_CELSIUS": {},"60_CELSIUS": {},"90_CELSIUS": {},"95_CELSIUS": {},"COLD": {}}}, "userSelections", None, None, None],
         # "targetTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
         "startTime": [{"access": "readwrite","type": "number","max": 72000,"min": 0,"step": 1800}, None, None, UnitOfTime.SECONDS, None],
@@ -93,6 +97,7 @@ Catalog: dict[str, [dict, str, str, str, str]] = {
         # "fCTotalWashCyclesCount": [None, None, None],
         # "fCTotalWashingTime": [None, None, None],
         # "applianceMode": [None, None, None],
+        CONNECTION_STATE_ATTRIBUTE: [{"access": "read","type": "string"}, None, None, None, None],
 }
 
 icon_mapping = {

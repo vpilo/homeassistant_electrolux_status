@@ -1,9 +1,9 @@
-from homeassistant.const import UnitOfTime
+from homeassistant.const import UnitOfTime, EntityCategory
 
 from .entity import ElectroluxEntity, time_seconds_to_minutes
 
 from homeassistant.components.sensor import SensorEntity
-from .const import DOMAIN, SENSOR
+from .const import DOMAIN, SENSOR, ALWAYS_ENABLED_ATTRIBUTES
 import logging
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -38,3 +38,14 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
         if self.unit == UnitOfTime.SECONDS:
             return UnitOfTime.MINUTES
         return self.unit
+
+    @property
+    def available(self) -> bool:
+        if (self._entity_category == EntityCategory.DIAGNOSTIC
+                or self.entity_attr in ALWAYS_ENABLED_ATTRIBUTES):
+            return True
+        appliance = self.get_appliance()
+        if appliance and appliance.connection_state:
+            return True
+        else:
+            return False

@@ -1,12 +1,14 @@
 import json
 import logging
 import re
+from typing import cast
 
 from pyelectroluxocp.apiModels import ApplianceInfoResponse, ApplienceStatusResponse
 
 from .binary_sensor import ElectroluxBinarySensor
 from .button import ElectroluxButtonEntity
-from .const import BINARY_SENSOR, SENSOR, BUTTON, icon_mapping, SELECT, SWITCH, NUMBER, Catalog
+from .const import BINARY_SENSOR, SENSOR, BUTTON, icon_mapping, SELECT, SWITCH, NUMBER, Catalog, \
+    CONNECTION_STATE_ATTRIBUTE
 from .entity import ElectroluxEntity
 from .number import ElectroluxNumber
 from .select import ElectroluxSelect
@@ -40,6 +42,35 @@ class ElectroluxLibraryEntity:
         return entry
 
     def get_sensor_name(self, attr_name: str, container: str = None):
+        attr_name = attr_name.rpartition('/')[-1] or attr_name
+        attr_name = attr_name[0].upper() + attr_name[1:]
+        group = ""
+        words = []
+        s = attr_name
+        for i in range(len(s)):
+            char = s[i]
+            if group == "":
+                group = char
+            else:
+                if char.isupper() and (s[i - 1].isupper()) and ((i == len(s) - 1) or s[i + 1].isupper()):
+                    group += char
+                else:
+                    if char.isupper() and s[i - 1].islower():
+                        if group.isupper():
+                            words.append(group)
+                        else:
+                            words.append(group.lower())
+                        group = char
+                    else:
+                        group += char
+        if len(group) > 0:
+            if group.isupper():
+                words.append(group)
+            else:
+                words.append(group.lower())
+        return " ".join(words)
+
+    def get_sensor_name_old(self, attr_name: str, container: str = None):
         # Convert format "fCMiscellaneousState/detergentExtradosage" to "Detergent extradosage"
         attr_name = attr_name.rpartition('/')[-1] or attr_name
         attr_name = attr_name[0].upper() + attr_name[1:]
@@ -110,12 +141,10 @@ class Appliance:
         self.name = name
         self.brand = brand
         self.state = state
+        self.connection_state = None
+        if self.state:
+            self.connection_state = self.state.get("connectionState", None)
 
-    def getItemFromCatalog(self, entity_name: str):
-        for key, item in Catalog.items():
-            if key == entity_name:
-                return item
-        return None
 
     def update_missing_entities(self):
         """Add missing entities when no capabilities returned by the API, do it dynamically"""
@@ -152,7 +181,7 @@ class Appliance:
         entity_category = None
         unit = None
         # item : capability, category, DeviceClass, Unit, EntityCategory
-        catalog_item = self.getItemFromCatalog(entity_name)
+        catalog_item = Catalog.get(entity_name, None)
         if catalog_item:
             device_class = catalog_item[2] if 2 < len(catalog_item) else None
             unit = catalog_item[3] if 3 < len(catalog_item) else None
@@ -259,6 +288,14 @@ class Appliance:
                     self.data.capabilities = capabilities
                     _LOGGER.debug("Electrolux rebuilt capabilities due to API malfunction",
                                   json.dumps(capabilities, indent=2))
+        # Add common entities
+        common_attribute = CONNECTION_STATE_ATTRIBUTE
+        catalog_item = Catalog.get(common_attribute, None)
+        if catalog_item:
+            self.data.capabilities[common_attribute] = catalog_item[0]
+            entity = self.get_entity(common_attribute)
+            entity.root_attribute = None
+            entities.append(entity)
 
         # For each capability src
         for capability in capabilities_names:
@@ -267,12 +304,12 @@ class Appliance:
             category = data.get_category(capability)
             device_class = None
             entity_category = None
-            unit = None
+            #unit = None
             # item : capability, category, DeviceClass, Unit, EntityCategory
-            catalog_item = self.getItemFromCatalog(entity_name)
+            catalog_item = cast([], Catalog.get(entity_name, None))
             if catalog_item:
                 device_class = catalog_item[2] if 2 < len(catalog_item) else None
-                unit = catalog_item[3] if 3 < len(catalog_item) else None
+                #unit = catalog_item[3] if 3 < len(catalog_item) else None
                 entity_category = catalog_item[4] if 4 < len(catalog_item) else None
 
             if capability == "executeCommand":
@@ -281,7 +318,7 @@ class Appliance:
                 for command in commands_keys:
                     entities.append(
                         ElectroluxButtonEntity(
-                            name=f"{data.get_name()} {data.get_sensor_name(entity_name, capability)}",
+                            name=f"{data.get_name()} {data.get_sensor_name(command, capability)}",
                             coordinator=self.coordinator,
                             config_entry=self.coordinator.config_entry,
                             entity_type=BUTTON,
