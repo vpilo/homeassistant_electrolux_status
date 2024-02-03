@@ -97,7 +97,7 @@ Catalog: dict[str, [dict, str, str, str, str]] = {
         # "fCTotalWashCyclesCount": [None, None, None],
         # "fCTotalWashingTime": [None, None, None],
         # "applianceMode": [None, None, None],
-        CONNECTION_STATE_ATTRIBUTE: [{"access": "read","type": "string"}, None, None, None, None],
+        CONNECTION_STATE_ATTRIBUTE: [{"access": "read","type": "string"}, None, None, None, EntityCategory.DIAGNOSTIC],
 }
 
 icon_mapping = {

@@ -38,14 +38,3 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
         if self.unit == UnitOfTime.SECONDS:
             return UnitOfTime.MINUTES
         return self.unit
-
-    @property
-    def available(self) -> bool:
-        if (self._entity_category == EntityCategory.DIAGNOSTIC
-                or self.entity_attr in ALWAYS_ENABLED_ATTRIBUTES):
-            return True
-        appliance = self.get_appliance()
-        if appliance and appliance.connection_state:
-            return True
-        else:
-            return False

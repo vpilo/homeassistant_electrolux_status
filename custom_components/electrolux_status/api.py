@@ -141,10 +141,6 @@ class Appliance:
         self.name = name
         self.brand = brand
         self.state = state
-        self.connection_state = None
-        if self.state:
-            self.connection_state = self.state.get("connectionState", None)
-
 
     def update_missing_entities(self):
         """Add missing entities when no capabilities returned by the API, do it dynamically"""

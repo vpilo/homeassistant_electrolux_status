@@ -9,7 +9,7 @@ from typing import cast
 
 # from .api import Appliance, ElectroluxLibraryEntity
 
-from .const import DOMAIN
+from .const import DOMAIN, ALWAYS_ENABLED_ATTRIBUTES
 import logging
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -41,7 +41,7 @@ class ElectroluxEntity(CoordinatorEntity):
                  pnc_id: str, entity_type: str, entity_attr, entity_source, capability: dict[str, any],
                  unit: str, device_class: str, entity_category: EntityCategory):
         super().__init__(coordinator)
-        self.root_attribute = "reported"
+        self.root_attribute = ["properties", "reported"]
         self.data = None
         self.coordinator = coordinator
         self._name = name
@@ -61,17 +61,17 @@ class ElectroluxEntity(CoordinatorEntity):
 
     @property
     def available(self) -> bool:
-        appliance = self.get_appliance()
-        if appliance and appliance.connection_state:
+        if (self._entity_category == EntityCategory.DIAGNOSTIC
+                or self.entity_attr in ALWAYS_ENABLED_ATTRIBUTES):
             return True
-        else:
-            return False
+        connection_state = self.get_connection_state()
+        if connection_state and connection_state != "disconnected":
+            return True
+        return False
 
-    @property
-    def state(self) -> StateType:
-        appliance = self.get_appliance()
-        if appliance:
-            return appliance.connection_state
+    def get_connection_state(self) -> str | None:
+        if self.appliance_status:
+            return self.appliance_status.get("connectionState", None)
         return None
 
     @property
@@ -120,18 +120,18 @@ class ElectroluxEntity(CoordinatorEntity):
     def extract_value(self):
         """Return the appliance attributes of the entity."""
         if self.appliance_status:
-            properties = self.appliance_status.get("properties", None)
-            if properties:
-                root = cast(any, properties)
-                if self.root_attribute:
-                    root = root.get(self.root_attribute, None)
-                if root:
-                    if self.entity_source:
-                        category: dict[str, any] | None = root.get(self.entity_source, None)
-                        if category:
-                            return category.get(self.entity_attr)
-                    else:
-                        return root.get(self.entity_attr, None)
+            root = cast(any, self.appliance_status)
+            if self.root_attribute:
+                for item in self.root_attribute:
+                    if root:
+                        root = root.get(item, None)
+            if root:
+                if self.entity_source:
+                    category: dict[str, any] | None = root.get(self.entity_source, None)
+                    if category:
+                        return category.get(self.entity_attr)
+                else:
+                    return root.get(self.entity_attr, None)
         return None
 
     def setup(self, data):

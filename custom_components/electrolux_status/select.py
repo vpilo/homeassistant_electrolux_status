@@ -55,6 +55,8 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
     @property
     def current_option(self) -> str:
         value = self.extract_value()
+        if value is None:
+            return ""
         label = list(self.options_list.keys())[list(self.options_list.values()).index(value)]
         # TODO : happens when value not in the catalog -> add the value to the list then
         if label is None:
