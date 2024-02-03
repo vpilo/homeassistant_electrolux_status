@@ -56,13 +56,16 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
     def current_option(self) -> str:
         value = self.extract_value()
         if value is None:
-            return ""
+            return self._cached_value
         label = list(self.options_list.keys())[list(self.options_list.values()).index(value)]
         # TODO : happens when value not in the catalog -> add the value to the list then
         if label is None:
             label = self.format_value(value)
             self.options_list[label] = value
-            return label
+        if label is not None:
+            self._cached_value = label
+        else:
+            label = self._cached_value
         return label
 
     async def async_select_option(self, option: str) -> None:

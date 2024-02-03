@@ -28,9 +28,13 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
         """Return the state of the sensor."""
         value = self.extract_value()
         if value is not None and self.unit == UnitOfTime.SECONDS:
-            return time_seconds_to_minutes(value)
+            value = time_seconds_to_minutes(value)
         if isinstance(value, str) and "_" in value:
             value = value.replace("_", " ").title()
+        if value is not None:
+            self._cached_value = value
+        else:
+            value = self._cached_value
         return value
 
     @property

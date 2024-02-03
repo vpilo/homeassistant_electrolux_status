@@ -26,4 +26,9 @@ class ElectroluxBinarySensor(ElectroluxEntity, BinarySensorEntity):
     @property
     def is_on(self):
         """Return true if the binary_sensor is on."""
-        return self.extract_value()
+        value = self.extract_value()
+        if value is None:
+            return self._cached_value
+        else:
+            self._cached_value = value
+        return value

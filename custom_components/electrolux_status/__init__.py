@@ -86,12 +86,12 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
     async def async_login(self) -> bool:
         try:
             # Check that one can extract the appliance list to confirm login
-            token = await self.hass.async_add_executor_job(self.api.get_user_token)
+            token = await self.api.get_user_token()
             if token:
+                _LOGGER.debug("Electrolux logged successfully, %s", token)
                 return True
         except Exception as ex:
             _LOGGER.error("Could not log in to ElectroluxStatus, %s", ex)
-            return False
         return False
 
     async def setup_entities(self):
@@ -100,9 +100,9 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
             "appliances": appliances
         }
         try:
-            appliances_json: list[ApplienceStatusResponse] = await self.api.get_appliances_list()
-            _LOGGER.debug("Electrolux update appliances %s", json.dumps(appliances_json))
-            for appliance_json in appliances_json:
+            appliances_list = await self.api.get_appliances_list()
+            _LOGGER.debug("Electrolux update appliances %s %s",self.api, json.dumps(appliances_list))
+            for appliance_json in appliances_list:
                 appliance_capabilities = None
                 appliance_id = appliance_json.get('applianceId')
                 connection_status = appliance_json.get('connectionState')
@@ -177,4 +177,4 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload config entry."""
     await async_unload_entry(hass, entry)
-    await async_setup_entry(hass, entry, None)
+    await async_setup_entry(hass, entry)

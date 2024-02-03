@@ -28,8 +28,14 @@ class ElectroluxNumber(ElectroluxEntity, NumberEntity):
     def native_value(self) -> float | None:
         """Return the value reported by the number."""
         if self.unit == UnitOfTime.SECONDS:
-            return time_seconds_to_minutes(self.extract_value())
-        return self.extract_value()
+            value = time_seconds_to_minutes(self.extract_value())
+        else:
+            value = self.extract_value()
+        if not value:
+            return self._cached_value
+        else:
+            self._cached_value = value
+        return value
 
     @property
     def native_max_value(self) -> float | None:

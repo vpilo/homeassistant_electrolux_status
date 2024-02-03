@@ -2,13 +2,9 @@ import math
 
 from homeassistant.components.sensor import ENTITY_ID_FORMAT
 from homeassistant.const import EntityCategory
-from homeassistant.helpers.typing import StateType
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from pyelectroluxocp.apiModels import ApplienceStatusResponse
 from typing import cast
-
-# from .api import Appliance, ElectroluxLibraryEntity
-
 from .const import DOMAIN, ALWAYS_ENABLED_ATTRIBUTES
 import logging
 
@@ -44,6 +40,7 @@ class ElectroluxEntity(CoordinatorEntity):
         self.root_attribute = ["properties", "reported"]
         self.data = None
         self.coordinator = coordinator
+        self._cached_value = None
         self._name = name
         self.api = coordinator.api
         self.entity_attr = entity_attr
@@ -58,6 +55,9 @@ class ElectroluxEntity(CoordinatorEntity):
         self.entity_id = ENTITY_ID_FORMAT.format(
             f"{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_attr}")
         self.capability = capability
+
+    def setup(self, data):
+        self.data = data
 
     @property
     def available(self) -> bool:
@@ -133,9 +133,6 @@ class ElectroluxEntity(CoordinatorEntity):
                 else:
                     return root.get(self.entity_attr, None)
         return None
-
-    def setup(self, data):
-        self.data = data
 
     def update(self, appliance_status: ApplienceStatusResponse):
         self.appliance_status = appliance_status
