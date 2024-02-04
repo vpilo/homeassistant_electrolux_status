@@ -100,6 +100,8 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
         }
         try:
             appliances_list = await self.api.get_appliances_list()
+            if appliances_list is None:
+                raise ConfigEntryAuthFailed
             _LOGGER.debug("Electrolux update appliances %s %s",self.api, json.dumps(appliances_list))
             for appliance_json in appliances_list:
                 appliance_capabilities = None

@@ -5,8 +5,9 @@ from datetime import datetime, timedelta
 from json import loads
 from types import TracebackType
 from typing import Any, Dict, Optional, Type
+
 from aiohttp import ClientSession
-import urllib.parse
+
 
 from .urls import (
     appliance_command_url,
@@ -70,10 +71,10 @@ class OneAppApiClient:
             self._close_session = True
         return self._client_session
 
-    def _api_headers_base(self, url :str, token: Optional[str]):
-        hostname = urllib.parse.urlparse(url)
-        headers = {"x-api-key": API_KEY_ELECTROLUX,
-                   "Host": hostname.netloc + "" }
+    def _api_headers_base(self, token: Optional[str]):
+        # hostname = urllib.parse.urlparse(url)
+        headers = {"x-api-key": API_KEY_ELECTROLUX}
+                   # "Host": hostname.netloc + "" }
         if token is not None:
             headers = {
                 **headers,
@@ -88,7 +89,7 @@ class OneAppApiClient:
         """Login using client credentials of the mobile application, used for fetching identity providers urls"""
         req_params = token_url(
             base_url,
-            self._api_headers_base(base_url, None),
+            self._api_headers_base(None),
             "client_credentials",
             client_secret=CLIENT_SECRET_ELECTROLUX,
         )
@@ -104,7 +105,7 @@ class OneAppApiClient:
         req_params = token_url(
             base_url,
             {
-                **self._api_headers_base(base_url, None),
+                **self._api_headers_base(None),
                 "Origin-Country-Code": decodedToken["country"],
             },
             "urn:ietf:params:oauth:grant-type:token-exchange",
@@ -119,7 +120,7 @@ class OneAppApiClient:
     async def refresh_token_user(self, base_url: str, refresh_token: str):
         req_params = token_url(
             base_url,
-            self._api_headers_base(base_url, None),
+            self._api_headers_base(None),
             "refresh_token",
             refresh_token=refresh_token,
         )
@@ -135,7 +136,7 @@ class OneAppApiClient:
         req_params = identity_providers_url(
             base_url,
             {
-                **self._api_headers_base(base_url, None),
+                **self._api_headers_base(None),
                 "Authorization": client_cred_token,
             },
             BRAND_ELECTROLUX,
@@ -148,7 +149,7 @@ class OneAppApiClient:
             return data
 
     async def get_user_metadata(self, base_url: str, token: str):
-        req_params = current_user_metadata_url(base_url, self._api_headers_base(base_url, token))
+        req_params = current_user_metadata_url(base_url, self._api_headers_base(token))
 
         async with await self._get_session().request(**req_params.__dict__) as response:
             response.raise_for_status()
@@ -159,24 +160,19 @@ class OneAppApiClient:
             self, base_url: str, token: str, include_metadata: bool
     ):
         req_params = list_appliances_url(
-            base_url, self._api_headers_base(base_url, token), include_metadata
+            base_url, self._api_headers_base(token), include_metadata
         )
         _LOGGER.debug("Electrolux get_appliances_list request to server %s %s", req_params.method, req_params.url)
-        for name, value in self._api_headers_base(base_url, token).items():
+        for name, value in self._api_headers_base(token).items():
             _LOGGER.debug(f"\t{name}: {value}")
-
+        # response: Response = await asyncio.to_thread(requests.get, url=base_url, headers=req_params.headers,params=req_params.params)
+        # response.raise_for_status()
+        # data: list[ApplienceStatusResponse] = await response.json()
+        # return data
         async with await self._get_session().request(**req_params.__dict__) as response:
             response.raise_for_status()
             _LOGGER.debug("Electrolux get_appliances_list response %d %s", response.status, response)
             data: list[ApplienceStatusResponse] = await response.json()
-            if data is None:
-                _LOGGER.debug("Electrolux get_appliances_list empty, getting text data instead, %s", data)
-                json_text = await response.text()
-                _LOGGER.debug("Electrolux get_appliances_list text data %s", json_text)
-                if json_text:
-                    json_data = json.loads(json_text)
-                    _LOGGER.debug("Electrolux get_appliances_list converted json data %s", json.dumps(json_data, indent=2))
-                    return json_data
             return data
 
     async def get_appliance_state(
@@ -184,7 +180,7 @@ class OneAppApiClient:
     ):
         req_params = get_appliance_by_id_url(
             base_url,
-            self._api_headers_base(base_url, token),
+            self._api_headers_base(token),
             id,
             include_metadata,
         )
@@ -200,7 +196,7 @@ class OneAppApiClient:
 
     async def get_appliance_capabilities(self, base_url: str, token: str, id: str):
         req_params = get_appliance_capabilities_url(
-            base_url, self._api_headers_base(base_url, token), id
+            base_url, self._api_headers_base(token), id
         )
 
         async with await self._get_session().request(**req_params.__dict__) as response:
@@ -215,7 +211,7 @@ class OneAppApiClient:
     async def get_appliances_info(self, base_url: str, token: str, ids: list[str]):
         req_params = get_appliances_info_by_ids_url(
             base_url,
-            self._api_headers_base(base_url, token),
+            self._api_headers_base(token),
             ids,
         )
 
@@ -233,7 +229,7 @@ class OneAppApiClient:
     ):
         req_params = appliance_command_url(
             base_url,
-            self._api_headers_base(base_url, token),
+            self._api_headers_base(token),
             id,
             command_data,
         )
