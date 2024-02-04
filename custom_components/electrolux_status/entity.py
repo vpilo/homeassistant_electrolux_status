@@ -3,7 +3,7 @@ import math
 from homeassistant.components.sensor import ENTITY_ID_FORMAT
 from homeassistant.const import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from pyelectroluxocp.apiModels import ApplienceStatusResponse
+from .electroluxwrapper.apiModels import ApplienceStatusResponse
 from typing import cast
 from .const import DOMAIN, ALWAYS_ENABLED_ATTRIBUTES
 import logging

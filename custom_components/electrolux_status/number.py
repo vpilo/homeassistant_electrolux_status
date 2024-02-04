@@ -1,7 +1,7 @@
 """Number platform for Electrolux Status."""
 from homeassistant.components.number import NumberEntity
 from homeassistant.const import UnitOfTime
-from pyelectroluxocp import OneAppApi
+from .electroluxwrapper import OneAppApi
 
 from .const import NUMBER, DOMAIN
 from .entity import ElectroluxEntity, time_seconds_to_minutes

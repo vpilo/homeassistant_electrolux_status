@@ -1,7 +1,7 @@
 """Select platform for Electrolux Status."""
 from homeassistant.components.select import SelectEntity
 from homeassistant.const import EntityCategory
-from pyelectroluxocp import OneAppApi
+from .electroluxwrapper.oneAppApi import OneAppApi
 
 from .const import SELECT, DOMAIN
 from .entity import ElectroluxEntity

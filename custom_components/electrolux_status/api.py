@@ -3,7 +3,8 @@ import logging
 import re
 from typing import cast
 
-from pyelectroluxocp.apiModels import ApplianceInfoResponse, ApplienceStatusResponse
+from .electroluxwrapper.apiModels import ApplianceInfoResponse, ApplienceStatusResponse
+#from pyelectroluxocp.apiModels import ApplianceInfoResponse, ApplienceStatusResponse
 
 from .binary_sensor import ElectroluxBinarySensor
 from .button import ElectroluxButtonEntity
