@@ -1,4 +1,6 @@
 """Select platform for Electrolux Status."""
+import json
+
 from homeassistant.components.select import SelectEntity
 from homeassistant.const import EntityCategory
 from .electroluxwrapper.oneAppApi import OneAppApi
@@ -86,7 +88,7 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
             command = {self.entity_source: {self.entity_attr: value}}
         else:
             command = {self.entity_attr: value}
-        _LOGGER.debug("Electrolux select option %s", command)
+        _LOGGER.debug("Electrolux select option %s", json.dumps(command))
         result = await client.execute_appliance_command(self.pnc_id, command)
         _LOGGER.debug("Electrolux select option result %s", result)
 
