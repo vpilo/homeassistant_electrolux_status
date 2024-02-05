@@ -81,6 +81,7 @@ class OneAppApiClient:
                 # Does not change anything
                 "Accept": "application/json",
                 "Content-Type": "application/json",
+                "User-Agent": "PostmanRuntime/7.36.1",
                 "Authorization": token,
             }
         return headers
@@ -170,6 +171,13 @@ class OneAppApiClient:
         # data: list[ApplienceStatusResponse] = await response.json()
         # return data
         async with await self._get_session().request(**req_params.__dict__) as response:
+            _LOGGER.debug(
+                "get_appliances_list(), response, requestUlr: %s, requestHeaders: %s, responseStatus: %i, responseHeaders: %s",
+                response.request_info.url,
+                response.request_info.headers,
+                response.status,
+                response.headers,
+            )
             response.raise_for_status()
             _LOGGER.debug("Electrolux get_appliances_list response %d %s", response.status, response)
             data: list[ApplienceStatusResponse] = await response.json()

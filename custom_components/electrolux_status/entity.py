@@ -4,8 +4,9 @@ from homeassistant.components.sensor import ENTITY_ID_FORMAT
 from homeassistant.const import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .electroluxwrapper.apiModels import ApplienceStatusResponse
+# from pyelectroluxocp.apiModels import ApplienceStatusResponse
 from typing import cast
-from .const import DOMAIN, ALWAYS_ENABLED_ATTRIBUTES
+from .const import DOMAIN, CONNECTION_STATE_ATTRIBUTE, CONNECTION_STATE_ATTRIBUTE2
 import logging
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -59,15 +60,29 @@ class ElectroluxEntity(CoordinatorEntity):
     def setup(self, data):
         self.data = data
 
+    # Disabled this as this removes the value from display : there is no readonly property for entities
+    # @property
+    # def available(self) -> bool:
+    #     if (self._entity_category == EntityCategory.DIAGNOSTIC
+    #             or self.entity_attr in ALWAYS_ENABLED_ATTRIBUTES):
+    #         return True
+    #     connection_state = self.get_connection_state()
+    #     if connection_state and connection_state != "disconnected":
+    #         return True
+    #     return False
+
     @property
-    def available(self) -> bool:
-        if (self._entity_category == EntityCategory.DIAGNOSTIC
-                or self.entity_attr in ALWAYS_ENABLED_ATTRIBUTES):
-            return True
-        connection_state = self.get_connection_state()
-        if connection_state and connection_state != "disconnected":
-            return True
+    def should_poll(self) -> bool:
         return False
+
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        # _LOGGER.debug("Electrolux entity got data %s", self.coordinator.data)
+        if self.coordinator.data is None:
+            return
+        appliance_data = self.coordinator.data.get(self.pnc_id, None)
+        self.appliance_status = appliance_data
+        self.async_write_ha_state()
 
     def get_connection_state(self) -> str | None:
         if self.appliance_status:
@@ -119,19 +134,31 @@ class ElectroluxEntity(CoordinatorEntity):
 
     def extract_value(self):
         """Return the appliance attributes of the entity."""
+        root_attribute = self.root_attribute
+        attribute = self.entity_attr
         if self.appliance_status:
             root = cast(any, self.appliance_status)
-            if self.root_attribute:
-                for item in self.root_attribute:
+            # Format returned by push is slightly different from format returned by API : fields are at root level
+            # Let's check if we can find the fields at root first
+
+            # Special case (dirty)
+            if attribute == CONNECTION_STATE_ATTRIBUTE and root.get(CONNECTION_STATE_ATTRIBUTE2, None) is not None:
+                return root.get(CONNECTION_STATE_ATTRIBUTE2)
+
+            if ((self.entity_source and root.get(self.entity_source, None) is not None) or
+                    root.get(attribute, None)):
+                root_attribute = None
+            if root_attribute:
+                for item in root_attribute:
                     if root:
                         root = root.get(item, None)
             if root:
                 if self.entity_source:
                     category: dict[str, any] | None = root.get(self.entity_source, None)
                     if category:
-                        return category.get(self.entity_attr)
+                        return category.get(attribute)
                 else:
-                    return root.get(self.entity_attr, None)
+                    return root.get(attribute, None)
         return None
 
     def update(self, appliance_status: ApplienceStatusResponse):

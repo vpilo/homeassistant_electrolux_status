@@ -4,7 +4,7 @@ import re
 from typing import cast
 
 from .electroluxwrapper.apiModels import ApplianceInfoResponse, ApplienceStatusResponse
-#from pyelectroluxocp.apiModels import ApplianceInfoResponse, ApplienceStatusResponse
+# from pyelectroluxocp.apiModels import ApplianceInfoResponse, ApplienceStatusResponse
 
 from .binary_sensor import ElectroluxBinarySensor
 from .button import ElectroluxButtonEntity
@@ -353,3 +353,9 @@ class Appliances:
 
     def get_appliances(self) -> dict[str, Appliance]:
         return self.appliances
+
+    def get_appliance_ids(self) -> list[str]:
+        ids = []
+        for appliance_id in self.appliances.keys():
+            ids.append(appliance_id)
+        return ids

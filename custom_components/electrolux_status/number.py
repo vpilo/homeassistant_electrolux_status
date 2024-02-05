@@ -2,6 +2,7 @@
 from homeassistant.components.number import NumberEntity
 from homeassistant.const import UnitOfTime
 from .electroluxwrapper import OneAppApi
+# from pyelectroluxocp import OneAppApi
 
 from .const import NUMBER, DOMAIN
 from .entity import ElectroluxEntity, time_seconds_to_minutes

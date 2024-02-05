@@ -38,6 +38,7 @@ DEFAULT_LANGUAGE = "English"
 
 # Common entities
 CONNECTION_STATE_ATTRIBUTE = "connectionState"
+CONNECTION_STATE_ATTRIBUTE2 = "connectivityState"
 ALWAYS_ENABLED_ATTRIBUTES = [CONNECTION_STATE_ATTRIBUTE]
 
 # capabilities model :

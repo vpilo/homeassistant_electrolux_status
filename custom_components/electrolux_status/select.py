@@ -2,6 +2,7 @@
 from homeassistant.components.select import SelectEntity
 from homeassistant.const import EntityCategory
 from .electroluxwrapper.oneAppApi import OneAppApi
+# from pyelectroluxocp import OneAppApi
 
 from .const import SELECT, DOMAIN
 from .entity import ElectroluxEntity
@@ -28,7 +29,9 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
     def format_value(self, value: str) -> str | None:
         if value is None:
             return None
-        return value.replace("_", " ").title()
+        if isinstance(value, str):
+            return value.replace("_", " ").title()
+        return str(value)
 
     def __init__(self, coordinator: any, name: str, config_entry,
                  pnc_id: str, entity_type: str, entity_attr, entity_source, capability: dict[str, any], unit,
@@ -57,7 +60,11 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
         value = self.extract_value()
         if value is None:
             return self._cached_value
-        label = list(self.options_list.keys())[list(self.options_list.values()).index(value)]
+        label = None
+        try:
+            label = list(self.options_list.keys())[list(self.options_list.values()).index(value)]
+        except Exception as ex:
+            _LOGGER.info("Electrolux error value %s does not exist in the list %s", value, self.options_list.values(), ex)
         # TODO : happens when value not in the catalog -> add the value to the list then
         if label is None:
             label = self.format_value(value)
@@ -70,7 +77,7 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
-        value = self.options_list[option]
+        value = self.options_list.get(option, None)
         if value is None:
             return
         client: OneAppApi = self.api

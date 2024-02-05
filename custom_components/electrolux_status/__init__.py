@@ -5,6 +5,7 @@ import logging
 from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady, ConfigEntryAuthFailed
@@ -18,8 +19,7 @@ from .const import CONF_USERNAME
 from .const import DOMAIN
 from .const import PLATFORMS
 from .const import languages
-# from pyelectroluxocp import OneAppApi
-# from electroluxwrapper.oneAppApi import OneAppApi
+#from pyelectroluxocp import OneAppApi
 from .electroluxwrapper import OneAppApi
 from .pyelectroluxconnect_util import pyelectroluxconnect_util
 
@@ -48,7 +48,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     client = pyelectroluxconnect_util.get_session(username, password, language)
 
-    coordinator = ElectroluxCoordinator(hass, client=client, update_interval=update_interval)
+    # For polling
+    #coordinator = ElectroluxCoordinator(hass, client=client, update_interval=update_interval)
+    coordinator = ElectroluxCoordinator(hass, client=client)
     if not await coordinator.async_login():
         raise ConfigEntryAuthFailed
 
@@ -56,6 +58,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     # Initialize entities
     await coordinator.setup_entities()
+    await coordinator.listen_websocket()
+
+    entry.async_on_unload(
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, coordinator.api.close)
+    )
 
     # Fill in the values for first time
     await coordinator.async_config_entry_first_refresh()
@@ -75,12 +82,12 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
     """Class to manage fetching data from the API."""
     api: OneAppApi = None
 
-    def __init__(self, hass: HomeAssistant, client: OneAppApi, update_interval: timedelta) -> None:
+    def __init__(self, hass: HomeAssistant, client: OneAppApi) -> None:
         """Initialize."""
         self.api = client
         self.platforms = []
 
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
+        super().__init__(hass, _LOGGER, name=DOMAIN)
 
     async def async_login(self) -> bool:
         try:
@@ -93,6 +100,17 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
             _LOGGER.error("Could not log in to ElectroluxStatus, %s", ex)
         return False
 
+    def incoming_data(self, data: dict[str, dict[str, any]]):
+        _LOGGER.debug("Electrolux appliance state updated %s", json.dumps(data))
+        self.async_set_updated_data(data)
+
+    async def listen_websocket(self):
+        appliances: Appliances = self.data.get('appliances', None)
+        ids = appliances.get_appliance_ids()
+        if ids is None or len(ids) == 0:
+            return
+        await self.api.watch_for_appliance_state_updates(ids, self.incoming_data)
+
     async def setup_entities(self):
         appliances = Appliances({})
         self.data = {
@@ -100,6 +118,11 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
         }
         try:
             appliances_list = await self.api.get_appliances_list()
+            # appliances_list = [ {"applianceId" : "914555224_01:00700404-443E07055462",
+            #                      "connectionState": "disconnected",
+            #                      "applianceData": {
+            #                          "applianceName": "Lave-linge",
+            #                      }}]
             if appliances_list is None:
                 raise ConfigEntryAuthFailed
             _LOGGER.debug("Electrolux update appliances %s %s",self.api, json.dumps(appliances_list))
@@ -107,11 +130,12 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                 appliance_capabilities = None
                 appliance_id = appliance_json.get('applianceId')
                 connection_status = appliance_json.get('connectionState')
+                _LOGGER.debug("Electrolux found appliance %s", appliance_id)
                 # appliance_profile = await self.hass.async_add_executor_job(self.api.getApplianceProfile, appliance)
                 appliance_name = appliance_json.get('applianceData').get('applianceName')
                 appliance_infos = await self.api.get_appliances_info([appliance_id])
                 appliance_state = await self.api.get_appliance_state(appliance_id)
-                _LOGGER.debug("Electrolux get_appliance_status result", appliance_state)
+                _LOGGER.debug("Electrolux get_appliance_status result %s", json.dumps(appliance_state))
                 try:
                     appliance_capabilities = await self.api.get_appliance_capabilities(appliance_id)
                     _LOGGER.debug("Electrolux appliance capabilities %s", json.dumps(appliance_capabilities))
@@ -139,9 +163,9 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
             _LOGGER.exception(exception)
             raise UpdateFailed() from exception
 
+
     async def _async_update_data(self):
         """Update data via library."""
-        #await self.async_login()
         appliances: Appliances = self.data.get('appliances', None)
         # Should not happen
         if appliances is None or len(appliances.get_appliances()) == 0:
