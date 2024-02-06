@@ -53,7 +53,7 @@ class ElectroluxNumber(ElectroluxEntity, NumberEntity):
         return self.capability.get("min", 0)
 
     @property
-    def native_step_value(self) -> float | None:
+    def native_step(self) -> float | None:
         """Return the max value."""
         if self.unit == UnitOfTime.SECONDS:
             return time_seconds_to_minutes(self.capability.get("step", 1))

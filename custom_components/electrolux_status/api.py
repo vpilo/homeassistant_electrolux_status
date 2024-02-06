@@ -45,6 +45,7 @@ class ElectroluxLibraryEntity:
     def get_sensor_name(self, attr_name: str, container: str = None):
         attr_name = attr_name.rpartition('/')[-1] or attr_name
         attr_name = attr_name[0].upper() + attr_name[1:]
+        attr_name = attr_name.replace("_", " ")
         group = ""
         words = []
         s = attr_name
@@ -53,11 +54,18 @@ class ElectroluxLibraryEntity:
             if group == "":
                 group = char
             else:
-                if char.isupper() and (s[i - 1].isupper()) and ((i == len(s) - 1) or s[i + 1].isupper()):
+                if char == " " and len(group) > 0:
+                    words.append(group)
+                    group = ""
+                    continue
+
+                if ((char.isupper() or char.isdigit())
+                        and (s[i - 1].isupper() or s[i - 1].isdigit())
+                        and ((i == len(s) - 1) or (s[i + 1].isupper() or s[i + 1].isdigit()))):
                     group += char
                 else:
-                    if char.isupper() and s[i - 1].islower():
-                        if group.isupper():
+                    if (char.isupper() or char.isdigit()) and s[i - 1].islower():
+                        if re.match("^[A-Z0-9]+$", group):
                             words.append(group)
                         else:
                             words.append(group.lower())
@@ -65,7 +73,7 @@ class ElectroluxLibraryEntity:
                     else:
                         group += char
         if len(group) > 0:
-            if group.isupper():
+            if re.match("^[A-Z0-9]+$", group):
                 words.append(group)
             else:
                 words.append(group.lower())
@@ -330,6 +338,8 @@ class Appliance:
                             device_class=device_class
                         )
                     )
+                continue
+
             entity = self.get_entity(capability)
             if entity:
                 entities.append(entity)

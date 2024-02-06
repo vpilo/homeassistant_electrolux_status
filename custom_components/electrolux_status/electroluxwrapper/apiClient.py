@@ -163,7 +163,6 @@ class OneAppApiClient:
         req_params = list_appliances_url(
             base_url, self._api_headers_base(token), include_metadata
         )
-        _LOGGER.debug("Electrolux get_appliances_list request to server %s %s", req_params.method, req_params.url)
         for name, value in self._api_headers_base(token).items():
             _LOGGER.debug(f"\t{name}: {value}")
         # response: Response = await asyncio.to_thread(requests.get, url=base_url, headers=req_params.headers,params=req_params.params)
@@ -179,7 +178,7 @@ class OneAppApiClient:
                 response.headers,
             )
             response.raise_for_status()
-            _LOGGER.debug("Electrolux get_appliances_list response %d %s", response.status, response)
+            # _LOGGER.debug("Electrolux get_appliances_list response %d %s", response.status, response)
             data: list[ApplienceStatusResponse] = await response.json()
             return data
 

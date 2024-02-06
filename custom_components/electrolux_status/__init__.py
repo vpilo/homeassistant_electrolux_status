@@ -118,12 +118,8 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
         }
         try:
             appliances_list = await self.api.get_appliances_list()
-            # appliances_list = [ {"applianceId" : "914555224_01:00700404-443E07055462",
-            #                      "connectionState": "disconnected",
-            #                      "applianceData": {
-            #                          "applianceName": "Lave-linge",
-            #                      }}]
             if appliances_list is None:
+                _LOGGER.error("Electrolux unable to retrieve appliances list. Cancelling setup")
                 raise ConfigEntryAuthFailed
             _LOGGER.debug("Electrolux update appliances %s %s",self.api, json.dumps(appliances_list))
             for appliance_json in appliances_list:
@@ -157,7 +153,6 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                 appliance.setup(ElectroluxLibraryEntity(name=appliance_name, status=connection_status,
                                                         state=appliance_state, appliance_info=appliance_info,
                                                         capabilities=appliance_capabilities))
-            _LOGGER.debug("Electrolux found appliance %s", ", ".join(list(appliances.appliances.keys())))
             return self.data
         except Exception as exception:
             _LOGGER.exception(exception)
@@ -167,10 +162,10 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self):
         """Update data via library."""
         appliances: Appliances = self.data.get('appliances', None)
-        # Should not happen
-        if appliances is None or len(appliances.get_appliances()) == 0:
-            await self.setup_entities()
-            appliances = self.data.get('appliances', None)
+        # Should not happen : wonder if this is not the cause of infinite loop of integrations creations => disabled
+        # if appliances is None or len(appliances.get_appliances()) == 0:
+        #     await self.setup_entities()
+        #     appliances = self.data.get('appliances', None)
 
         for appliance_id in appliances.get_appliances():
             try:
