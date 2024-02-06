@@ -1,4 +1,4 @@
-from homeassistant.const import UnitOfTime, EntityCategory
+from homeassistant.const import UnitOfTime, EntityCategory, UnitOfTemperature
 
 from .entity import ElectroluxEntity, time_seconds_to_minutes
 
@@ -22,6 +22,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 class ElectroluxSensor(ElectroluxEntity, SensorEntity):
     """Electrolux Status Sensor class."""
+
+    @property
+    def suggested_display_precision(self) -> int | None:
+        if self.unit == UnitOfTemperature.CELSIUS:
+            return 2
+        return None
 
     @property
     def native_value(self):

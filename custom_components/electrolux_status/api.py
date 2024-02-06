@@ -3,6 +3,9 @@ import logging
 import re
 from typing import cast
 
+from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.const import UnitOfTemperature
+
 from .electroluxwrapper.apiModels import ApplianceInfoResponse, ApplienceStatusResponse
 # from pyelectroluxocp.apiModels import ApplianceInfoResponse, ApplienceStatusResponse
 
@@ -96,6 +99,30 @@ class ElectroluxLibraryEntity:
         # Convert format "fCMiscellaneousState/detergentExtradosage" to "detergentExtradosage"
         return attr_name.rpartition('/')[-1] or attr_name
 
+    def get_entity_unit(self, attr_name: str):
+        capability_def: dict[str, any] | None = self.capabilities.get(attr_name, None)
+        if not capability_def:
+            return None
+        # Type : string, int, number, boolean (other values ignored)
+        type = capability_def.get("type", None)
+        if not type:
+            return None
+        if type == "temperature":
+           return UnitOfTemperature.CELSIUS
+        return None
+
+    def get_entity_device_class(self, attr_name: str):
+        capability_def: dict[str, any] | None = self.capabilities.get(attr_name, None)
+        if not capability_def:
+            return None
+        # Type : string, int, number, boolean (other values ignored)
+        type = capability_def.get("type", None)
+        if not type:
+            return None
+        if type == "temperature":
+           return SensorDeviceClass.TEMPERATURE
+        return None
+
     def get_entity_type(self, attr_name: str):
         capability_def: dict[str, any] | None = self.capabilities.get(attr_name, None)
         if not capability_def:
@@ -121,6 +148,11 @@ class ElectroluxLibraryEntity:
                     return BINARY_SENSOR
                 if access == "readwrite":
                     return SWITCH
+            case "temperature":
+                if access == "read":
+                    return SENSOR
+                if access == "readwrite":
+                    return NUMBER
             case _:
                 if access == "read" and type in ["number", "int", "boolean", "string"]:
                     return SENSOR
@@ -183,9 +215,9 @@ class Appliance:
         entity_name = self.data.get_entity_name(capability)
         category = self.data.get_category(capability)
         capability_info: dict[str, any] = self.data.capabilities[capability]
-        device_class = None
+        device_class = self.data.get_entity_device_class(capability)
         entity_category = None
-        unit = None
+        unit = self.data.get_entity_unit(capability)
         # item : capability, category, DeviceClass, Unit, EntityCategory
         catalog_item = Catalog.get(entity_name, None)
         if catalog_item:

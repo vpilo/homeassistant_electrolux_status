@@ -1,6 +1,6 @@
 """Number platform for Electrolux Status."""
 from homeassistant.components.number import NumberEntity
-from homeassistant.const import UnitOfTime
+from homeassistant.const import UnitOfTime, UnitOfTemperature
 from .electroluxwrapper import OneAppApi
 # from pyelectroluxocp import OneAppApi
 
@@ -35,6 +35,8 @@ class ElectroluxNumber(ElectroluxEntity, NumberEntity):
         if not value:
             return self._cached_value
         else:
+            if self.unit == UnitOfTemperature.CELSIUS:
+                value = round(value, 2)
             self._cached_value = value
         return value
 
