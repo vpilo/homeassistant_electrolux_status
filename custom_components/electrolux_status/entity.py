@@ -6,7 +6,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .electroluxwrapper.apiModels import ApplienceStatusResponse
 # from pyelectroluxocp.apiModels import ApplienceStatusResponse
 from typing import cast
-from .const import DOMAIN, CONNECTION_STATE_ATTRIBUTE, CONNECTION_STATE_ATTRIBUTE2
+from .const import DOMAIN
 import logging
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -140,11 +140,6 @@ class ElectroluxEntity(CoordinatorEntity):
             root = cast(any, self.appliance_status)
             # Format returned by push is slightly different from format returned by API : fields are at root level
             # Let's check if we can find the fields at root first
-
-            # Special case (dirty)
-            if attribute == CONNECTION_STATE_ATTRIBUTE and root.get(CONNECTION_STATE_ATTRIBUTE2, None) is not None:
-                return root.get(CONNECTION_STATE_ATTRIBUTE2)
-
             if ((self.entity_source and root.get(self.entity_source, None) is not None) or
                     root.get(attribute, None)):
                 root_attribute = None

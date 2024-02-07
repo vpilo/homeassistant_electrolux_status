@@ -11,8 +11,7 @@ from .electroluxwrapper.apiModels import ApplianceInfoResponse, ApplienceStatusR
 
 from .binary_sensor import ElectroluxBinarySensor
 from .button import ElectroluxButtonEntity
-from .const import BINARY_SENSOR, SENSOR, BUTTON, icon_mapping, SELECT, SWITCH, NUMBER, Catalog, \
-    CONNECTION_STATE_ATTRIBUTE
+from .const import BINARY_SENSOR, SENSOR, BUTTON, icon_mapping, SELECT, SWITCH, NUMBER, Catalog, COMMON_ATTRIBUTES
 from .entity import ElectroluxEntity
 from .number import ElectroluxNumber
 from .select import ElectroluxSelect
@@ -327,13 +326,14 @@ class Appliance:
                     _LOGGER.debug("Electrolux rebuilt capabilities due to API malfunction",
                                   json.dumps(capabilities, indent=2))
         # Add common entities
-        common_attribute = CONNECTION_STATE_ATTRIBUTE
-        catalog_item = Catalog.get(common_attribute, None)
-        if catalog_item:
-            self.data.capabilities[common_attribute] = catalog_item[0]
-            entity = self.get_entity(common_attribute)
-            entity.root_attribute = None
-            entities.append(entity)
+        for common_attribute in COMMON_ATTRIBUTES:
+            entity_name = data.get_entity_name(common_attribute)
+            category = data.get_category(common_attribute)
+            catalog_item = Catalog.get(entity_name, None)
+            if catalog_item:
+                self.data.capabilities[common_attribute] = catalog_item[0]
+                entity = self.get_entity(common_attribute)
+                entities.append(entity)
 
         # For each capability src
         for capability in capabilities_names:

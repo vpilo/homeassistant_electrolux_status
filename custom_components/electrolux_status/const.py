@@ -37,9 +37,7 @@ DEFAULT_SCAN_INTERVAL = 30
 DEFAULT_LANGUAGE = "English"
 
 # Common entities
-CONNECTION_STATE_ATTRIBUTE = "connectionState"
-CONNECTION_STATE_ATTRIBUTE2 = "connectivityState"
-ALWAYS_ENABLED_ATTRIBUTES = [CONNECTION_STATE_ATTRIBUTE]
+COMMON_ATTRIBUTES = ["connectivityState", "networkInterface/linkQualityIndicator"]
 
 # capabilities model :
 #
@@ -92,13 +90,13 @@ Catalog: dict[str, [dict, str, str, str, str]] = {
         "waterHardness": [{"access": "read", "type": "string"}, None, None, None, EntityCategory.DIAGNOSTIC],
         "applianceMode": [{"access": "read", "type": "string"}, None, None, None, EntityCategory.DIAGNOSTIC],
         "totalWashingTime": [{"access": "read", "type": "number"}, None, None, UnitOfTime.SECONDS, EntityCategory.DIAGNOSTIC],
-        "linkQualityIndicator": [{"access": "read", "type": "string", "values": {"EXCELLENT": {},"GOOD": {},"POOR": {},"UNDEFINED": {},"VERY_GOOD": {},"VERY_POOR": {}}}, None, None, None, EntityCategory.DIAGNOSTIC],
+        "linkQualityIndicator": [{"access": "read", "type": "string", "values": {"EXCELLENT": {},"GOOD": {},"POOR": {},"UNDEFINED": {},"VERY_GOOD": {},"VERY_POOR": {}}}, "networkInterface", None, None, EntityCategory.DIAGNOSTIC],
         "executeCommand": [{"access": "write", "type": "string", "values": {"OFF": {},"ON": {},"PAUSE": {},"RESUME": {},"START": {},"STOPRESET": {}}}, None, None, None, None],
         # "rinseAidLevel": [None, None, None],
         # "fCTotalWashCyclesCount": [None, None, None],
         # "fCTotalWashingTime": [None, None, None],
         # "applianceMode": [None, None, None],
-        CONNECTION_STATE_ATTRIBUTE: [{"access": "read","type": "string"}, None, None, None, EntityCategory.DIAGNOSTIC],
+        "connectivityState": [{"access": "read","type": "string"}, None, None, None, EntityCategory.DIAGNOSTIC],
 }
 
 icon_mapping = {
