@@ -33,6 +33,8 @@ class ElectroluxNumber(ElectroluxEntity, NumberEntity):
         else:
             value = self.extract_value()
         if not value:
+            value = self.capability.get("default", None)
+        if not value:
             return self._cached_value
         else:
             if self.unit == UnitOfTemperature.CELSIUS:

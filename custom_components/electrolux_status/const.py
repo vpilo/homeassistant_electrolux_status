@@ -37,7 +37,7 @@ DEFAULT_SCAN_INTERVAL = 30
 DEFAULT_LANGUAGE = "English"
 
 # Common entities
-COMMON_ATTRIBUTES = ["connectivityState", "networkInterface/linkQualityIndicator"]
+COMMON_ATTRIBUTES = ["connectivityState", "networkInterface/linkQualityIndicator", "applianceMode"]
 
 # capabilities model :
 #
