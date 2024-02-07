@@ -8,7 +8,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady, ConfigEntryAuthFailed
+from homeassistant.exceptions import ConfigEntryNotReady, ConfigEntryAuthFailed, ConfigEntryError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
@@ -52,7 +52,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     #coordinator = ElectroluxCoordinator(hass, client=client, update_interval=update_interval)
     coordinator = ElectroluxCoordinator(hass, client=client)
     if not await coordinator.async_login():
-        raise ConfigEntryAuthFailed
+        raise Exception("Electrolux wrong credentials")
 
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
@@ -93,11 +93,13 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
         try:
             # Check that one can extract the appliance list to confirm login
             token = await self.api.get_user_token()
-            if token:
-                _LOGGER.debug("Electrolux logged successfully, %s", token)
+            if token and token.token:
+                _LOGGER.debug("Electrolux logged successfully, %s", token.token)
                 return True
+            _LOGGER.debug("Electrolux wrong credentials")
         except Exception as ex:
             _LOGGER.error("Could not log in to ElectroluxStatus, %s", ex)
+            raise ex
         return False
 
     def incoming_data(self, data: dict[str, dict[str, any]]):
@@ -112,6 +114,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
         await self.api.watch_for_appliance_state_updates(ids, self.incoming_data)
 
     async def setup_entities(self):
+        _LOGGER.debug("Electrolux setup_entities")
         appliances = Appliances({})
         self.data = {
             "appliances": appliances
@@ -120,7 +123,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
             appliances_list = await self.api.get_appliances_list()
             if appliances_list is None:
                 _LOGGER.error("Electrolux unable to retrieve appliances list. Cancelling setup")
-                raise ConfigEntryAuthFailed
+                raise ConfigEntryFailed
             _LOGGER.debug("Electrolux update appliances %s %s",self.api, json.dumps(appliances_list))
             for appliance_json in appliances_list:
                 appliance_capabilities = None
@@ -197,5 +200,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload config entry."""
+    _LOGGER.debug("Electrolux async_reload_entry")
     await async_unload_entry(hass, entry)
     await async_setup_entry(hass, entry)
