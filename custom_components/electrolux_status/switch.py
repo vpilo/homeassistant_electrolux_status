@@ -1,6 +1,7 @@
 """Switch platform for Electrolux Status."""
 from homeassistant.components.switch import SwitchEntity
 
+from .electroluxwrapper import OneAppApi
 from .const import SWITCH, DOMAIN
 from .entity import ElectroluxEntity
 import logging
@@ -32,10 +33,20 @@ class ElectroluxSwitch(ElectroluxEntity, SwitchEntity):
             self._cached_value = value
         return value
 
+    async def switch(self, value: bool):
+        client: OneAppApi = self.api
+        if self.entity_source:
+            command = {self.entity_source: {self.entity_attr: value}}
+        else:
+            command = {self.entity_attr: value}
+        _LOGGER.debug("Electrolux set value %f", value)
+        result = await client.execute_appliance_command(self.pnc_id, command)
+        _LOGGER.debug("Electrolux set value result %s", result)
+
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
-        _LOGGER.error("Not supported yet")
+        await self.switch(True)
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        _LOGGER.error("Not supported yet")
+        await self.switch(False)
