@@ -109,6 +109,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
     async def listen_websocket(self):
         appliances: Appliances = self.data.get('appliances', None)
         ids = appliances.get_appliance_ids()
+        _LOGGER.debug("Electrolux listen_websocket for appliances %s", ",".join(ids))
         if ids is None or len(ids) == 0:
             return
         await self.api.watch_for_appliance_state_updates(ids, self.incoming_data)
@@ -123,7 +124,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
             appliances_list = await self.api.get_appliances_list()
             if appliances_list is None:
                 _LOGGER.error("Electrolux unable to retrieve appliances list. Cancelling setup")
-                raise ConfigEntryFailed
+                raise Exception("Electrolux unable to retrieve appliances list. Cancelling setup")
             _LOGGER.debug("Electrolux update appliances %s %s",self.api, json.dumps(appliances_list))
             for appliance_json in appliances_list:
                 appliance_capabilities = None

@@ -37,10 +37,10 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
 
     def __init__(self, coordinator: any, name: str, config_entry,
                  pnc_id: str, entity_type: str, entity_attr, entity_source, capability: dict[str, any], unit,
-                 device_class: str, entity_category: EntityCategory, ):
+                 device_class: str, entity_category: EntityCategory, icon: str):
         super().__init__(coordinator=coordinator, capability=capability, name=name, config_entry=config_entry,
                          pnc_id=pnc_id, entity_type=entity_type, entity_attr=entity_attr, entity_source=entity_source,
-                         unit=unit, device_class=device_class, entity_category=entity_category)
+                         unit=unit, device_class=device_class, entity_category=entity_category, icon=icon)
         values_dict: dict[str, any] | None = self.capability.get("values", None)
         self.options_list: dict[str, str] = {}
         for value in values_dict.keys():

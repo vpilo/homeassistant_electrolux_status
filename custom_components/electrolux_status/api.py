@@ -216,6 +216,7 @@ class Appliance:
         capability_info: dict[str, any] = self.data.capabilities[capability]
         device_class = self.data.get_entity_device_class(capability)
         entity_category = None
+        entity_icon = None
         unit = self.data.get_entity_unit(capability)
         # item : capability, category, DeviceClass, Unit, EntityCategory
         catalog_item = Catalog.get(entity_name, None)
@@ -223,6 +224,7 @@ class Appliance:
             device_class = catalog_item[2] if 2 < len(catalog_item) else None
             unit = catalog_item[3] if 3 < len(catalog_item) else None
             entity_category = catalog_item[4] if 4 < len(catalog_item) else None
+            entity_icon = catalog_item[5] if 5 < len(catalog_item) else None
 
         if entity_type == SENSOR:
             return ElectroluxSensor(
@@ -236,7 +238,8 @@ class Appliance:
                 capability=capability_info,
                 unit=unit,
                 entity_category=entity_category,
-                device_class=device_class
+                device_class=device_class,
+                icon=entity_icon
             )
         if entity_type == BINARY_SENSOR:
             return ElectroluxBinarySensor(
@@ -250,7 +253,8 @@ class Appliance:
                 capability=capability_info,
                 unit=unit,
                 entity_category=entity_category,
-                device_class=device_class
+                device_class=device_class,
+                icon=entity_icon
             )
         if entity_type == SELECT:
             return ElectroluxSelect(
@@ -264,7 +268,8 @@ class Appliance:
                 capability=capability_info,
                 unit=unit,
                 entity_category=entity_category,
-                device_class=device_class
+                device_class=device_class,
+                icon=entity_icon
             )
         if entity_type == NUMBER:
             return ElectroluxNumber(
@@ -278,7 +283,8 @@ class Appliance:
                 capability=capability_info,
                 unit=unit,
                 entity_category=entity_category,
-                device_class=device_class
+                device_class=device_class,
+                icon=entity_icon
             )
         if entity_type == SWITCH:
             return ElectroluxSwitch(
@@ -292,7 +298,8 @@ class Appliance:
                 capability=capability_info,
                 unit=unit,
                 entity_category=entity_category,
-                device_class=device_class
+                device_class=device_class,
+                icon=entity_icon
             )
         return None
 

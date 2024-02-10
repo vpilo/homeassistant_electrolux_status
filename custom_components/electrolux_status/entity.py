@@ -36,7 +36,8 @@ class ElectroluxEntity(CoordinatorEntity):
 
     def __init__(self, coordinator: any, name: str, config_entry,
                  pnc_id: str, entity_type: str, entity_attr, entity_source, capability: dict[str, any],
-                 unit: str, device_class: str, entity_category: EntityCategory):
+                 unit: str, device_class: str, entity_category: EntityCategory,
+                 icon: str):
         super().__init__(coordinator)
         self.root_attribute = ["properties", "reported"]
         self.data = None
@@ -50,6 +51,7 @@ class ElectroluxEntity(CoordinatorEntity):
         self.config_entry = config_entry
         self.pnc_id = pnc_id
         self.unit = unit
+        self._icon = icon
         self._device_class = device_class
         self._entity_category = entity_category
         _LOGGER.debug("Electrolux new entity %s for appliance %s", name, pnc_id)
@@ -93,6 +95,11 @@ class ElectroluxEntity(CoordinatorEntity):
     def name(self):
         """Return the name of the sensor."""
         return self._name
+
+    @property
+    def icon(self):
+        """Return the icon of the entity."""
+        return self._icon
 
     # @property
     # def get_entity(self) -> ApplianceEntity:

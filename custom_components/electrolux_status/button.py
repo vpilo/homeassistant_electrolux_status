@@ -30,7 +30,7 @@ class ElectroluxButtonEntity(ElectroluxEntity, ButtonEntity):
                  val_to_send, icon):
         super().__init__(coordinator=coordinator, capability=capability, name=name, config_entry=config_entry,
                          pnc_id=pnc_id, entity_type=entity_type, entity_attr=entity_attr, entity_source=entity_source, unit=None,
-                         device_class=device_class, entity_category=entity_category)
+                         device_class=device_class, entity_category=entity_category, icon=icon)
         self.val_to_send = val_to_send
         self.button_icon = icon
         self.entity_id = ENTITY_ID_FORMAT.format(
