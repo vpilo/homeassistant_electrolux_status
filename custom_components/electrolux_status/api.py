@@ -135,6 +135,10 @@ class ElectroluxLibraryEntity:
         if not access:
             return None
 
+        # Exception (Electrolux bug)
+        if type == "boolean" and access == "readwrite" and capability_def.get("values", None) is not None:
+            return SWITCH
+
         # List of values ? if values is defined and has at least 1 entry
         values: dict[str, any] | None = capability_def.get("values", None)
         if values and access == "readwrite" and isinstance(values, dict) and len(values) > 0:
@@ -370,7 +374,9 @@ class Appliance:
                     capability_info = catalog_item[0]
                 else:
                     if catalog_item[0]:
-                        capability_info.update(catalog_item[0])
+                        for key, item in catalog_item[0]:
+                            if capability_info.get(key, None) is None:
+                                capability_info[key] = item
                 device_class = catalog_item[2] if 2 < len(catalog_item) else None
                 #unit = catalog_item[3] if 3 < len(catalog_item) else None
                 entity_category = catalog_item[4] if 4 < len(catalog_item) else None

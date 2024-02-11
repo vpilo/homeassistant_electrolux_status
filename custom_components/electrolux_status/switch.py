@@ -27,6 +27,13 @@ class ElectroluxSwitch(ElectroluxEntity, SwitchEntity):
     def is_on(self):
         """Return true if the binary_sensor is on."""
         value = self.extract_value()
+        # Electrolux bug
+        if value is not None and isinstance(value, str):
+            if value == "ON":
+                value = True
+            else:
+                value = False
+
         if value is None:
             return self._cached_value
         else:
@@ -35,6 +42,14 @@ class ElectroluxSwitch(ElectroluxEntity, SwitchEntity):
 
     async def switch(self, value: bool):
         client: OneAppApi = self.api
+        # Electrolux bug
+        current_value = self.extract_value()
+        if current_value is not None and isinstance(current_value, str):
+            if value:
+                value = "ON"
+            else:
+                value = "OFF"
+
         if self.entity_source:
             command = {self.entity_source: {self.entity_attr: value}}
         else:
