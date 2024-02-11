@@ -2,6 +2,7 @@
 
 [![Validate with HACS](https://github.com/albaintor/homeassistant_electrolux_status/actions/workflows/hacs.yml/badge.svg)](https://github.com/albaintor/homeassistant_electrolux_status/actions/workflows/hacs.yml)
 [![Validate with hassfest](https://github.com/albaintor/homeassistant_electrolux_status/actions/workflows/hassfest.yml/badge.svg)](https://github.com/albaintor/homeassistant_electrolux_status/actions/workflows/hassfest.yml)
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/albaintor)
 
 ## This new integration is based on new APIs and may be unstable 
 As the former project has been deleted, you will need to delete the existing HACS integration and :
@@ -11,7 +12,6 @@ As the former project has been deleted, you will need to delete the existing HAC
 If you are interested in contributing to the project and assisting with the integration of the new APIs, your contributions are more than welcome! Feel free to fork the repository, make changes, and submit a pull request.
 
 Thank you for your understanding and support.
-You can [buy me a Coffee for support](https://www.buymeacoffee.com/albaintor)
 
 ## Details
 This is an integration to Home Assistant to communicate with the Electrolux OCP Platform (probably for One Connectivity Platform), Electrolux owned brands, like: Electrolux, AEG, Frigidaire, Husqvarna.
