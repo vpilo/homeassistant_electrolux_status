@@ -364,7 +364,13 @@ class Appliance:
             #unit = None
             # item : capability, category, DeviceClass, Unit, EntityCategory
             catalog_item = cast([], Catalog.get(entity_name, None))
+            # Handle the case where the capabilities defined in catalog are richer than provided one from server
             if catalog_item:
+                if capability_info is None:
+                    capability_info = catalog_item[0]
+                else:
+                    if catalog_item[0]:
+                        capability_info.update(catalog_item[0])
                 device_class = catalog_item[2] if 2 < len(catalog_item) else None
                 #unit = catalog_item[3] if 3 < len(catalog_item) else None
                 entity_category = catalog_item[4] if 4 < len(catalog_item) else None
