@@ -338,6 +338,16 @@ class Appliance:
         for common_attribute in COMMON_ATTRIBUTES:
             entity_name = data.get_entity_name(common_attribute)
             category = data.get_category(common_attribute)
+            found = False
+            # Check if not reported in capabilities
+            for capability in capabilities_names:
+                entity_name2 = data.get_entity_name(capability)
+                category2 = data.get_category(capability)
+                if entity_name2 == entity_name and ((category is None and category2 is None) or category == category2):
+                    found = True
+                    break
+            if found:
+                continue
             catalog_item = Catalog.get(entity_name, None)
             if catalog_item:
                 self.data.capabilities[common_attribute] = catalog_item[0]
