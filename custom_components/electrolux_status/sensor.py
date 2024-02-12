@@ -35,8 +35,10 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
         value = self.extract_value()
         if value is not None and self.unit == UnitOfTime.SECONDS:
             value = time_seconds_to_minutes(value)
-        if isinstance(value, str) and "_" in value:
-            value = value.replace("_", " ").title()
+        if isinstance(value, str):
+            if "_" in value:
+                value = value.replace("_", " ")
+            value = value.title()
         if value is not None:
             self._cached_value = value
         else:
