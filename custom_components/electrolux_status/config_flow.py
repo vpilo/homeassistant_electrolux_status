@@ -10,7 +10,7 @@ from homeassistant.core import callback
 from typing import Mapping, Any
 
 from .pyelectroluxconnect_util import pyelectroluxconnect_util
-from .const import CONF_PASSWORD, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+from .const import CONF_PASSWORD
 from .const import CONF_LANGUAGE, DEFAULT_LANGUAGE
 from .const import CONF_USERNAME
 from .const import DOMAIN
@@ -139,12 +139,12 @@ class ElectroluxStatusOptionsFlowHandler(config_entries.OptionsFlow):
             step_id="user",
             data_schema=vol.Schema(
                 {
-                    vol.Optional(
-                        CONF_SCAN_INTERVAL,
-                        default=self.config_entry.options.get(
-                            CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
-                        ),
-                    ): cv.positive_int,
+                    # vol.Optional(
+                    #     CONF_SCAN_INTERVAL,
+                    #     default=self.config_entry.options.get(
+                    #         CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+                    #     ),
+                    # ): cv.positive_int,
                 }
             ),
         )

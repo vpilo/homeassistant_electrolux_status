@@ -8,13 +8,13 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady, ConfigEntryAuthFailed, ConfigEntryError
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from .api import Appliance, Appliances, ElectroluxLibraryEntity
-from .const import CONF_LANGUAGE, DEFAULT_LANGUAGE
-from .const import CONF_PASSWORD, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+from .const import CONF_LANGUAGE, DEFAULT_LANGUAGE, DEFAULT_WEBSOCKET_RENEWAL_DELAY
+from .const import CONF_PASSWORD
 from .const import CONF_USERNAME
 from .const import DOMAIN
 from .const import PLATFORMS
@@ -37,19 +37,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     if hass.data.get(DOMAIN) is None:
         hass.data.setdefault(DOMAIN, {})
 
-    if entry.options.get(CONF_SCAN_INTERVAL):
-        update_interval = timedelta(seconds=entry.options[CONF_SCAN_INTERVAL])
-    else:
-        update_interval = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
+    # if entry.options.get(CONF_SCAN_INTERVAL):
+    #     update_interval = timedelta(seconds=entry.options[CONF_SCAN_INTERVAL])
+    # else:
+    #     update_interval = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
 
     username = entry.data.get(CONF_USERNAME)
     password = entry.data.get(CONF_PASSWORD)
     language = languages.get(entry.data.get(CONF_LANGUAGE, DEFAULT_LANGUAGE), "eng")
 
     client = pyelectroluxconnect_util.get_session(username, password, language)
-
-    # For polling
-    #coordinator = ElectroluxCoordinator(hass, client=client, update_interval=update_interval)
     coordinator = ElectroluxCoordinator(hass, client=client)
     if not await coordinator.async_login():
         raise Exception("Electrolux wrong credentials")
@@ -59,6 +56,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # Initialize entities
     await coordinator.setup_entities()
     await coordinator.listen_websocket()
+    await coordinator.launch_websocket_renewal_task()
 
     entry.async_on_unload(
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, coordinator.api.close)
@@ -86,6 +84,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
         """Initialize."""
         self.api = client
         self.platforms = []
+        self.renew_task = None
 
         super().__init__(hass, _LOGGER, name=DOMAIN)
 
@@ -113,6 +112,31 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
         if ids is None or len(ids) == 0:
             return
         await self.api.watch_for_appliance_state_updates(ids, self.incoming_data)
+
+    async def launch_websocket_renewal_task(self):
+        if self.renew_task:
+            await self.renew_task.cancel()
+            self.renew_task = None
+        self.renew_task = asyncio.create_task(self.renew_websocket(), name="Electrolux renewal websocket")
+
+    async def renew_websocket(self):
+        while True:
+            await asyncio.sleep(DEFAULT_WEBSOCKET_RENEWAL_DELAY)
+            _LOGGER.debug("Electrolux renew_websocket")
+            try:
+                await self.api.disconnect_websocket()
+            except Exception as ex:
+                _LOGGER.error("Electrolux renew_websocket could not close websocket %s", ex)
+            await self.listen_websocket()
+
+    async def close_websocket(self):
+        if self.renew_task:
+            await self.renew_task.cancel()
+            self.renew_task = None
+        try:
+            await self.api.disconnect_websocket()
+        except Exception as ex:
+            _LOGGER.error("Electrolux close_websocket could not close websocket %s", ex)
 
     async def setup_entities(self):
         _LOGGER.debug("Electrolux setup_entities")
@@ -183,7 +207,8 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Handle removal of an entry."""
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator:ElectroluxCoordinator = hass.data[DOMAIN][entry.entry_id]
+    await coordinator.close_websocket()
     unloaded = all(
         await asyncio.gather(
             *[

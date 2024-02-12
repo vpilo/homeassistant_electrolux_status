@@ -374,7 +374,7 @@ class Appliance:
                     capability_info = catalog_item[0]
                 else:
                     if catalog_item[0]:
-                        for key, item in catalog_item[0]:
+                        for key, item in catalog_item[0].items():
                             if capability_info.get(key, None) is None:
                                 capability_info[key] = item
                 device_class = catalog_item[2] if 2 < len(catalog_item) else None

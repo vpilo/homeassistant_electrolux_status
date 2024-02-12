@@ -32,9 +32,8 @@ CONF_LANGUAGE = "language"
 CONF_SCAN_INTERVAL = "scan_interval"
 
 # Defaults
-DEFAULT_NAME = DOMAIN
-DEFAULT_SCAN_INTERVAL = 30
 DEFAULT_LANGUAGE = "English"
+DEFAULT_WEBSOCKET_RENEWAL_DELAY = 43200 # 12 hours
 
 # Common entities
 COMMON_ATTRIBUTES = ["connectivityState", "networkInterface/linkQualityIndicator", "applianceMode"]
