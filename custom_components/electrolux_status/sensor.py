@@ -27,6 +27,8 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
     def suggested_display_precision(self) -> int | None:
         if self.unit == UnitOfTemperature.CELSIUS:
             return 2
+        if self.unit == UnitOfTime.SECONDS:
+            return 0
         return None
 
     @property
@@ -35,6 +37,8 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
         value = self.extract_value()
         if value is not None and self.unit == UnitOfTime.SECONDS:
             value = time_seconds_to_minutes(value)
+            if value is not None and value < 0:
+                value = 0
         if isinstance(value, str):
             if "_" in value:
                 value = value.replace("_", " ")
