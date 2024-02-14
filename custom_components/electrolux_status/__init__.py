@@ -2,7 +2,6 @@
 import asyncio
 import json
 import logging
-from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
@@ -13,7 +12,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from .api import Appliance, Appliances, ElectroluxLibraryEntity
-from .const import CONF_LANGUAGE, DEFAULT_LANGUAGE, DEFAULT_WEBSOCKET_RENEWAL_DELAY
+from .const import CONF_LANGUAGE, DEFAULT_LANGUAGE, DEFAULT_WEBSOCKET_RENEWAL_DELAY, CONF_RENEW_INTERVAL
 from .const import CONF_PASSWORD
 from .const import CONF_USERNAME
 from .const import DOMAIN
@@ -37,19 +36,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     if hass.data.get(DOMAIN) is None:
         hass.data.setdefault(DOMAIN, {})
 
-    # if entry.options.get(CONF_SCAN_INTERVAL):
-    #     update_interval = timedelta(seconds=entry.options[CONF_SCAN_INTERVAL])
-    # else:
-    #     update_interval = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
+    renew_interval = DEFAULT_WEBSOCKET_RENEWAL_DELAY
+    if entry.options.get(CONF_RENEW_INTERVAL):
+        renew_interval = entry.options[CONF_RENEW_INTERVAL]
 
     username = entry.data.get(CONF_USERNAME)
     password = entry.data.get(CONF_PASSWORD)
     language = languages.get(entry.data.get(CONF_LANGUAGE, DEFAULT_LANGUAGE), "eng")
 
     client = pyelectroluxconnect_util.get_session(username, password, language)
-    coordinator = ElectroluxCoordinator(hass, client=client)
+    coordinator = ElectroluxCoordinator(hass, client=client, renew_interval=renew_interval)
     if not await coordinator.async_login():
         raise Exception("Electrolux wrong credentials")
+
+    # Bug ?
+    if coordinator.config_entry is None:
+        coordinator.config_entry = entry
 
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
@@ -80,11 +82,12 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
     """Class to manage fetching data from the API."""
     api: OneAppApi = None
 
-    def __init__(self, hass: HomeAssistant, client: OneAppApi) -> None:
+    def __init__(self, hass: HomeAssistant, client: OneAppApi, renew_interval: int) -> None:
         """Initialize."""
         self.api = client
         self.platforms = []
         self.renew_task = None
+        self.renew_interval = renew_interval
 
         super().__init__(hass, _LOGGER, name=DOMAIN)
 
@@ -115,13 +118,13 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
 
     async def launch_websocket_renewal_task(self):
         if self.renew_task:
-            await self.renew_task.cancel()
+            self.renew_task.cancel()
             self.renew_task = None
         self.renew_task = asyncio.create_task(self.renew_websocket(), name="Electrolux renewal websocket")
 
     async def renew_websocket(self):
         while True:
-            await asyncio.sleep(DEFAULT_WEBSOCKET_RENEWAL_DELAY)
+            await asyncio.sleep(self.renew_interval)
             _LOGGER.debug("Electrolux renew_websocket")
             try:
                 await self.api.disconnect_websocket()
@@ -131,7 +134,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
 
     async def close_websocket(self):
         if self.renew_task:
-            await self.renew_task.cancel()
+            self.renew_task.cancel()
             self.renew_task = None
         try:
             await self.api.disconnect_websocket()
@@ -226,6 +229,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload config entry."""
-    _LOGGER.debug("Electrolux async_reload_entry")
+    _LOGGER.debug("Electrolux async_reload_entry %s", entry)
     await async_unload_entry(hass, entry)
     await async_setup_entry(hass, entry)

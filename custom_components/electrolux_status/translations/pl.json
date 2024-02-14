@@ -23,7 +23,7 @@
     "step": {
       "user": {
         "data": {
-          "scan_interval": "Interwał aktualizacji API (sekundy)"
+          "renew_interval": "Interwał aktualizacji API (sekundy)"
         }
       }
     }

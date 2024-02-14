@@ -23,7 +23,7 @@
     "step": {
       "user": {
         "data": {
-          "scan_interval": "API update interval (seconds)"
+          "renew_interval": "Renewal interval of websocket (seconds)"
         }
       }
     }
