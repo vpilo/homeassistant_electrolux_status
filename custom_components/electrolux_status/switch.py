@@ -1,7 +1,7 @@
 """Switch platform for Electrolux Status."""
 from homeassistant.components.switch import SwitchEntity
 
-from .electroluxwrapper import OneAppApi
+from pyelectroluxocp import OneAppApi
 from .const import SWITCH, DOMAIN
 from .entity import ElectroluxEntity
 import logging

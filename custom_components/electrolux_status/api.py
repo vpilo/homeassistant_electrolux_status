@@ -6,8 +6,7 @@ from typing import cast
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.const import UnitOfTemperature
 
-from .electroluxwrapper.apiModels import ApplianceInfoResponse, ApplienceStatusResponse
-# from pyelectroluxocp.apiModels import ApplianceInfoResponse, ApplienceStatusResponse
+from pyelectroluxocp.apiModels import ApplianceInfoResponse, ApplienceStatusResponse
 
 from .binary_sensor import ElectroluxBinarySensor
 from .button import ElectroluxButtonEntity

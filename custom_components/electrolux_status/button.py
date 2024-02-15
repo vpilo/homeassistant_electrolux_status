@@ -1,8 +1,7 @@
 """Button platform for Electrolux Status."""
 from homeassistant.components.button import ButtonEntity, ENTITY_ID_FORMAT
 from homeassistant.const import EntityCategory
-from .electroluxwrapper.oneAppApi import OneAppApi
-# from pyelectroluxocp import OneAppApi
+from pyelectroluxocp.oneAppApi import OneAppApi
 
 from .const import BUTTON, DOMAIN
 from .entity import ElectroluxEntity

@@ -1,5 +1,4 @@
-# from pyelectroluxocp import OneAppApi
-from .electroluxwrapper.oneAppApi import OneAppApi
+from pyelectroluxocp.oneAppApi import OneAppApi
 
 class pyelectroluxconnect_util:
     @staticmethod

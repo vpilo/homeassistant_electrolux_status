@@ -18,8 +18,7 @@ from .const import CONF_USERNAME
 from .const import DOMAIN
 from .const import PLATFORMS
 from .const import languages
-#from pyelectroluxocp import OneAppApi
-from .electroluxwrapper import OneAppApi
+from pyelectroluxocp import OneAppApi
 from .pyelectroluxconnect_util import pyelectroluxconnect_util
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -56,25 +55,32 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
     # Initialize entities
+    _LOGGER.debug("async_setup_entry setup_entities")
     await coordinator.setup_entities()
-    await coordinator.listen_websocket()
+    _LOGGER.debug("async_setup_entry listen_websocket")
+    coordinator.listen_websocket()
+    _LOGGER.debug("async_setup_entry launch_websocket_renewal_task")
     await coordinator.launch_websocket_renewal_task()
 
     entry.async_on_unload(
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, coordinator.api.close)
     )
 
+    _LOGGER.debug("async_setup_entry async_config_entry_first_refresh")
     # Fill in the values for first time
     await coordinator.async_config_entry_first_refresh()
 
     if not coordinator.last_update_success:
         raise ConfigEntryNotReady
 
+    _LOGGER.debug("async_setup_entry extend PLATFORMS")
     coordinator.platforms.extend(PLATFORMS)
     # Call async_setup_entry in entity files
+    _LOGGER.debug("async_setup_entry async_forward_entry_setups")
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-
+    _LOGGER.debug("async_setup_entry add_update_listener")
     entry.add_update_listener(async_reload_entry)
+    _LOGGER.debug("async_setup_entry OVER")
     return True
 
 
@@ -108,13 +114,13 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
         _LOGGER.debug("Electrolux appliance state updated %s", json.dumps(data))
         self.async_set_updated_data(data)
 
-    async def listen_websocket(self):
+    def listen_websocket(self):
         appliances: Appliances = self.data.get('appliances', None)
         ids = appliances.get_appliance_ids()
         _LOGGER.debug("Electrolux listen_websocket for appliances %s", ",".join(ids))
         if ids is None or len(ids) == 0:
             return
-        await self.api.watch_for_appliance_state_updates(ids, self.incoming_data)
+        asyncio.create_task(self.api.watch_for_appliance_state_updates(ids, self.incoming_data))
 
     async def launch_websocket_renewal_task(self):
         if self.renew_task:
@@ -130,7 +136,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                 await self.api.disconnect_websocket()
             except Exception as ex:
                 _LOGGER.error("Electrolux renew_websocket could not close websocket %s", ex)
-            await self.listen_websocket()
+            self.listen_websocket()
 
     async def close_websocket(self):
         if self.renew_task:

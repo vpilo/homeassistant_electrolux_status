@@ -3,8 +3,7 @@ import json
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.const import EntityCategory
-from .electroluxwrapper.oneAppApi import OneAppApi
-# from pyelectroluxocp import OneAppApi
+from pyelectroluxocp.oneAppApi import OneAppApi
 
 from .const import SELECT, DOMAIN
 from .entity import ElectroluxEntity
