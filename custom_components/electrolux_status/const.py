@@ -85,7 +85,7 @@ Catalog: dict[str, [dict, str, str, str, str]] = {
         # "programUID": ["valTransl", None, None],
         # "sensorHumidity": ["numberValue", SensorDeviceClass.HUMIDITY, PERCENTAGE, None],
         # "ambientTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS, None],
-        "applianceTotalWorkingTime": [{"access": "read", "type": "number"}, None, None, UnitOfTime.MINUTES, EntityCategory.DIAGNOSTIC, "mdi:clock-time-eight-outline"],
+        "applianceTotalWorkingTime": [{"access": "read", "type": "number"}, None, None, UnitOfTime.SECONDS, EntityCategory.DIAGNOSTIC, "mdi:clock-time-eight-outline"],
         "totalCycleCounter": [{"access": "read", "type": "number"}, None, None, None, EntityCategory.DIAGNOSTIC, "mdi:counter"],
         "waterHardness": [{"access": "read", "type": "string"}, None, None, None, EntityCategory.DIAGNOSTIC, "mdi:water"],
         "applianceMode": [{"access": "read", "type": "string"}, None, None, None, EntityCategory.DIAGNOSTIC, "mdi:auto-mode"],
