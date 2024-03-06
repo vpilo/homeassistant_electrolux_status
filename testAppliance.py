@@ -4,8 +4,8 @@ from pyelectroluxocp import OneAppApi
 import re
 
 # Fill in your username and password here :
-login="__your_login__"
-password="__your_passsword__"
+login="damienbt@msn.com"
+password="Ludivine1"
 
 async def main():
     async with OneAppApi(login, password) as client:
