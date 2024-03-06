@@ -39,6 +39,7 @@ Tested with Electrolux and AEG washer-dryer, but probably could be used with som
 - ELECTROLUX EW9H188SPC - PerfectCare 900 Dryer
 - ELECTROLUX EW8F8669Q8 - PerfectCare 800 Washer
 - ELECTROLUX EW9F149SP - PerfectCare 900 Washer
+- ELECTROLUX EW9W161BC - PerfectCare 900 Washer & Dryer
 - ELECTROLUX KEGB9300W - Dishwasher
 - ELECTROLUX EEG69410W - Dishwasher 
 - AEG L6FBG841CA - 6000 Series Autodose
