@@ -74,10 +74,10 @@ class ElectroluxStatusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             return await self._show_config_form(user_input)
         return await self._show_config_form(user_input)
 
-    @staticmethod
-    @callback
-    def async_get_options_flow(config_entry):
-        return ElectroluxStatusOptionsFlowHandler(config_entry)
+    # @staticmethod
+    # @callback
+    # def async_get_options_flow(config_entry):
+    #     return ElectroluxStatusOptionsFlowHandler(config_entry)
 
     async def _show_config_form(self, user_input):  # pylint: disable=unused-argument
         """Show the configuration form to edit location data."""
