@@ -49,6 +49,8 @@ COMMON_ATTRIBUTES = ["connectivityState", "networkInterface/linkQualityIndicator
 #   min / max / step for type = number
 # }
 
+TIME_ENTITIES_TO_UPDATE = ["timeToEnd"]
+
 Catalog: dict[str, [dict, str, str, str, str]] = {
         "timeToEnd": [{"access": "read","type": "number"}, None, None, UnitOfTime.SECONDS, None, "mdi:av-timer"],
         "runningTime": [{"access": "read","type": "number"}, None, None, UnitOfTime.SECONDS, None, "mdi:timelapse"],

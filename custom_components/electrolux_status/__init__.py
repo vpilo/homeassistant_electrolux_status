@@ -12,7 +12,8 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from .api import Appliance, Appliances, ElectroluxLibraryEntity
-from .const import CONF_LANGUAGE, DEFAULT_LANGUAGE, DEFAULT_WEBSOCKET_RENEWAL_DELAY, CONF_RENEW_INTERVAL
+from .const import CONF_LANGUAGE, DEFAULT_LANGUAGE, DEFAULT_WEBSOCKET_RENEWAL_DELAY, CONF_RENEW_INTERVAL, \
+    TIME_ENTITIES_TO_UPDATE
 from .const import CONF_PASSWORD
 from .const import CONF_USERNAME
 from .const import DOMAIN
@@ -110,9 +111,43 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
             raise ex
         return False
 
+    async def deferred_update(self, appliance_id: str, delay: int) -> None:
+        """Deferred update due to Electrolux not sending updated data at the end of the appliance program/cycle"""
+        _LOGGER.debug("Electrolux scheduling deferred update for appliance %s", appliance_id)
+        await asyncio.sleep(delay)
+        _LOGGER.debug("Electrolux scheduled deferred update for appliance %s running", appliance_id)
+        appliances: Appliances = self.data.get('appliances', None)
+        # Should not happen : wonder if this is not the cause of infinite loop of integrations creations => disabled
+        # if appliances is None or len(appliances.get_appliances()) == 0:
+        #     await self.setup_entities()
+        #     appliances = self.data.get('appliances', None)
+
+        for local_appliance_id in appliances.get_appliances():
+            if local_appliance_id != appliance_id:
+                pass
+            try:
+                appliance: Appliance = appliances.get_appliances().get(appliance_id)
+                appliance_status = await self.api.get_appliance_state(appliance_id)
+                appliance.update(appliance_status)
+                self.async_set_updated_data(self.data)
+            except Exception as exception:
+                _LOGGER.exception(exception)
+                raise UpdateFailed() from exception
+
     def incoming_data(self, data: dict[str, dict[str, any]]):
         _LOGGER.debug("Electrolux appliance state updated %s", json.dumps(data))
         self.async_set_updated_data(data)
+        # Bug in Electrolux library : no data sent when appliance cycle is over
+        for appliance_id, appliance_data in data.items():
+            do_deferred = False
+            for key, value in appliance_data.items():
+                if key in TIME_ENTITIES_TO_UPDATE:
+                    if value is not None and value > 0 and value <= 1:
+                        do_deferred = True
+                        break
+            if do_deferred:
+                asyncio.create_task(self.deferred_update(appliance_id, 70))
+
 
     def listen_websocket(self):
         appliances: Appliances = self.data.get('appliances', None)
