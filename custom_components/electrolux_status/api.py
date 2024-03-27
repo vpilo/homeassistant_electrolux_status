@@ -184,7 +184,7 @@ class Appliance:
         self.pnc_id = pnc_id
         self.name = name
         self.brand = brand
-        self.state = state
+        self.state: ApplienceStatusResponse = state
 
     def update_missing_entities(self):
         """Add missing entities when no capabilities returned by the API, do it dynamically"""
@@ -411,10 +411,24 @@ class Appliance:
         for entity in entities:
             entity.setup(data)
 
+    def update_reported_data(self, reported_data: dict[str, any]):
+        _LOGGER.debug("Electrolux update reported data %s", reported_data)
+        try:
+            local_reported_data = self.state.get("properties", None).get("reported", None)
+            local_reported_data.update(reported_data)
+            _LOGGER.debug("Electrolux updated reported data %s", self.state)
+            self.update_missing_entities()
+            for entity in self.entities:
+                entity.update(self.state)
+
+        except Exception as ex:
+            _LOGGER.debug("Electrolux status could not update reported data with %s", reported_data, ex)
+
     def update(self, appliance_status: ApplienceStatusResponse):
+        self.state = appliance_status
         self.update_missing_entities()
         for entity in self.entities:
-            entity.update(appliance_status)
+            entity.update(self.state)
 
 
 class Appliances:

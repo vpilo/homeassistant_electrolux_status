@@ -81,8 +81,8 @@ class ElectroluxEntity(CoordinatorEntity):
         # _LOGGER.debug("Electrolux entity got data %s", self.coordinator.data)
         if self.coordinator.data is None:
             return
-        appliance_data = self.coordinator.data.get(self.pnc_id, None)
-        self.appliance_status = appliance_data
+        appliances = self.coordinator.data.get('appliances', None)
+        self.appliance_status = appliances.get_appliance(self.pnc_id).state
         self.async_write_ha_state()
 
     def get_connection_state(self) -> str | None:
@@ -164,3 +164,5 @@ class ElectroluxEntity(CoordinatorEntity):
 
     def update(self, appliance_status: ApplienceStatusResponse):
         self.appliance_status = appliance_status
+        # if self.hass:
+        #     self.async_write_ha_state()

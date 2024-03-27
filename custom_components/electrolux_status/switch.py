@@ -30,23 +30,15 @@ class ElectroluxSwitch(ElectroluxEntity, SwitchEntity):
 
         # Electrolux bug
         if value is not None and isinstance(value, str):
-            _LOGGER.debug("Electrolux is_on got value \"%s\"", value)
             if value == "ON":
                 value = True
             else:
                 value = False
-        else:
-            _LOGGER.debug("Electrolux is_on got value %s", value)
 
         if value is None:
-            _LOGGER.debug("Electrolux is_on -> %s (cached)", self._cached_value)
             return self._cached_value
         else:
             self._cached_value = value
-        if value is not None and isinstance(value, str):
-            _LOGGER.debug("Electrolux is_on -> \"%s\"", value)
-        else:
-            _LOGGER.debug("Electrolux is_on -> %s", value)
         return value
 
     async def switch(self, value: bool):
