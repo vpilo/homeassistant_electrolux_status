@@ -29,6 +29,12 @@ def time_seconds_to_minutes(seconds):
         return int(math.ceil((int(seconds) / 60)))
     return None
 
+def time_minutes_to_seconds(minutes):
+    if minutes is not None:
+        if minutes == -1:
+            return -1
+        return int(minutes) * 60
+    return None
 
 class ElectroluxEntity(CoordinatorEntity):
     appliance_status: ApplienceStatusResponse
