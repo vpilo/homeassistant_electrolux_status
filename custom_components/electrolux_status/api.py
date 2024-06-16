@@ -1,16 +1,28 @@
+"""API for Electrolux Status."""
+
 import json
 import logging
 import re
 from typing import cast
 
+from pyelectroluxocp.apiModels import ApplianceInfoResponse, ApplienceStatusResponse
+
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.const import UnitOfTemperature
 
-from pyelectroluxocp.apiModels import ApplianceInfoResponse, ApplienceStatusResponse
-
 from .binary_sensor import ElectroluxBinarySensor
 from .button import ElectroluxButtonEntity
-from .const import BINARY_SENSOR, SENSOR, BUTTON, icon_mapping, SELECT, SWITCH, NUMBER, Catalog, COMMON_ATTRIBUTES
+from .const import (
+    BINARY_SENSOR,
+    BUTTON,
+    COMMON_ATTRIBUTES,
+    NUMBER,
+    SELECT,
+    SENSOR,
+    SWITCH,
+    Catalog,
+    icon_mapping,
+)
 from .entity import ElectroluxEntity
 from .number import ElectroluxNumber
 from .select import ElectroluxSelect
@@ -23,8 +35,16 @@ HEADERS = {"Content-type": "application/json; charset=UTF-8"}
 
 
 class ElectroluxLibraryEntity:
-    def __init__(self, name, status: str, state: ApplienceStatusResponse, appliance_info: ApplianceInfoResponse,
-                 capabilities: dict[str, any]):
+    """Electrolux Library Entity."""
+
+    def __init__(
+        self,
+        name,
+        status: str,
+        state: ApplienceStatusResponse,
+        appliance_info: ApplianceInfoResponse,
+        capabilities: dict[str, any],
+    ):
         self.name = name
         self.status = status
         self.state = state
@@ -36,7 +56,7 @@ class ElectroluxLibraryEntity:
         return self.name
 
     def get_value(self, attr_name, source=None):
-        if source and source != '':
+        if source and source != "":
             container: dict[str, any] | None = self.reported_state.get(source, None)
             entry = None if container is None else container.get(attr_name, None)
         else:
@@ -44,7 +64,7 @@ class ElectroluxLibraryEntity:
         return entry
 
     def get_sensor_name(self, attr_name: str, container: str = None):
-        attr_name = attr_name.rpartition('/')[-1] or attr_name
+        attr_name = attr_name.rpartition("/")[-1] or attr_name
         attr_name = attr_name[0].upper() + attr_name[1:]
         attr_name = attr_name.replace("_", " ")
         group = ""
@@ -60,9 +80,13 @@ class ElectroluxLibraryEntity:
                     group = ""
                     continue
 
-                if ((char.isupper() or char.isdigit())
-                        and (s[i - 1].isupper() or s[i - 1].isdigit())
-                        and ((i == len(s) - 1) or (s[i + 1].isupper() or s[i + 1].isdigit()))):
+                if (
+                    (char.isupper() or char.isdigit())
+                    and (s[i - 1].isupper() or s[i - 1].isdigit())
+                    and (
+                        (i == len(s) - 1) or (s[i + 1].isupper() or s[i + 1].isdigit())
+                    )
+                ):
                     group += char
                 else:
                     if (char.isupper() or char.isdigit()) and s[i - 1].islower():
@@ -82,20 +106,20 @@ class ElectroluxLibraryEntity:
 
     def get_sensor_name_old(self, attr_name: str, container: str = None):
         # Convert format "fCMiscellaneousState/detergentExtradosage" to "Detergent extradosage"
-        attr_name = attr_name.rpartition('/')[-1] or attr_name
+        attr_name = attr_name.rpartition("/")[-1] or attr_name
         attr_name = attr_name[0].upper() + attr_name[1:]
-        attr_name = " ".join(re.findall('[A-Z][^A-Z]*', attr_name))
+        attr_name = " ".join(re.findall("[A-Z][^A-Z]*", attr_name))
         attr_name = attr_name.capitalize()
         return attr_name
 
     def get_category(self, attr_name: str):
         # Extract category ex: "fCMiscellaneousState/detergentExtradosage" to "fCMiscellaneousState"
         # or "" if none
-        return attr_name.rpartition('/')[0]
+        return attr_name.rpartition("/")[0]
 
     def get_entity_name(self, attr_name: str, container: str = None):
         # Convert format "fCMiscellaneousState/detergentExtradosage" to "detergentExtradosage"
-        return attr_name.rpartition('/')[-1] or attr_name
+        return attr_name.rpartition("/")[-1] or attr_name
 
     def get_entity_unit(self, attr_name: str):
         capability_def: dict[str, any] | None = self.capabilities.get(attr_name, None)
@@ -106,7 +130,7 @@ class ElectroluxLibraryEntity:
         if not type:
             return None
         if type == "temperature":
-           return UnitOfTemperature.CELSIUS
+            return UnitOfTemperature.CELSIUS
         return None
 
     def get_entity_device_class(self, attr_name: str):
@@ -118,7 +142,7 @@ class ElectroluxLibraryEntity:
         if not type:
             return None
         if type == "temperature":
-           return SensorDeviceClass.TEMPERATURE
+            return SensorDeviceClass.TEMPERATURE
         return None
 
     def get_entity_type(self, attr_name: str):
@@ -135,12 +159,21 @@ class ElectroluxLibraryEntity:
             return None
 
         # Exception (Electrolux bug)
-        if type == "boolean" and access == "readwrite" and capability_def.get("values", None) is not None:
+        if (
+            type == "boolean"
+            and access == "readwrite"
+            and capability_def.get("values", None) is not None
+        ):
             return SWITCH
 
         # List of values ? if values is defined and has at least 1 entry
         values: dict[str, any] | None = capability_def.get("values", None)
-        if values and access == "readwrite" and isinstance(values, dict) and len(values) > 0:
+        if (
+            values
+            and access == "readwrite"
+            and isinstance(values, dict)
+            and len(values) > 0
+        ):
             if type != "number" or capability_def.get("min", None) is None:
                 return SELECT
 
@@ -165,7 +198,11 @@ class ElectroluxLibraryEntity:
     def sources_list(self):
         if self.capabilities is None:
             return None
-        return [key for key in list(self.capabilities.keys()) if not key.startswith("applianceCareAndMaintenance")]
+        return [
+            key
+            for key in list(self.capabilities.keys())
+            if not key.startswith("applianceCareAndMaintenance")
+        ]
 
 
 class Appliance:
@@ -174,9 +211,15 @@ class Appliance:
     entities: []
     coordinator: any
 
-    def __init__(self, coordinator: any,
-                 name: str, pnc_id: str, brand: str, model: str,
-                 state: ApplienceStatusResponse) -> None:
+    def __init__(
+        self,
+        coordinator: any,
+        name: str,
+        pnc_id: str,
+        brand: str,
+        model: str,
+        state: ApplienceStatusResponse,
+    ) -> None:
         self.own_capabilties = False
         self.data = None
         self.coordinator = coordinator
@@ -197,17 +240,29 @@ class Appliance:
             if reported:
                 for key, item in Catalog.items():
                     category = item[1]
-                    if ((category and reported.get(category, None) and reported.get(category, None).get(key))
-                            or (not category and reported.get(key, None))):
+                    if (
+                        category
+                        and reported.get(category, None)
+                        and reported.get(category, None).get(key)
+                    ) or (not category and reported.get(key, None)):
                         found: bool = False
                         for entity in self.entities:
-                            if entity.entity_attr == key and entity.entity_source == category:
+                            if (
+                                entity.entity_attr == key
+                                and entity.entity_source == category
+                            ):
                                 found = True
-                                capability = key if category is None else category + "/" + key
+                                capability = (
+                                    key if category is None else category + "/" + key
+                                )
                                 self.data.capabilities[capability] = item[0]
                                 break
                         if not found:
-                            _LOGGER.debug("Electrolux discovered new entity from extracted data", category, key)
+                            _LOGGER.debug(
+                                "Electrolux discovered new entity from extracted data",
+                                category,
+                                key,
+                            )
                             entity = self.get_entity(capability)
                             if entity:
                                 self.entities.append(entity)
@@ -244,7 +299,7 @@ class Appliance:
                 unit=unit,
                 entity_category=entity_category,
                 device_class=device_class,
-                icon=entity_icon
+                icon=entity_icon,
             )
         if entity_type == BINARY_SENSOR:
             return ElectroluxBinarySensor(
@@ -259,7 +314,7 @@ class Appliance:
                 unit=unit,
                 entity_category=entity_category,
                 device_class=device_class,
-                icon=entity_icon
+                icon=entity_icon,
             )
         if entity_type == SELECT:
             return ElectroluxSelect(
@@ -274,7 +329,7 @@ class Appliance:
                 unit=unit,
                 entity_category=entity_category,
                 device_class=device_class,
-                icon=entity_icon
+                icon=entity_icon,
             )
         if entity_type == NUMBER:
             return ElectroluxNumber(
@@ -289,7 +344,7 @@ class Appliance:
                 unit=unit,
                 entity_category=entity_category,
                 device_class=device_class,
-                icon=entity_icon
+                icon=entity_icon,
             )
         if entity_type == SWITCH:
             return ElectroluxSwitch(
@@ -304,7 +359,7 @@ class Appliance:
                 unit=unit,
                 entity_category=entity_category,
                 device_class=device_class,
-                icon=entity_icon
+                icon=entity_icon,
             )
         return None
 
@@ -325,9 +380,15 @@ class Appliance:
                 if reported:
                     for key, item in Catalog.items():
                         category = item[1]
-                        if ((category and reported.get(category, None) and reported.get(category, None).get(key))
-                                or (not category and reported.get(key, None))
-                                or key == "executeCommand"):
+                        if (
+                            (
+                                category
+                                and reported.get(category, None)
+                                and reported.get(category, None).get(key)
+                            )
+                            or (not category and reported.get(key, None))
+                            or key == "executeCommand"
+                        ):
                             if category:
                                 capabilities[category + "/" + key] = item[0]
                                 capabilities_names.append(category + "/" + key)
@@ -335,8 +396,10 @@ class Appliance:
                                 capabilities[key] = item[0]
                                 capabilities_names.append(key)
                     self.data.capabilities = capabilities
-                    _LOGGER.debug("Electrolux rebuilt capabilities due to API malfunction",
-                                  json.dumps(capabilities, indent=2))
+                    _LOGGER.debug(
+                        "Electrolux rebuilt capabilities due to API malfunction",
+                        json.dumps(capabilities, indent=2),
+                    )
         # Add common entities
         for common_attribute in COMMON_ATTRIBUTES:
             entity_name = data.get_entity_name(common_attribute)
@@ -346,7 +409,9 @@ class Appliance:
             for capability in capabilities_names:
                 entity_name2 = data.get_entity_name(capability)
                 category2 = data.get_category(capability)
-                if entity_name2 == entity_name and ((category is None and category2 is None) or category == category2):
+                if entity_name2 == entity_name and (
+                    (category is None and category2 is None) or category == category2
+                ):
                     found = True
                     break
             if found:
@@ -364,7 +429,7 @@ class Appliance:
             category = data.get_category(capability)
             device_class = None
             entity_category = None
-            #unit = None
+            # unit = None
             # item : capability, category, DeviceClass, Unit, EntityCategory
             catalog_item = cast([], Catalog.get(entity_name, None))
             # Handle the case where the capabilities defined in catalog are richer than provided one from server
@@ -377,7 +442,7 @@ class Appliance:
                             if capability_info.get(key, None) is None:
                                 capability_info[key] = item
                 device_class = catalog_item[2] if 2 < len(catalog_item) else None
-                #unit = catalog_item[3] if 3 < len(catalog_item) else None
+                # unit = catalog_item[3] if 3 < len(catalog_item) else None
                 entity_category = catalog_item[4] if 4 < len(catalog_item) else None
 
             if capability == "executeCommand":
@@ -397,7 +462,7 @@ class Appliance:
                             val_to_send=command,
                             capability=capability_info,
                             entity_category=entity_category,
-                            device_class=device_class
+                            device_class=device_class,
                         )
                     )
                 continue
@@ -414,7 +479,9 @@ class Appliance:
     def update_reported_data(self, reported_data: dict[str, any]):
         _LOGGER.debug("Electrolux update reported data %s", reported_data)
         try:
-            local_reported_data = self.state.get("properties", None).get("reported", None)
+            local_reported_data = self.state.get("properties", None).get(
+                "reported", None
+            )
             local_reported_data.update(reported_data)
             _LOGGER.debug("Electrolux updated reported data %s", self.state)
             self.update_missing_entities()
@@ -422,7 +489,11 @@ class Appliance:
                 entity.update(self.state)
 
         except Exception as ex:
-            _LOGGER.debug("Electrolux status could not update reported data with %s", reported_data, ex)
+            _LOGGER.debug(
+                "Electrolux status could not update reported data with %s",
+                reported_data,
+                ex,
+            )
 
     def update(self, appliance_status: ApplienceStatusResponse):
         self.state = appliance_status

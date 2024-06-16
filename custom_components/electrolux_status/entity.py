@@ -1,24 +1,34 @@
+import logging
 import math
+from typing import cast
+
+from pyelectroluxocp.apiModels import ApplienceStatusResponse
 
 from homeassistant.components.sensor import ENTITY_ID_FORMAT
 from homeassistant.const import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from pyelectroluxocp.apiModels import ApplienceStatusResponse
-from typing import cast
+
 from .const import DOMAIN
-import logging
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    """Setup binary sensor platform."""
+    """Configure entity platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
-    appliances = coordinator.data.get('appliances', None)
+    appliances = coordinator.data.get("appliances", None)
     if appliances is not None:
         for appliance_id, appliance in appliances.appliances.items():
-            entities = [entity for entity in appliance.entities if entity.entity_type == "entity"]
-            _LOGGER.debug("Electrolux add %d entities to registry for appliance %s", len(entities), appliance_id)
+            entities = [
+                entity
+                for entity in appliance.entities
+                if entity.entity_type == "entity"
+            ]
+            _LOGGER.debug(
+                "Electrolux add %d entities to registry for appliance %s",
+                len(entities),
+                appliance_id,
+            )
             async_add_entities(entities)
 
 
@@ -33,10 +43,21 @@ def time_seconds_to_minutes(seconds):
 class ElectroluxEntity(CoordinatorEntity):
     appliance_status: ApplienceStatusResponse
 
-    def __init__(self, coordinator: any, name: str, config_entry,
-                 pnc_id: str, entity_type: str, entity_attr, entity_source, capability: dict[str, any],
-                 unit: str, device_class: str, entity_category: EntityCategory,
-                 icon: str):
+    def __init__(
+        self,
+        coordinator: any,
+        name: str,
+        config_entry,
+        pnc_id: str,
+        entity_type: str,
+        entity_attr,
+        entity_source,
+        capability: dict[str, any],
+        unit: str,
+        device_class: str,
+        entity_category: EntityCategory,
+        icon: str,
+    ):
         super().__init__(coordinator)
         self.root_attribute = ["properties", "reported"]
         self.data = None
@@ -55,7 +76,8 @@ class ElectroluxEntity(CoordinatorEntity):
         self._entity_category = entity_category
         _LOGGER.debug("Electrolux new entity %s for appliance %s", name, pnc_id)
         self.entity_id = ENTITY_ID_FORMAT.format(
-            f"{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_attr}")
+            f"{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_attr}"
+        )
         self.capability = capability
 
     def setup(self, data):
@@ -81,7 +103,7 @@ class ElectroluxEntity(CoordinatorEntity):
         # _LOGGER.debug("Electrolux entity got data %s", self.coordinator.data)
         if self.coordinator.data is None:
             return
-        appliances = self.coordinator.data.get('appliances', None)
+        appliances = self.coordinator.data.get("appliances", None)
         self.appliance_status = appliances.get_appliance(self.pnc_id).state
         self.async_write_ha_state()
 
@@ -106,7 +128,7 @@ class ElectroluxEntity(CoordinatorEntity):
 
     @property
     def get_appliance(self):
-        return self.coordinator.data['appliances'].get_appliance(self.pnc_id)
+        return self.coordinator.data["appliances"].get_appliance(self.pnc_id)
 
     @property
     def unique_id(self):
@@ -146,8 +168,9 @@ class ElectroluxEntity(CoordinatorEntity):
             root = cast(any, self.appliance_status)
             # Format returned by push is slightly different from format returned by API : fields are at root level
             # Let's check if we can find the fields at root first
-            if ((self.entity_source and root.get(self.entity_source, None) is not None) or
-                    root.get(attribute, None)):
+            if (
+                self.entity_source and root.get(self.entity_source, None) is not None
+            ) or root.get(attribute, None):
                 root_attribute = None
             if root_attribute:
                 for item in root_attribute:

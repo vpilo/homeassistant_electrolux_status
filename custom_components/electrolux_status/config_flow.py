@@ -1,20 +1,28 @@
 """Adds config flow for Electrolux Status."""
-import logging
 
-import homeassistant.helpers.config_validation as cv
-from homeassistant.data_entry_flow import FlowResult
-from homeassistant.helpers.selector import selector
+from collections.abc import Mapping
+import logging
+from typing import Any
+
 import voluptuous as vol
+
 from homeassistant import config_entries
 from homeassistant.core import callback
-from typing import Mapping, Any
+from homeassistant.data_entry_flow import FlowResult
+import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.selector import selector
 
+from .const import (
+    CONF_LANGUAGE,
+    CONF_PASSWORD,
+    CONF_RENEW_INTERVAL,
+    CONF_USERNAME,
+    DEFAULT_LANGUAGE,
+    DEFAULT_WEBSOCKET_RENEWAL_DELAY,
+    DOMAIN,
+    languages,
+)
 from .pyelectroluxconnect_util import pyelectroluxconnect_util
-from .const import CONF_PASSWORD, CONF_RENEW_INTERVAL, DEFAULT_WEBSOCKET_RENEWAL_DELAY
-from .const import CONF_LANGUAGE, DEFAULT_LANGUAGE
-from .const import CONF_USERNAME
-from .const import DOMAIN
-from .const import languages
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,7 +33,7 @@ class ElectroluxStatusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize."""
         self._errors = {}
 
@@ -39,8 +47,7 @@ class ElectroluxStatusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             valid = await self._test_credentials(
-                user_input[CONF_USERNAME],
-                user_input[CONF_PASSWORD]
+                user_input[CONF_USERNAME], user_input[CONF_PASSWORD]
             )
             if valid:
                 return self.async_create_entry(
@@ -62,8 +69,7 @@ class ElectroluxStatusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         self._errors = {}
         if user_input is not None:
             valid = await self._test_credentials(
-                user_input[CONF_USERNAME],
-                user_input[CONF_PASSWORD]
+                user_input[CONF_USERNAME], user_input[CONF_PASSWORD]
             )
             if valid:
                 return self.async_create_entry(
@@ -84,21 +90,17 @@ class ElectroluxStatusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         data_schema = {
             vol.Required(CONF_USERNAME): str,
             vol.Required(CONF_PASSWORD): str,
-            vol.Optional(CONF_LANGUAGE, default = DEFAULT_LANGUAGE): selector({
-                "select": {
-                    "options": list(languages.keys()),
-                    "mode": "dropdown"}
-            }),
+            vol.Optional(CONF_LANGUAGE, default=DEFAULT_LANGUAGE): selector(
+                {"select": {"options": list(languages.keys()), "mode": "dropdown"}}
+            ),
         }
         if self.show_advanced_options:
             data_schema = {
                 vol.Required(CONF_USERNAME): str,
                 vol.Required(CONF_PASSWORD): str,
-                vol.Optional(CONF_LANGUAGE, default = DEFAULT_LANGUAGE): selector({
-                    "select": {
-                        "options": list(languages.keys()),
-                        "mode": "dropdown"}
-                }),
+                vol.Optional(CONF_LANGUAGE, default=DEFAULT_LANGUAGE): selector(
+                    {"select": {"options": list(languages.keys()), "mode": "dropdown"}}
+                ),
             }
         return self.async_show_form(
             step_id="user",

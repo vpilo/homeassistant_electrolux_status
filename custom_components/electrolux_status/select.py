@@ -1,31 +1,38 @@
 """Select platform for Electrolux Status."""
+
 import json
+import logging
+
+from pyelectroluxocp.oneAppApi import OneAppApi
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.const import EntityCategory
-from pyelectroluxocp.oneAppApi import OneAppApi
 
-from .const import SELECT, DOMAIN
+from .const import DOMAIN, SELECT
 from .entity import ElectroluxEntity
-
-import logging
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    """Setup sensor platform."""
+    """Configure select platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
-    appliances = coordinator.data.get('appliances', None)
+    appliances = coordinator.data.get("appliances", None)
     if appliances is not None:
         for appliance_id, appliance in appliances.appliances.items():
-            entities = [entity for entity in appliance.entities if entity.entity_type == SELECT]
-            _LOGGER.debug("Electrolux add %d selects to registry for appliance %s", len(entities), appliance_id)
+            entities = [
+                entity for entity in appliance.entities if entity.entity_type == SELECT
+            ]
+            _LOGGER.debug(
+                "Electrolux add %d selects to registry for appliance %s",
+                len(entities),
+                appliance_id,
+            )
             async_add_entities(entities)
 
 
 class ElectroluxSelect(ElectroluxEntity, SelectEntity):
-    """Electrolux Status binary_sensor class."""
+    """Electrolux Status Select class."""
 
     def format_value(self, value: str) -> str | None:
         if value is None:
@@ -34,12 +41,35 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
             return value.replace("_", " ").title()
         return str(value)
 
-    def __init__(self, coordinator: any, name: str, config_entry,
-                 pnc_id: str, entity_type: str, entity_attr, entity_source, capability: dict[str, any], unit,
-                 device_class: str, entity_category: EntityCategory, icon: str):
-        super().__init__(coordinator=coordinator, capability=capability, name=name, config_entry=config_entry,
-                         pnc_id=pnc_id, entity_type=entity_type, entity_attr=entity_attr, entity_source=entity_source,
-                         unit=unit, device_class=device_class, entity_category=entity_category, icon=icon)
+    def __init__(
+        self,
+        coordinator: any,
+        name: str,
+        config_entry,
+        pnc_id: str,
+        entity_type: str,
+        entity_attr,
+        entity_source,
+        capability: dict[str, any],
+        unit,
+        device_class: str,
+        entity_category: EntityCategory,
+        icon: str,
+    ):
+        super().__init__(
+            coordinator=coordinator,
+            capability=capability,
+            name=name,
+            config_entry=config_entry,
+            pnc_id=pnc_id,
+            entity_type=entity_type,
+            entity_attr=entity_attr,
+            entity_source=entity_source,
+            unit=unit,
+            device_class=device_class,
+            entity_category=entity_category,
+            icon=icon,
+        )
         values_dict: dict[str, any] | None = self.capability.get("values", None)
         self.options_list: dict[str, str] = {}
         for value in values_dict.keys():
@@ -63,9 +93,16 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
             return self._cached_value
         label = None
         try:
-            label = list(self.options_list.keys())[list(self.options_list.values()).index(value)]
+            label = list(self.options_list.keys())[
+                list(self.options_list.values()).index(value)
+            ]
         except Exception as ex:
-            _LOGGER.info("Electrolux error value %s does not exist in the list %s", value, self.options_list.values(), ex)
+            _LOGGER.info(
+                "Electrolux error value %s does not exist in the list %s",
+                value,
+                self.options_list.values(),
+                ex,
+            )
         # TODO : happens when value not in the catalog -> add the value to the list then
         if label is None:
             label = self.format_value(value)

@@ -1,23 +1,32 @@
 """Number platform for Electrolux Status."""
-from homeassistant.components.number import NumberEntity
-from homeassistant.const import UnitOfTime, UnitOfTemperature
+
+import logging
+
 from pyelectroluxocp import OneAppApi
 
-from .const import NUMBER, DOMAIN
+from homeassistant.components.number import NumberEntity
+from homeassistant.const import UnitOfTemperature, UnitOfTime
+
+from .const import DOMAIN, NUMBER
 from .entity import ElectroluxEntity, time_seconds_to_minutes
-import logging
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    """Setup sensor platform."""
+    """Configure number platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
-    appliances = coordinator.data.get('appliances', None)
+    appliances = coordinator.data.get("appliances", None)
     if appliances is not None:
         for appliance_id, appliance in appliances.appliances.items():
-            entities = [entity for entity in appliance.entities if entity.entity_type == NUMBER]
-            _LOGGER.debug("Electrolux add %d selects to registry for appliance %s", len(entities), appliance_id)
+            entities = [
+                entity for entity in appliance.entities if entity.entity_type == NUMBER
+            ]
+            _LOGGER.debug(
+                "Electrolux add %d selects to registry for appliance %s",
+                len(entities),
+                appliance_id,
+            )
             async_add_entities(entities)
 
 
@@ -66,7 +75,7 @@ class ElectroluxNumber(ElectroluxEntity, NumberEntity):
         """Update the current value."""
         client: OneAppApi = self.api
         if self.entity_source:
-            command = { self.entity_source: {self.entity_attr: value}}
+            command = {self.entity_source: {self.entity_attr: value}}
         else:
             command = {self.entity_attr: value}
         _LOGGER.debug("Electrolux set value %f", value)
