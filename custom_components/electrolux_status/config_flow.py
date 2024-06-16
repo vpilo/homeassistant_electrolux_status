@@ -7,7 +7,6 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.selector import selector
@@ -53,8 +52,7 @@ class ElectroluxStatusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 return self.async_create_entry(
                     title=user_input[CONF_USERNAME], data=user_input
                 )
-            else:
-                self._errors["base"] = "auth"
+            self._errors["base"] = "auth"
 
             return await self._show_config_form(user_input)
 
@@ -75,8 +73,7 @@ class ElectroluxStatusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 return self.async_create_entry(
                     title=user_input[CONF_USERNAME], data=user_input
                 )
-            else:
-                self._errors["base"] = "auth"
+            self._errors["base"] = "auth"
             return await self._show_config_form(user_input)
         return await self._show_config_form(user_input)
 
@@ -113,16 +110,16 @@ class ElectroluxStatusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         try:
             client = pyelectroluxconnect_util.get_session(username, password)
             await self.hass.async_add_executor_job(client.get_appliances_list)
-            return True
-        except Exception as inst:  # pylint: disable=broad-except
-            _LOGGER.exception(inst)
-        return False
+        except Exception as inst:  # pylint: disable=broad-except  # noqa: BLE001
+            _LOGGER.error("Authentication to electrolux failed: %s", inst)
+            return False
+        return True
 
 
 class ElectroluxStatusOptionsFlowHandler(config_entries.OptionsFlow):
     """Config flow options handler for Electrolux Status."""
 
-    def __init__(self, config_entry):
+    def __init__(self, config_entry) -> None:
         """Initialize HACS options flow."""
         self.config_entry = config_entry
         self.options = dict(config_entry.options)

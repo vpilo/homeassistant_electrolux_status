@@ -5,7 +5,10 @@ import logging
 from pyelectroluxocp import OneAppApi
 
 from homeassistant.components.number import NumberEntity
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature, UnitOfTime
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, NUMBER
 from .entity import ElectroluxEntity, time_seconds_to_minutes
@@ -13,7 +16,11 @@ from .entity import ElectroluxEntity, time_seconds_to_minutes
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+):
     """Configure number platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     appliances = coordinator.data.get("appliances", None)
@@ -44,10 +51,9 @@ class ElectroluxNumber(ElectroluxEntity, NumberEntity):
             value = self.capability.get("default", None)
         if not value:
             return self._cached_value
-        else:
-            if self.unit == UnitOfTemperature.CELSIUS:
-                value = round(value, 2)
-            self._cached_value = value
+        if self.unit == UnitOfTemperature.CELSIUS:
+            value = round(value, 2)
+        self._cached_value = value
         return value
 
     @property
@@ -84,6 +90,7 @@ class ElectroluxNumber(ElectroluxEntity, NumberEntity):
 
     @property
     def native_unit_of_measurement(self):
+        """Return the unit of measurement."""
         if self.unit == UnitOfTime.SECONDS:
             return UnitOfTime.MINUTES
         return self.unit

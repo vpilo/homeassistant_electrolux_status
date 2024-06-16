@@ -44,7 +44,8 @@ class ElectroluxLibraryEntity:
         state: ApplienceStatusResponse,
         appliance_info: ApplianceInfoResponse,
         capabilities: dict[str, any],
-    ):
+    ) -> None:
+        """Initaliaze the entity."""
         self.name = name
         self.status = status
         self.state = state
@@ -53,9 +54,11 @@ class ElectroluxLibraryEntity:
         self.capabilities = capabilities
 
     def get_name(self):
+        """Get entity name."""
         return self.name
 
     def get_value(self, attr_name, source=None):
+        """Return value by attribute."""
         if source and source != "":
             container: dict[str, any] | None = self.reported_state.get(source, None)
             entry = None if container is None else container.get(attr_name, None)
@@ -63,14 +66,15 @@ class ElectroluxLibraryEntity:
             entry = self.reported_state.get(attr_name, None)
         return entry
 
-    def get_sensor_name(self, attr_name: str, container: str = None):
+    def get_sensor_name(self, attr_name: str, container: str | None = None):
+        """Get the name of the sensor."""
         attr_name = attr_name.rpartition("/")[-1] or attr_name
         attr_name = attr_name[0].upper() + attr_name[1:]
         attr_name = attr_name.replace("_", " ")
         group = ""
         words = []
         s = attr_name
-        for i in range(len(s)):
+        for i in range(len(s)):  # [consider-using-enumerate]
             char = s[i]
             if group == "":
                 group = char
@@ -88,15 +92,14 @@ class ElectroluxLibraryEntity:
                     )
                 ):
                     group += char
-                else:
-                    if (char.isupper() or char.isdigit()) and s[i - 1].islower():
-                        if re.match("^[A-Z0-9]+$", group):
-                            words.append(group)
-                        else:
-                            words.append(group.lower())
-                        group = char
+                elif (char.isupper() or char.isdigit()) and s[i - 1].islower():
+                    if re.match("^[A-Z0-9]+$", group):
+                        words.append(group)
                     else:
-                        group += char
+                        words.append(group.lower())
+                    group = char
+                else:
+                    group += char
         if len(group) > 0:
             if re.match("^[A-Z0-9]+$", group):
                 words.append(group)
@@ -104,54 +107,65 @@ class ElectroluxLibraryEntity:
                 words.append(group.lower())
         return " ".join(words)
 
-    def get_sensor_name_old(self, attr_name: str, container: str = None):
-        # Convert format "fCMiscellaneousState/detergentExtradosage" to "Detergent extradosage"
+    def get_sensor_name_old(self, attr_name: str, container: str | None = None):
+        """Convert sensor format.
+
+        ex: "fCMiscellaneousState/detergentExtradosage" to "Detergent extradosage".
+        """
         attr_name = attr_name.rpartition("/")[-1] or attr_name
         attr_name = attr_name[0].upper() + attr_name[1:]
         attr_name = " ".join(re.findall("[A-Z][^A-Z]*", attr_name))
-        attr_name = attr_name.capitalize()
-        return attr_name
+        return attr_name.capitalize()
 
     def get_category(self, attr_name: str):
-        # Extract category ex: "fCMiscellaneousState/detergentExtradosage" to "fCMiscellaneousState"
-        # or "" if none
+        """Extract category.
+
+        ex: "fCMiscellaneousState/detergentExtradosage" to "fCMiscellaneousState".
+        or "" if none
+        """
         return attr_name.rpartition("/")[0]
 
-    def get_entity_name(self, attr_name: str, container: str = None):
-        # Convert format "fCMiscellaneousState/detergentExtradosage" to "detergentExtradosage"
+    def get_entity_name(self, attr_name: str, container: str | None = None):
+        """Convert Entity Name.
+
+        ex: Convert format "fCMiscellaneousState/detergentExtradosage" to "detergentExtradosage"
+        """
         return attr_name.rpartition("/")[-1] or attr_name
 
     def get_entity_unit(self, attr_name: str):
+        """Get entity unit type."""
         capability_def: dict[str, any] | None = self.capabilities.get(attr_name, None)
         if not capability_def:
             return None
         # Type : string, int, number, boolean (other values ignored)
-        type = capability_def.get("type", None)
-        if not type:
+        type_units = capability_def.get("type", None)
+        if not type_units:
             return None
-        if type == "temperature":
+        if type_units == "temperature":
             return UnitOfTemperature.CELSIUS
         return None
 
     def get_entity_device_class(self, attr_name: str):
+        """Get entity device class."""
         capability_def: dict[str, any] | None = self.capabilities.get(attr_name, None)
         if not capability_def:
             return None
         # Type : string, int, number, boolean (other values ignored)
-        type = capability_def.get("type", None)
-        if not type:
+        type_class = capability_def.get("type", None)
+        if not type_class:
             return None
-        if type == "temperature":
+        if type_class == "temperature":
             return SensorDeviceClass.TEMPERATURE
         return None
 
     def get_entity_type(self, attr_name: str):
+        """Get entity type."""
         capability_def: dict[str, any] | None = self.capabilities.get(attr_name, None)
         if not capability_def:
             return None
         # Type : string, int, number, boolean (other values ignored)
-        type = capability_def.get("type", None)
-        if not type:
+        type_object = capability_def.get("type", None)
+        if not type_object:
             return None
         # Access : read, readwrite (other values ignored)
         access = capability_def.get("access", None)
@@ -160,7 +174,7 @@ class ElectroluxLibraryEntity:
 
         # Exception (Electrolux bug)
         if (
-            type == "boolean"
+            type_object == "boolean"
             and access == "readwrite"
             and capability_def.get("values", None) is not None
         ):
@@ -174,10 +188,10 @@ class ElectroluxLibraryEntity:
             and isinstance(values, dict)
             and len(values) > 0
         ):
-            if type != "number" or capability_def.get("min", None) is None:
+            if type_object != "number" or capability_def.get("min", None) is None:
                 return SELECT
 
-        match type:
+        match type_object:
             case "boolean":
                 if access == "read":
                     return BINARY_SENSOR
@@ -189,13 +203,19 @@ class ElectroluxLibraryEntity:
                 if access == "readwrite":
                     return NUMBER
             case _:
-                if access == "read" and type in ["number", "int", "boolean", "string"]:
+                if access == "read" and type_object in [
+                    "number",
+                    "int",
+                    "boolean",
+                    "string",
+                ]:
                     return SENSOR
-                if type == "int" or type == "number":
+                if type_object in ("int", "number"):
                     return NUMBER
         return None
 
     def sources_list(self):
+        """List the capability types."""
         if self.capabilities is None:
             return None
         return [
@@ -206,9 +226,11 @@ class ElectroluxLibraryEntity:
 
 
 class Appliance:
+    """Define the Appliance Class."""
+
     brand: str
     device: str
-    entities: []
+    entities: list[ElectroluxEntity]
     coordinator: any
 
     def __init__(
@@ -220,6 +242,7 @@ class Appliance:
         model: str,
         state: ApplienceStatusResponse,
     ) -> None:
+        """Initiate the appliance."""
         self.own_capabilties = False
         self.data = None
         self.coordinator = coordinator
@@ -230,7 +253,7 @@ class Appliance:
         self.state: ApplienceStatusResponse = state
 
     def update_missing_entities(self):
-        """Add missing entities when no capabilities returned by the API, do it dynamically"""
+        """Add missing entities when no capabilities returned by the API, do it dynamically."""
         if not self.own_capabilties:
             return
         properties = self.state.get("properties")
@@ -259,7 +282,7 @@ class Appliance:
                                 break
                         if not found:
                             _LOGGER.debug(
-                                "Electrolux discovered new entity from extracted data",
+                                "Electrolux discovered new entity from extracted data. Category: %s Key: %s",
                                 category,
                                 key,
                             )
@@ -268,6 +291,7 @@ class Appliance:
                                 self.entities.append(entity)
 
     def get_entity(self, capability: str) -> ElectroluxEntity | None:
+        """Return the entity."""
         entity_type = self.data.get_entity_type(capability)
         entity_name = self.data.get_entity_name(capability)
         category = self.data.get_category(capability)
@@ -281,10 +305,10 @@ class Appliance:
         if catalog_item:
             if capability_info is None:
                 capability_info = catalog_item[0]
-            device_class = catalog_item[2] if 2 < len(catalog_item) else None
-            unit = catalog_item[3] if 3 < len(catalog_item) else None
-            entity_category = catalog_item[4] if 4 < len(catalog_item) else None
-            entity_icon = catalog_item[5] if 5 < len(catalog_item) else None
+            device_class = catalog_item[2] if len(catalog_item) > 2 else None
+            unit = catalog_item[3] if len(catalog_item) > 3 else None
+            entity_category = catalog_item[4] if len(catalog_item) > 4 else None
+            entity_icon = catalog_item[5] if len(catalog_item) > 5 else None
 
         if entity_type == SENSOR:
             return ElectroluxSensor(
@@ -364,6 +388,7 @@ class Appliance:
         return None
 
     def setup(self, data: ElectroluxLibraryEntity):
+        """Configure the entity."""
         self.data = data
         self.entities = []
         entities = []
@@ -397,7 +422,7 @@ class Appliance:
                                 capabilities_names.append(key)
                     self.data.capabilities = capabilities
                     _LOGGER.debug(
-                        "Electrolux rebuilt capabilities due to API malfunction",
+                        "Electrolux rebuilt capabilities due to API malfunction: %s",
                         json.dumps(capabilities, indent=2),
                     )
         # Add common entities
@@ -436,35 +461,51 @@ class Appliance:
             if catalog_item:
                 if capability_info is None:
                     capability_info = catalog_item[0]
-                else:
-                    if catalog_item[0]:
-                        for key, item in catalog_item[0].items():
-                            if capability_info.get(key, None) is None:
-                                capability_info[key] = item
-                device_class = catalog_item[2] if 2 < len(catalog_item) else None
+                elif catalog_item[0]:
+                    for key, item in catalog_item[0].items():
+                        if capability_info.get(key, None) is None:
+                            capability_info[key] = item
+                device_class = catalog_item[2] if len(catalog_item) > 2 else None
                 # unit = catalog_item[3] if 3 < len(catalog_item) else None
-                entity_category = catalog_item[4] if 4 < len(catalog_item) else None
+                entity_category = catalog_item[4] if len(catalog_item) > 4 else None
 
             if capability == "executeCommand":
                 commands: dict[str, str] = capability_info["values"]
                 commands_keys = list(commands.keys())
-                for command in commands_keys:
-                    entities.append(
-                        ElectroluxButtonEntity(
-                            name=f"{data.get_name()} {data.get_sensor_name(command, capability)}",
-                            coordinator=self.coordinator,
-                            config_entry=self.coordinator.config_entry,
-                            entity_type=BUTTON,
-                            entity_attr=entity_name,
-                            entity_source=category,
-                            pnc_id=self.pnc_id,
-                            icon=icon_mapping.get(command, "mdi:gesture-tap-button"),
-                            val_to_send=command,
-                            capability=capability_info,
-                            entity_category=entity_category,
-                            device_class=device_class,
-                        )
+                entities.extend(
+                    ElectroluxButtonEntity(
+                        name=f"{data.get_name()} {data.get_sensor_name(command, capability)}",
+                        coordinator=self.coordinator,
+                        config_entry=self.coordinator.config_entry,
+                        entity_type=BUTTON,
+                        entity_attr=entity_name,
+                        entity_source=category,
+                        pnc_id=self.pnc_id,
+                        icon=icon_mapping.get(command, "mdi:gesture-tap-button"),
+                        val_to_send=command,
+                        capability=capability_info,
+                        entity_category=entity_category,
+                        device_class=device_class,
                     )
+                    for command in commands_keys
+                )
+                # for command in commands_keys:
+                #     entities.append(
+                #         ElectroluxButtonEntity(
+                #             name=f"{data.get_name()} {data.get_sensor_name(command, capability)}",
+                #             coordinator=self.coordinator,
+                #             config_entry=self.coordinator.config_entry,
+                #             entity_type=BUTTON,
+                #             entity_attr=entity_name,
+                #             entity_source=category,
+                #             pnc_id=self.pnc_id,
+                #             icon=icon_mapping.get(command, "mdi:gesture-tap-button"),
+                #             val_to_send=command,
+                #             capability=capability_info,
+                #             entity_category=entity_category,
+                #             device_class=device_class,
+                #         )
+                #     )
                 continue
 
             entity = self.get_entity(capability)
@@ -477,6 +518,7 @@ class Appliance:
             entity.setup(data)
 
     def update_reported_data(self, reported_data: dict[str, any]):
+        """Update the reported data."""
         _LOGGER.debug("Electrolux update reported data %s", reported_data)
         try:
             local_reported_data = self.state.get("properties", None).get(
@@ -488,14 +530,15 @@ class Appliance:
             for entity in self.entities:
                 entity.update(self.state)
 
-        except Exception as ex:
+        except Exception as ex:  # noqa: BLE001
             _LOGGER.debug(
-                "Electrolux status could not update reported data with %s",
+                "Electrolux status could not update reported data with %s. %s",
                 reported_data,
                 ex,
             )
 
     def update(self, appliance_status: ApplienceStatusResponse):
+        """Update appliance status."""
         self.state = appliance_status
         self.update_missing_entities()
         for entity in self.entities:
@@ -503,17 +546,20 @@ class Appliance:
 
 
 class Appliances:
+    """Appliance class definition."""
+
     def __init__(self, appliances: dict[str, Appliance]) -> None:
+        """Initialize the class."""
         self.appliances = appliances
 
     def get_appliance(self, pnc_id) -> Appliance:
+        """Return the appliance."""
         return self.appliances.get(pnc_id, None)
 
     def get_appliances(self) -> dict[str, Appliance]:
+        """Return all appliances."""
         return self.appliances
 
     def get_appliance_ids(self) -> list[str]:
-        ids = []
-        for appliance_id in self.appliances.keys():
-            ids.append(appliance_id)
-        return ids
+        """Return all appliance ids."""
+        return list(self.appliances)

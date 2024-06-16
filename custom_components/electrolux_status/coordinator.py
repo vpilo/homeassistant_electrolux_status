@@ -7,6 +7,7 @@ import logging
 from pyelectroluxocp import OneAppApi
 
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import Appliance, Appliances, ElectroluxLibraryEntity
@@ -28,10 +29,12 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
         self.platforms = []
         self.renew_task = None
         self.renew_interval = renew_interval
+        self._websocket = None
 
         super().__init__(hass, _LOGGER, name=DOMAIN)
 
     async def async_login(self) -> bool:
+        """Authenticate with the service."""
         try:
             # Check that one can extract the appliance list to confirm login
             token = await self.api.get_user_token()
@@ -41,7 +44,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
             _LOGGER.debug("Electrolux wrong credentials")
         except Exception as ex:
             _LOGGER.error("Could not log in to ElectroluxStatus, %s", ex)
-            raise ex
+            raise ConfigEntryAuthFailed from ex
         return False
 
     # async def deferred_update(self, appliance_id: str, delay: int) -> None:
@@ -68,6 +71,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
     #             raise UpdateFailed() from exception
 
     def incoming_data(self, data: dict[str, dict[str, any]]):
+        """Process incoming data."""
         _LOGGER.debug("Electrolux appliance state updated %s", json.dumps(data))
         # Update reported data
         appliances: Appliances = self.data.get("appliances", None)
@@ -87,16 +91,18 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
         #         asyncio.create_task(self.deferred_update(appliance_id, 70))
 
     def listen_websocket(self):
+        """Listen for state changes."""
         appliances: Appliances = self.data.get("appliances", None)
         ids = appliances.get_appliance_ids()
         _LOGGER.debug("Electrolux listen_websocket for appliances %s", ",".join(ids))
         if ids is None or len(ids) == 0:
             return
-        asyncio.create_task(
+        self._websocket = asyncio.create_task(
             self.api.watch_for_appliance_state_updates(ids, self.incoming_data)
         )
 
     async def launch_websocket_renewal_task(self):
+        """Start the renewal of websocket."""
         if self.renew_task:
             self.renew_task.cancel()
             self.renew_task = None
@@ -105,27 +111,30 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
         )
 
     async def renew_websocket(self):
+        """Renew websocket state."""
         while True:
             await asyncio.sleep(self.renew_interval)
             _LOGGER.debug("Electrolux renew_websocket")
             try:
                 await self.api.disconnect_websocket()
-            except Exception as ex:
+            except Exception as ex:  # noqa: BLE001
                 _LOGGER.error(
                     "Electrolux renew_websocket could not close websocket %s", ex
                 )
             self.listen_websocket()
 
     async def close_websocket(self):
+        """Close websocket."""
         if self.renew_task:
             self.renew_task.cancel()
             self.renew_task = None
         try:
             await self.api.disconnect_websocket()
-        except Exception as ex:
+        except Exception as ex:  # noqa: BLE001
             _LOGGER.error("Electrolux close_websocket could not close websocket %s", ex)
 
     async def setup_entities(self):
+        """Configure entities."""
         _LOGGER.debug("Electrolux setup_entities")
         appliances = Appliances({})
         self.data = {"appliances": appliances}
@@ -135,7 +144,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                 _LOGGER.error(
                     "Electrolux unable to retrieve appliances list. Cancelling setup"
                 )
-                raise Exception(
+                raise ConfigEntryNotReady(
                     "Electrolux unable to retrieve appliances list. Cancelling setup"
                 )
             _LOGGER.debug(
@@ -166,9 +175,10 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                         "Electrolux appliance capabilities %s",
                         json.dumps(appliance_capabilities),
                     )
-                except Exception as exception:
+                except Exception as exception:  # noqa: BLE001
                     _LOGGER.warning(
-                        "Electrolux unable to retrieve capabilities, we are going on our own"
+                        "Electrolux unable to retrieve capabilities, we are going on our own. %s",
+                        exception,
                     )
 
                 appliance_info = (
@@ -196,10 +206,10 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                         capabilities=appliance_capabilities,
                     )
                 )
-            return self.data
         except Exception as exception:
-            _LOGGER.exception(exception)
-            raise UpdateFailed() from exception
+            _LOGGER.debug("setup_entities: %s", exception)
+            raise UpdateFailed from exception
+        return self.data
 
     async def _async_update_data(self):
         """Update data via library."""
@@ -209,6 +219,6 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                 appliance_status = await self.api.get_appliance_state(appliance_id)
                 appliance.update(appliance_status)
             except Exception as exception:
-                _LOGGER.exception(exception)
-                raise UpdateFailed() from exception
+                _LOGGER.debug("_async_update_data: %s", exception)
+                raise UpdateFailed from exception
         return self.data

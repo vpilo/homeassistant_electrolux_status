@@ -3,6 +3,9 @@
 import logging
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import BINARY_SENSOR, DOMAIN
 from .entity import ElectroluxEntity
@@ -10,7 +13,11 @@ from .entity import ElectroluxEntity
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+):
     """Configure binary sensor platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     appliances = coordinator.data.get("appliances", None)
@@ -38,6 +45,5 @@ class ElectroluxBinarySensor(ElectroluxEntity, BinarySensorEntity):
         value = self.extract_value()
         if value is None:
             return self._cached_value
-        else:
-            self._cached_value = value
+        self._cached_value = value
         return value

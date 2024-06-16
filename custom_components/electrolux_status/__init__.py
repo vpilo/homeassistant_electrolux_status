@@ -6,9 +6,9 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import Config, HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 
-from .api import Appliance, Appliances, ElectroluxLibraryEntity
+# from .api import Appliance, Appliances, ElectroluxLibraryEntity
 from .const import (
     CONF_LANGUAGE,
     CONF_PASSWORD,
@@ -18,7 +18,7 @@ from .const import (
     DEFAULT_WEBSOCKET_RENEWAL_DELAY,
     DOMAIN,
     PLATFORMS,
-    TIME_ENTITIES_TO_UPDATE,
+    # TIME_ENTITIES_TO_UPDATE,
     languages,
 )
 from .coordinator import ElectroluxCoordinator
@@ -51,7 +51,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass, client=client, renew_interval=renew_interval
     )
     if not await coordinator.async_login():
-        raise Exception("Electrolux wrong credentials")
+        raise ConfigEntryAuthFailed("Electrolux wrong credentials")
 
     # Bug ?
     if coordinator.config_entry is None:

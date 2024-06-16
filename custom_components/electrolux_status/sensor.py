@@ -1,7 +1,12 @@
+"""Switch platform for Electrolux Status."""
+
 import logging
 
 from homeassistant.components.sensor import SensorEntity
-from homeassistant.const import EntityCategory, UnitOfTemperature, UnitOfTime
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import UnitOfTemperature, UnitOfTime
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, SENSOR
 from .entity import ElectroluxEntity, time_seconds_to_minutes
@@ -9,7 +14,11 @@ from .entity import ElectroluxEntity, time_seconds_to_minutes
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+):
     """Configure sensor platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     appliances = coordinator.data.get("appliances", None)
@@ -31,6 +40,7 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
 
     @property
     def suggested_display_precision(self) -> int | None:
+        """Get the display precision."""
         if self.unit == UnitOfTemperature.CELSIUS:
             return 2
         if self.unit == UnitOfTime.SECONDS:
@@ -57,6 +67,7 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
 
     @property
     def native_unit_of_measurement(self):
+        """Return unit of measurement."""
         if self.unit == UnitOfTime.SECONDS:
             return UnitOfTime.MINUTES
         return self.unit

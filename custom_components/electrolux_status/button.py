@@ -5,7 +5,10 @@ import logging
 from pyelectroluxocp.oneAppApi import OneAppApi
 
 from homeassistant.components.button import ENTITY_ID_FORMAT, ButtonEntity
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import BUTTON, DOMAIN
 from .entity import ElectroluxEntity
@@ -13,7 +16,11 @@ from .entity import ElectroluxEntity
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+):
     """Configure button platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     appliances = coordinator.data.get("appliances", None)
@@ -47,7 +54,8 @@ class ElectroluxButtonEntity(ElectroluxEntity, ButtonEntity):
         entity_category: EntityCategory,
         val_to_send,
         icon,
-    ):
+    ) -> None:
+        """Initialize the Button Entity."""
         super().__init__(
             coordinator=coordinator,
             capability=capability,
@@ -70,6 +78,7 @@ class ElectroluxButtonEntity(ElectroluxEntity, ButtonEntity):
 
     @property
     def get_appliance(self):
+        """Return the appliance object."""
         return self.coordinator.data["appliances"].get_appliance(self.pnc_id)
 
     @property
@@ -91,10 +100,11 @@ class ElectroluxButtonEntity(ElectroluxEntity, ButtonEntity):
 
     @property
     def available(self):
-        # available state should depends on connect state
+        """Available state should depend on connect state."""
         return True
 
     async def send_command(self) -> bool:
+        """Send a command to the device."""
         client: OneAppApi = self.api
         _LOGGER.debug("Electrolux send command %s", self.val_to_send)
         result = await client.execute_appliance_command(
@@ -104,6 +114,7 @@ class ElectroluxButtonEntity(ElectroluxEntity, ButtonEntity):
         return True
 
     async def async_press(self) -> None:
+        """Execute a button press."""
         await self.send_command()
         # await self.hass.async_add_executor_job(self.send_command)
         # if self.entity_attr == "ExecuteCommand":

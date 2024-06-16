@@ -1,3 +1,5 @@
+"""Entity platform for Electrolux Status."""
+
 import logging
 import math
 from typing import cast
@@ -5,7 +7,10 @@ from typing import cast
 from pyelectroluxocp.apiModels import ApplienceStatusResponse
 
 from homeassistant.components.sensor import ENTITY_ID_FORMAT
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
@@ -13,7 +18,11 @@ from .const import DOMAIN
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+):
     """Configure entity platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     appliances = coordinator.data.get("appliances", None)
@@ -32,15 +41,18 @@ async def async_setup_entry(hass, entry, async_add_entities):
             async_add_entities(entities)
 
 
-def time_seconds_to_minutes(seconds):
-    if seconds is not None:
-        if seconds == -1:
-            return -1
-        return int(math.ceil((int(seconds) / 60)))
-    return None
+def time_seconds_to_minutes(seconds: float | None) -> int | None:
+    """Convert seconds to minutes."""
+    if seconds is None:
+        return None
+    if seconds == -1:
+        return -1
+    return math.ceil(seconds / 60)
 
 
 class ElectroluxEntity(CoordinatorEntity):
+    """Class for Electorolux devices."""
+
     appliance_status: ApplienceStatusResponse
 
     def __init__(
@@ -57,7 +69,8 @@ class ElectroluxEntity(CoordinatorEntity):
         device_class: str,
         entity_category: EntityCategory,
         icon: str,
-    ):
+    ) -> None:
+        """Initaliaze the entity."""
         super().__init__(coordinator)
         self.root_attribute = ["properties", "reported"]
         self.data = None
@@ -81,6 +94,7 @@ class ElectroluxEntity(CoordinatorEntity):
         self.capability = capability
 
     def setup(self, data):
+        """Initialiaze setup."""
         self.data = data
 
     # Disabled this as this removes the value from display : there is no readonly property for entities
@@ -96,6 +110,7 @@ class ElectroluxEntity(CoordinatorEntity):
 
     @property
     def should_poll(self) -> bool:
+        """Confirm if device should be polled."""
         return False
 
     def _handle_coordinator_update(self) -> None:
@@ -108,6 +123,7 @@ class ElectroluxEntity(CoordinatorEntity):
         self.async_write_ha_state()
 
     def get_connection_state(self) -> str | None:
+        """Return connection state."""
         if self.appliance_status:
             return self.appliance_status.get("connectionState", None)
         return None
@@ -128,6 +144,7 @@ class ElectroluxEntity(CoordinatorEntity):
 
     @property
     def get_appliance(self):
+        """Return the appliance device."""
         return self.coordinator.data["appliances"].get_appliance(self.pnc_id)
 
     @property
@@ -137,6 +154,7 @@ class ElectroluxEntity(CoordinatorEntity):
 
     @property
     def device_info(self):
+        """Return identifiers of the device."""
         return {
             "identifiers": {(DOMAIN, self.get_appliance.name)},
             "name": self.get_appliance.name,
@@ -153,6 +171,7 @@ class ElectroluxEntity(CoordinatorEntity):
 
     @property
     def entity_category(self) -> EntityCategory | None:
+        """Return entity category."""
         return self._entity_category
 
     @property
@@ -186,6 +205,7 @@ class ElectroluxEntity(CoordinatorEntity):
         return None
 
     def update(self, appliance_status: ApplienceStatusResponse):
+        """Update the appliance status."""
         self.appliance_status = appliance_status
         # if self.hass:
         #     self.async_write_ha_state()

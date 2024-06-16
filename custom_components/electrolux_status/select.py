@@ -6,7 +6,10 @@ import logging
 from pyelectroluxocp.oneAppApi import OneAppApi
 
 from homeassistant.components.select import SelectEntity
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, SELECT
 from .entity import ElectroluxEntity
@@ -14,7 +17,11 @@ from .entity import ElectroluxEntity
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+):
     """Configure select platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     appliances = coordinator.data.get("appliances", None)
@@ -35,6 +42,7 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
     """Electrolux Status Select class."""
 
     def format_value(self, value: str) -> str | None:
+        """Format the value."""
         if value is None:
             return None
         if isinstance(value, str):
@@ -55,7 +63,8 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
         device_class: str,
         entity_category: EntityCategory,
         icon: str,
-    ):
+    ) -> None:
+        """Initialize the Select entity."""
         super().__init__(
             coordinator=coordinator,
             capability=capability,
@@ -72,9 +81,9 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
         )
         values_dict: dict[str, any] | None = self.capability.get("values", None)
         self.options_list: dict[str, str] = {}
-        for value in values_dict.keys():
+        for value in values_dict:
             entry: dict[str, any] = values_dict[value]
-            if "disabled" in entry.keys():
+            if "disabled" in entry:
                 continue
             label = self.format_value(value)
             self.options_list[label] = value
@@ -88,6 +97,7 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
 
     @property
     def current_option(self) -> str:
+        """Return the current option."""
         value = self.extract_value()
         if value is None:
             return self._cached_value
@@ -96,9 +106,9 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
             label = list(self.options_list.keys())[
                 list(self.options_list.values()).index(value)
             ]
-        except Exception as ex:
+        except Exception as ex:  # noqa: BLE001
             _LOGGER.info(
-                "Electrolux error value %s does not exist in the list %s",
+                "Electrolux error value %s does not exist in the list %s. %s",
                 value,
                 self.options_list.values(),
                 ex,

@@ -5,6 +5,9 @@ import logging
 from pyelectroluxocp import OneAppApi
 
 from homeassistant.components.switch import SwitchEntity
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, SWITCH
 from .entity import ElectroluxEntity
@@ -12,7 +15,11 @@ from .entity import ElectroluxEntity
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+):
     """Configure switch platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     appliances = coordinator.data.get("appliances", None)
@@ -46,11 +53,11 @@ class ElectroluxSwitch(ElectroluxEntity, SwitchEntity):
 
         if value is None:
             return self._cached_value
-        else:
-            self._cached_value = value
+        self._cached_value = value
         return value
 
     async def switch(self, value: bool):
+        """Control switch state."""
         client: OneAppApi = self.api
         # Electrolux bug
         if "values" in self.capability:
