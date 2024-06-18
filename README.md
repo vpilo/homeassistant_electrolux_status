@@ -28,6 +28,7 @@ Tested with Electrolux and AEG washer-dryer, but probably could be used with som
 
 ### Supported and tested devices
 
+This list is not exhaustive as your appliance may work even if not present here
 - ELECTROLUX EDH803BEWA - UltimateCare 800
 - ELECTROLUX EW9H283BY - PerfectCare 900
 - ELECTROLUX EWF1041ZDWA - UltimateCare 900 AutoDose
@@ -41,7 +42,8 @@ Tested with Electrolux and AEG washer-dryer, but probably could be used with som
 - ELECTROLUX EW9F149SP - PerfectCare 900 Washer
 - ELECTROLUX EW9W161BC - PerfectCare 900 Washer & Dryer
 - ELECTROLUX KEGB9300W - Dishwasher
-- ELECTROLUX EEG69410W - Dishwasher 
+- ELECTROLUX EEG69410W - Dishwasher
+- ELECTROLUX YH7W979P9  - Airdryer
 - AEG L6FBG841CA - 6000 Series Autodose
 - AEG L7FENQ96 - 7000 Series ProSteam Autodose
 - AEG L7FBE941Q - 7000 Series Prosense Autodose
