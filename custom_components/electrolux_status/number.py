@@ -4,7 +4,7 @@ from homeassistant.const import UnitOfTime, UnitOfTemperature
 from pyelectroluxocp import OneAppApi
 
 from .const import NUMBER, DOMAIN
-from .entity import ElectroluxEntity, time_seconds_to_minutes
+from .entity import ElectroluxEntity, time_seconds_to_minutes, time_minutes_to_seconds
 import logging
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -64,6 +64,8 @@ class ElectroluxNumber(ElectroluxEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
+        if self.unit == UnitOfTime.SECONDS:
+            value = time_minutes_to_seconds(value)
         client: OneAppApi = self.api
         if self.entity_source:
             command = { self.entity_source: {self.entity_attr: value}}
