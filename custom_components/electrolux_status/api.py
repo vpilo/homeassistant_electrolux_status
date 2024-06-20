@@ -24,6 +24,7 @@ from .const import (
     icon_mapping,
 )
 from .entity import ElectroluxEntity
+from .model import ElectroluxDevice
 from .number import ElectroluxNumber
 from .select import ElectroluxSelect
 from .sensor import ElectroluxSensor
@@ -261,34 +262,35 @@ class Appliance:
         if properties:
             reported = properties.get("reported")
             if reported:
-                for key, item in Catalog.items():
-                    category = item[1]
-                    if (
-                        category
-                        and reported.get(category, None)
-                        and reported.get(category, None).get(key)
-                    ) or (not category and reported.get(key, None)):
-                        found: bool = False
-                        for entity in self.entities:
-                            if (
-                                entity.entity_attr == key
-                                and entity.entity_source == category
-                            ):
-                                found = True
-                                capability = (
-                                    key if category is None else category + "/" + key
+                for key, items in Catalog.items():
+                    for item in items:
+                        category = item.category
+                        if (
+                            category
+                            and reported.get(category, None)
+                            and reported.get(category, None).get(key)
+                        ) or (not category and reported.get(key, None)):
+                            found: bool = False
+                            for entity in self.entities:
+                                if (
+                                    entity.entity_attr == key
+                                    and entity.entity_source == category
+                                ):
+                                    found = True
+                                    capability = (
+                                        key if category is None else category + "/" + key
+                                    )
+                                    self.data.capabilities[capability] = item.capability_info
+                                    break
+                            if not found:
+                                _LOGGER.debug(
+                                    "Electrolux discovered new entity from extracted data. Category: %s Key: %s",
+                                    category,
+                                    key,
                                 )
-                                self.data.capabilities[capability] = item[0]
-                                break
-                        if not found:
-                            _LOGGER.debug(
-                                "Electrolux discovered new entity from extracted data. Category: %s Key: %s",
-                                category,
-                                key,
-                            )
-                            entity = self.get_entity(capability)
-                            if entity:
-                                self.entities.append(entity)
+                                entity = self.get_entity(capability)
+                                if entity:
+                                    self.entities.append(entity)
 
     def get_entity(self, capability: str) -> ElectroluxEntity | None:
         """Return the entity."""
@@ -301,14 +303,15 @@ class Appliance:
         entity_icon = None
         unit = self.data.get_entity_unit(capability)
         # item : capability, category, DeviceClass, Unit, EntityCategory
-        catalog_item = Catalog.get(entity_name, None)
-        if catalog_item:
-            if capability_info is None:
-                capability_info = catalog_item[0]
-            device_class = catalog_item[2] if len(catalog_item) > 2 else None
-            unit = catalog_item[3] if len(catalog_item) > 3 else None
-            entity_category = catalog_item[4] if len(catalog_item) > 4 else None
-            entity_icon = catalog_item[5] if len(catalog_item) > 5 else None
+        catalog_items = Catalog.get(entity_name, None)
+        if catalog_items:
+            for catalog_item in catalog_items:
+                if capability_info is None:
+                    capability_info = catalog_item.capability_info
+                device_class = catalog_item.device_class
+                unit = catalog_item.unit
+                entity_category = catalog_item.entity_category
+                entity_icon = catalog_item.entity_icon
 
         if entity_type == SENSOR:
             return ElectroluxSensor(
@@ -403,23 +406,24 @@ class Appliance:
             if properties:
                 reported = properties.get("reported")
                 if reported:
-                    for key, item in Catalog.items():
-                        category = item[1]
-                        if (
-                            (
-                                category
-                                and reported.get(category, None)
-                                and reported.get(category, None).get(key)
-                            )
-                            or (not category and reported.get(key, None))
-                            or key == "executeCommand"
-                        ):
-                            if category:
-                                capabilities[category + "/" + key] = item[0]
-                                capabilities_names.append(category + "/" + key)
-                            else:
-                                capabilities[key] = item[0]
-                                capabilities_names.append(key)
+                    for key, items in Catalog.items():
+                        for item in items:
+                            category = item.category
+                            if (
+                                (
+                                    category
+                                    and reported.get(category, None)
+                                    and reported.get(category, None).get(key)
+                                )
+                                or (not category and reported.get(key, None))
+                                or key == "executeCommand"
+                            ):
+                                if category:
+                                    capabilities[category + "/" + key] = item.capability_info
+                                    capabilities_names.append(category + "/" + key)
+                                else:
+                                    capabilities[key] = item.capability_info
+                                    capabilities_names.append(key)
                     self.data.capabilities = capabilities
                     _LOGGER.debug(
                         "Electrolux rebuilt capabilities due to API malfunction: %s",
@@ -443,7 +447,7 @@ class Appliance:
                 continue
             catalog_item = Catalog.get(entity_name, None)
             if catalog_item:
-                self.data.capabilities[common_attribute] = catalog_item[0]
+                self.data.capabilities[common_attribute] = catalog_item[0].capability_info
                 entity = self.get_entity(common_attribute)
                 entities.append(entity)
 
@@ -456,18 +460,18 @@ class Appliance:
             entity_category = None
             # unit = None
             # item : capability, category, DeviceClass, Unit, EntityCategory
-            catalog_item = cast([], Catalog.get(entity_name, None))
+            catalog_items = cast(list[ElectroluxDevice], Catalog.get(entity_name, None))
+
             # Handle the case where the capabilities defined in catalog are richer than provided one from server
-            if catalog_item:
-                if capability_info is None:
-                    capability_info = catalog_item[0]
-                elif catalog_item[0]:
-                    for key, item in catalog_item[0].items():
-                        if capability_info.get(key, None) is None:
-                            capability_info[key] = item
-                device_class = catalog_item[2] if len(catalog_item) > 2 else None
-                # unit = catalog_item[3] if 3 < len(catalog_item) else None
-                entity_category = catalog_item[4] if len(catalog_item) > 4 else None
+            if catalog_items:
+                for catalog_item in catalog_items:
+                    if capability_info is None:
+                        capability_info = catalog_item.capability_info
+                    elif catalog_item.capability_info:
+                        for key, item in catalog_item.capability_info.items():
+                            if capability_info.get(key, None) is None:
+                                capability_info[key] = item
+                    device_class = catalog_item.device_class
 
             if capability == "executeCommand":
                 commands: dict[str, str] = capability_info["values"]

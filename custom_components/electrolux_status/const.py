@@ -2,8 +2,15 @@
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.sensor import SensorDeviceClass
-from homeassistant.const import UnitOfPower, UnitOfTemperature, UnitOfTime
+from homeassistant.const import (
+    PERCENTAGE,
+    UnitOfTime,
+    UnitOfTemperature,
+    UnitOfPower,
+    UnitOfVolume,
+)
 from homeassistant.helpers.entity import EntityCategory
+from .model import ElectroluxDevice
 
 # Base component constants
 NAME = "Elettrolux status"
@@ -56,235 +63,322 @@ COMMON_ATTRIBUTES = [
 
 TIME_ENTITIES_TO_UPDATE = ["timeToEnd"]
 
-Catalog: dict[str, [dict, str, str, str, str]] = {
+
+Catalog: dict[str, list[ElectroluxDevice]] = {
     "timeToEnd": [
-        {"access": "read", "type": "number"},
-        None,
-        None,
-        UnitOfTime.SECONDS,
-        None,
-        "mdi:av-timer",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "number"},
+            category=None,
+            device_class=None,
+            unit=UnitOfTime.SECONDS,
+            entity_category=None,
+            entity_icon="mdi:av-timer",
+        )
     ],
     "runningTime": [
-        {"access": "read", "type": "number"},
-        None,
-        None,
-        UnitOfTime.SECONDS,
-        None,
-        "mdi:timelapse",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "number"},
+            category=None,
+            device_class=None,
+            unit=UnitOfTime.SECONDS,
+            entity_category=None,
+            entity_icon="mdi:timelapse",
+        )
     ],
-    "cyclePhase": [{"access": "read", "type": "string"}, None, None, None, None],
-    "cycleSubPhase": [{"access": "read", "type": "string"}, None, None, None, None],
+    "cyclePhase": [
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "string"},
+            category=None,
+            device_class=None,
+            unit=None,
+            entity_category=None,
+            entity_icon=None,
+        )
+    ],
+    "cycleSubPhase": [
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "string"},
+            category=None,
+            device_class=None,
+            unit=None,
+            entity_category=None,
+            entity_icon=None,
+        )
+    ],
     "applianceState": [
-        {"access": "read", "type": "string"},
-        None,
-        None,
-        None,
-        None,
-        "mdi:state-machine",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "string"},
+            category=None,
+            device_class=None,
+            unit=None,
+            entity_category=None,
+            entity_icon="mdi:state-machine",
+        )
     ],
     "displayTemperature": [
-        {"access": "read", "type": "string"},
-        None,
-        SensorDeviceClass.TEMPERATURE,
-        None,
-        None,
-        "mdi:thermometer",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "string"},
+            category=None,
+            device_class=SensorDeviceClass.TEMPERATURE,
+            unit=None,
+            entity_category=None,
+            entity_icon="mdi:thermometer",
+        )
     ],
     "displayFoodProbeTemperature": [
-        {"access": "read", "type": "number"},
-        None,
-        SensorDeviceClass.TEMPERATURE,
-        UnitOfTemperature.CELSIUS,
-        None,
-        "mdi:thermometer",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "number"},
+            category=None,
+            device_class=SensorDeviceClass.TEMPERATURE,
+            unit=UnitOfTemperature.CELSIUS,
+            entity_category=None,
+            entity_icon="mdi:thermometer",
+        )
     ],
     "sensorTemperature": [
-        {"access": "read", "type": "number"},
-        None,
-        SensorDeviceClass.TEMPERATURE,
-        UnitOfTemperature.CELSIUS,
-        None,
-        "mdi:thermometer",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "number"},
+            category=None,
+            device_class=SensorDeviceClass.TEMPERATURE,
+            unit=UnitOfTemperature.CELSIUS,
+            entity_category=None,
+            entity_icon="mdi:thermometer",
+        )
     ],
     "defrostTemperature": [
-        {"access": "read", "type": "number"},
-        None,
-        SensorDeviceClass.TEMPERATURE,
-        UnitOfTemperature.CELSIUS,
-        None,
-        "mdi:snowflake-thermometer",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "number"},
+            category=None,
+            device_class=SensorDeviceClass.TEMPERATURE,
+            unit=UnitOfTemperature.CELSIUS,
+            entity_category=None,
+            entity_icon="mdi:snowflake-thermometer",
+        )
     ],
     "targetMicrowavePower": [
-        {"access": "read", "type": "number"},
-        None,
-        SensorDeviceClass.ENERGY,
-        UnitOfPower.WATT,
-        None,
-        "mdi:microwave",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "number"},
+            category=None,
+            device_class=SensorDeviceClass.ENERGY,
+            unit=UnitOfPower.WATT,
+            entity_category=None,
+            entity_icon="mdi:microwave",
+        )
     ],
     "ovenProcessIdentifier": [
-        {"access": "read", "type": "string"},
-        None,
-        None,
-        None,
-        None,
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "string"},
+            category=None,
+            device_class=None,
+            unit=None,
+            entity_category=None,
+            entity_icon="mdi:application-settings-outline",
+        )
     ],
     "remoteControl": [
-        {"access": "read", "type": "string"},
-        None,
-        None,
-        None,
-        None,
-        "mdi:remote",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "string"},
+            category=None,
+            device_class=None,
+            unit=None,
+            entity_category=None,
+            entity_icon="mdi:remote",
+        )
     ],
     "defaultExtraRinse": [
-        {
-            "access": "readwrite",
-            "type": "string",
-            "values": {"EXTRA_RINSE_1": {}, "EXTRA_RINSE_2": {}, "EXTRA_RINSE_OFF": {}},
-        },
-        None,
-        None,
-        None,
-        None,
+        ElectroluxDevice(
+            capability_info={
+                "access": "readwrite",
+                "type": "string",
+                "values": {
+                    "EXTRA_RINSE_1": {},
+                    "EXTRA_RINSE_2": {},
+                    "EXTRA_RINSE_OFF": {},
+                },
+            },
+            category=None,
+            device_class=None,
+            unit=None,
+            entity_category=None,
+            entity_icon=None,
+        )
     ],
     "analogTemperature": [
-        {
-            "access": "readwrite",
-            "type": "string",
-            "values": {
-                "20_CELSIUS": {},
-                "30_CELSIUS": {},
-                "40_CELSIUS": {},
-                "50_CELSIUS": {},
-                "60_CELSIUS": {},
-                "90_CELSIUS": {},
-                "95_CELSIUS": {},
-                "COLD": {},
+        ElectroluxDevice(
+            capability_info={
+                "access": "readwrite",
+                "type": "string",
+                "values": {
+                    "20_CELSIUS": {},
+                    "30_CELSIUS": {},
+                    "40_CELSIUS": {},
+                    "50_CELSIUS": {},
+                    "60_CELSIUS": {},
+                    "90_CELSIUS": {},
+                    "95_CELSIUS": {},
+                    "COLD": {},
+                },
             },
-        },
-        "userSelections",
-        None,
-        None,
-        None,
-        "mdi:thermometer",
+            category="userSelections",
+            device_class=None,
+            unit=None,
+            entity_category=None,
+            entity_icon="mdi:thermometer",
+        )
     ],
     "targetTemperatureC": [
-        {"access": "readwrite", "type": "number", "max": 300.0, "min": 0, "step": 5.0},
-        None,
-        SensorDeviceClass.TEMPERATURE,
-        UnitOfTemperature.CELSIUS,
-        None,
-        "mdi:thermometer",
+        ElectroluxDevice(
+            capability_info={
+                "access": "readwrite",
+                "type": "number",
+                "max": 300.0,
+                "min": 0,
+                "step": 5.0,
+            },
+            category=None,
+            device_class=SensorDeviceClass.TEMPERATURE,
+            unit=UnitOfTemperature.CELSIUS,
+            entity_category=None,
+            entity_icon="mdi:thermometer",
+        )
     ],
     # "targetTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS],
     "startTime": [
-        {"access": "readwrite", "type": "number", "max": 72000, "min": 0, "step": 1800},
-        None,
-        None,
-        UnitOfTime.SECONDS,
-        None,
-        "mdi:clock-start",
+        ElectroluxDevice(
+            capability_info={
+                "access": "readwrite",
+                "type": "number",
+                "max": 72000,
+                "min": 0,
+                "step": 1800,
+            },
+            category=None,
+            device_class=None,
+            unit=UnitOfTime.SECONDS,
+            entity_category=None,
+            entity_icon="mdi:clock-start",
+        )
     ],
     "waterSoftenerMode": [
-        {"access": "read", "type": "string"},
-        None,
-        None,
-        None,
-        None,
-        "mdi:water-check",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "string"},
+            category=None,
+            device_class=None,
+            unit=None,
+            entity_category=None,
+            entity_icon="mdi:water-check",
+        )
     ],
     "steamValue": [
-        {
-            "access": "read",
-            "type": "string",
-            "values": {
-                "STEAM_MAX": {},
-                "STEAM_MED": {},
-                "STEAM_MIN": {},
-                "STEAM_OFF": {},
+        ElectroluxDevice(
+            capability_info={
+                "access": "read",
+                "type": "string",
+                "values": {
+                    "STEAM_MAX": {},
+                    "STEAM_MED": {},
+                    "STEAM_MIN": {},
+                    "STEAM_OFF": {},
+                },
             },
-        },
-        "userSelections",
-        None,
-        None,
-        None,
-        "mdi:pot-steam",
+            category="userSelections",
+            device_class=None,
+            unit=None,
+            entity_category=None,
+            entity_icon="mdi:pot-steam",
+        )
     ],
     "analogSpinSpeed": [
-        {
-            "access": "readwrite",
-            "type": "string",
-            "values": {
-                "0_RPM": {},
-                "1000_RPM": {},
-                "1200_RPM": {},
-                "1400_RPM": {},
-                "1600_RPM": {},
-                "400_RPM": {},
-                "600_RPM": {},
-                "800_RPM": {},
-                "DISABLED": {"disabled": True},
+        ElectroluxDevice(
+            capability_info={
+                "access": "readwrite",
+                "type": "string",
+                "values": {
+                    "0_RPM": {},
+                    "1000_RPM": {},
+                    "1200_RPM": {},
+                    "1400_RPM": {},
+                    "1600_RPM": {},
+                    "400_RPM": {},
+                    "600_RPM": {},
+                    "800_RPM": {},
+                    "DISABLED": {"disabled": True},
+                },
             },
-        },
-        "userSelections",
-        None,
-        None,
-        None,
-        "mdi:speedometer",
+            category="userSelections",
+            device_class=None,
+            unit=None,
+            entity_category=None,
+            entity_icon="mdi:speedometer",
+        )
     ],
     "programUID": [
-        {"access": "read", "type": "string"},
-        "userSelections",
-        None,
-        None,
-        None,
-        "mdi:application-settings-outline",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "string"},
+            category="userSelections",
+            device_class=None,
+            unit=None,
+            entity_category=None,
+            entity_icon="mdi:application-settings-outline",
+        )
     ],
     "doorState": [
-        {"access": "read", "type": "string"},
-        None,
-        BinarySensorDeviceClass.DOOR,
-        None,
-        None,
-        "mdi:door",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "string"},
+            category=None,
+            device_class=BinarySensorDeviceClass.DOOR,
+            unit=None,
+            entity_category=None,
+            entity_icon="mdi:door",
+        ),
     ],
     "doorLock": [
-        {"access": "read", "type": "string"},
-        None,
-        BinarySensorDeviceClass.LOCK,
-        None,
-        None,
-        "mdi:door-closed-lock",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "string"},
+            category=None,
+            device_class=BinarySensorDeviceClass.LOCK,
+            unit=None,
+            entity_category=None,
+            entity_icon="mdi:door-closed-lock",
+        )
     ],
     "uiLockMode": [
-        {"access": "readwrite", "type": "boolean"},
-        None,
-        None,
-        None,
-        None,
-        "mdi:lock",
+        ElectroluxDevice(
+            capability_info={
+                "access": "readwrite",
+                "type": "boolean",
+                "values": {"OFF": {}, "ON": {}},
+            },
+            category=None,
+            device_class=BinarySensorDeviceClass.LOCK,
+            unit=None,
+            entity_category=None,
+            entity_icon="mdi:lock",
+        )
     ],
     "endOfCycleSound": [
-        {
-            "access": "readwrite",
-            "type": "string",
-            "values": {"NO_SOUND": {}, "SHORT_SOUND": {}},
-        },
-        None,
-        None,
-        None,
-        None,
-        "mdi:cellphone-sound",
+        ElectroluxDevice(
+            capability_info={
+                "access": "readwrite",
+                "type": "string",
+                "values": {"NO_SOUND": {}, "SHORT_SOUND": {}},
+            },
+            category=None,
+            device_class=None,
+            unit=None,
+            entity_category=None,
+            entity_icon="mdi:cellphone-sound",
+        )
     ],
     "preWashPhase": [
-        {"access": "read", "type": "boolean"},
-        None,
-        None,
-        None,
-        None,
-        "mdi:washing-machine",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "boolean"},
+            category=None,
+            device_class=None,
+            unit=None,
+            entity_category=None,
+            entity_icon="mdi:washing-machine",
+        )
     ],
     # "eLUXTimeManagerLevel": ["valTransl", None, None],
     # "waterTankWarningMode": [None, None, None],
@@ -296,95 +390,113 @@ Catalog: dict[str, [dict, str, str, str, str]] = {
     # "sensorHumidity": ["numberValue", SensorDeviceClass.HUMIDITY, PERCENTAGE, None],
     # "ambientTemperature": ["container", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS, None],
     "applianceTotalWorkingTime": [
-        {"access": "read", "type": "number"},
-        None,
-        None,
-        UnitOfTime.SECONDS,
-        EntityCategory.DIAGNOSTIC,
-        "mdi:clock-time-eight-outline",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "number"},
+            category=None,
+            device_class=None,
+            unit=UnitOfTime.SECONDS,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            entity_icon="mdi:clock-time-eight-outline",
+        )
     ],
     "totalCycleCounter": [
-        {"access": "read", "type": "number"},
-        None,
-        None,
-        None,
-        EntityCategory.DIAGNOSTIC,
-        "mdi:counter",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "number"},
+            category=None,
+            device_class=None,
+            unit=None,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            entity_icon="mdi:counter",
+        )
     ],
     "waterHardness": [
-        {"access": "read", "type": "string"},
-        None,
-        None,
-        None,
-        EntityCategory.DIAGNOSTIC,
-        "mdi:water",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "string"},
+            category=None,
+            device_class=None,
+            unit=None,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            entity_icon="mdi:water",
+        )
     ],
     "applianceMode": [
-        {"access": "read", "type": "string"},
-        None,
-        None,
-        None,
-        EntityCategory.DIAGNOSTIC,
-        "mdi:auto-mode",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "string"},
+            category=None,
+            device_class=None,
+            unit=None,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            entity_icon="mdi:auto-mode",
+        )
     ],
     "totalWashingTime": [
-        {"access": "read", "type": "number"},
-        None,
-        None,
-        UnitOfTime.SECONDS,
-        EntityCategory.DIAGNOSTIC,
-        "mdi:washing-machine",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "number"},
+            category=None,
+            device_class=None,
+            unit=UnitOfTime.SECONDS,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            entity_icon="mdi:washing-machine",
+        )
     ],
     "linkQualityIndicator": [
-        {
-            "access": "read",
-            "type": "string",
-            "values": {
-                "EXCELLENT": {},
-                "GOOD": {},
-                "POOR": {},
-                "UNDEFINED": {},
-                "VERY_GOOD": {},
-                "VERY_POOR": {},
+        ElectroluxDevice(
+            capability_info={
+                "access": "read",
+                "type": "string",
+                "values": {
+                    "EXCELLENT": {},
+                    "GOOD": {},
+                    "POOR": {},
+                    "UNDEFINED": {},
+                    "VERY_GOOD": {},
+                    "VERY_POOR": {},
+                },
             },
-        },
-        "networkInterface",
-        None,
-        None,
-        EntityCategory.DIAGNOSTIC,
-        "mdi:wifi-strength-2",
+            category="networkInterface",
+            device_class=None,
+            unit=None,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            entity_icon="mdi:wifi-strength-2",
+        )
     ],
     "executeCommand": [
-        {
-            "access": "write",
-            "type": "string",
-            "values": {
-                "OFF": {},
-                "ON": {},
-                "PAUSE": {},
-                "RESUME": {},
-                "START": {},
-                "STOPRESET": {},
+        ElectroluxDevice(
+            capability_info={
+                "access": "write",
+                "type": "string",
+                "values": {
+                    "OFF": {},
+                    "ON": {},
+                    "PAUSE": {},
+                    "RESUME": {},
+                    "START": {},
+                    "STOPRESET": {},
+                },
             },
-        },
-        None,
-        None,
-        None,
-        None,
+            category=None,
+            device_class=None,
+            unit=None,
+            entity_category=None,
+            entity_icon=None,
+        )
     ],
     # "rinseAidLevel": [None, None, None],
     # "fCTotalWashCyclesCount": [None, None, None],
     # "fCTotalWashingTime": [None, None, None],
     # "applianceMode": [None, None, None],
     "connectivityState": [
-        {"access": "read", "type": "string"},
-        None,
-        None,
-        None,
-        EntityCategory.DIAGNOSTIC,
-        "mdi:wifi",
+        ElectroluxDevice(
+            capability_info={"access": "read", "type": "string"},
+            category=None,
+            device_class=None,
+            unit=None,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            entity_icon="mdi:wifi",
+        )
     ],
 }
+
 
 icon_mapping = {
     "OFF": "mdi:power-off",
