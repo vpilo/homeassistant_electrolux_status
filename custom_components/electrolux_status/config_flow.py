@@ -8,6 +8,7 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.selector import selector
 
@@ -108,8 +109,10 @@ class ElectroluxStatusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def _test_credentials(self, username, password):
         """Return true if credentials is valid."""
         try:
-            client = pyelectroluxconnect_util.get_session(username, password)
-            await self.hass.async_add_executor_job(client.get_appliances_list)
+            client = pyelectroluxconnect_util.get_session(
+                username, password, async_get_clientsession(self.hass)
+            )
+            await client.get_appliances_list()
         except Exception as inst:  # pylint: disable=broad-except  # noqa: BLE001
             _LOGGER.error("Authentication to electrolux failed: %s", inst)
             return False

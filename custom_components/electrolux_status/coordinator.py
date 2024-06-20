@@ -4,10 +4,14 @@ import asyncio
 import json
 import logging
 
+from aiohttp import ClientResponseError
 from pyelectroluxocp import OneAppApi
 
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.exceptions import (
+    ConfigEntryError,
+    ConfigEntryNotReady,
+)
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import Appliance, Appliances, ElectroluxLibraryEntity
@@ -39,12 +43,22 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
             # Check that one can extract the appliance list to confirm login
             token = await self.api.get_user_token()
             if token and token.token:
-                _LOGGER.debug("Electrolux logged successfully, %s", token.token)
+                _LOGGER.debug("Electrolux logged in successfully, %s", token.token)
                 return True
             _LOGGER.debug("Electrolux wrong credentials")
+        except ClientResponseError as ex:
+            _LOGGER.debug(
+                "HTTP error occurred during login to ElectroluxStatus: %s", ex
+            )
+            if ex.status == 429:
+                raise ConfigEntryNotReady(
+                    "You have exceeded the maximum number of active sessions. "
+                    "Please log out of another device or wait until an existing session expires"
+                ) from ex
+            raise ConfigEntryError from ex
         except Exception as ex:
             _LOGGER.error("Could not log in to ElectroluxStatus, %s", ex)
-            raise ConfigEntryAuthFailed from ex
+            raise ConfigEntryError from ex
         return False
 
     # async def deferred_update(self, appliance_id: str, delay: int) -> None:

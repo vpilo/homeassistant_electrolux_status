@@ -7,6 +7,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import Config, HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 # from .api import Appliance, Appliances, ElectroluxLibraryEntity
 from .const import (
@@ -45,8 +46,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     username = entry.data.get(CONF_USERNAME)
     password = entry.data.get(CONF_PASSWORD)
     language = languages.get(entry.data.get(CONF_LANGUAGE, DEFAULT_LANGUAGE), "eng")
+    session = async_get_clientsession(hass)
 
-    client = pyelectroluxconnect_util.get_session(username, password, language)
+    client = pyelectroluxconnect_util.get_session(username, password, session, language)
     coordinator = ElectroluxCoordinator(
         hass, client=client, renew_interval=renew_interval
     )
