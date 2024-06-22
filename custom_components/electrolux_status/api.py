@@ -302,16 +302,16 @@ class Appliance:
         entity_category = None
         entity_icon = None
         unit = self.data.get_entity_unit(capability)
+
         # item : capability, category, DeviceClass, Unit, EntityCategory
-        catalog_items = Catalog.get(entity_name, None)
-        if catalog_items:
-            for catalog_item in catalog_items:
-                if capability_info is None:
-                    capability_info = catalog_item.capability_info
-                device_class = catalog_item.device_class
-                unit = catalog_item.unit
-                entity_category = catalog_item.entity_category
-                entity_icon = catalog_item.entity_icon
+        catalog_item = Catalog.get(capability, None)
+        if catalog_item:
+            if capability_info is None:
+                capability_info = catalog_item.capability_info
+            device_class = catalog_item.device_class
+            unit = catalog_item.unit
+            entity_category = catalog_item.entity_category
+            entity_icon = catalog_item.entity_icon
 
         if entity_type == SENSOR:
             return ElectroluxSensor(
@@ -392,43 +392,37 @@ class Appliance:
 
     def setup(self, data: ElectroluxLibraryEntity):
         """Configure the entity."""
-        self.data = data
-        self.entities = []
-        entities = []
-        # Extraction of the capabilities of the connected appliance and mapping to the known entities of the component
+        self.data: ElectroluxLibraryEntity = data
+        self.entities: list = []
+        entities: list = []
+        # Extraction of the appliance capabilities & mapping to the known entities of the component
         capabilities_names = self.data.sources_list()  # [ "applianceState", "autoDosing",..., "userSelections/analogTemperature",...]
 
         # No capabilities returned (unstable API) => rebuild them from catalog + sample data
         if capabilities_names is None and self.state:
             capabilities_names = []
             capabilities = {}
-            properties = self.state.get("properties")
-            if properties:
-                reported = properties.get("reported")
-                if reported:
-                    for key, items in Catalog.items():
-                        for item in items:
-                            category = item.category
-                            if (
-                                (
-                                    category
-                                    and reported.get(category, None)
-                                    and reported.get(category, None).get(key)
-                                )
-                                or (not category and reported.get(key, None))
-                                or key == "executeCommand"
-                            ):
-                                if category:
-                                    capabilities[category + "/" + key] = item.capability_info
-                                    capabilities_names.append(category + "/" + key)
-                                else:
-                                    capabilities[key] = item.capability_info
-                                    capabilities_names.append(key)
-                    self.data.capabilities = capabilities
-                    _LOGGER.debug(
-                        "Electrolux rebuilt capabilities due to API malfunction: %s",
-                        json.dumps(capabilities, indent=2),
-                    )
+            reported = self.state.get("properties", {}).get("reported")
+            if reported:
+                for key, item in Catalog.items():
+                    category = item.category
+                    if (
+                        (
+                            category
+                            and reported.get(category, None)
+                            and reported.get(category, None).get(key)
+                        )
+                        or (not category and reported.get(key, None))
+                        or key == "executeCommand"
+                    ):
+                        path = f"{category}/{key}" if category else key
+                        capabilities[path] = item.capability_info
+                        capabilities_names.append(path)
+                self.data.capabilities = capabilities
+                _LOGGER.debug(
+                    "Electrolux rebuilt capabilities due to API malfunction: %s",
+                    json.dumps(capabilities),
+                )
         # Add common entities
         for common_attribute in COMMON_ATTRIBUTES:
             entity_name = data.get_entity_name(common_attribute)
@@ -447,7 +441,7 @@ class Appliance:
                 continue
             catalog_item = Catalog.get(entity_name, None)
             if catalog_item:
-                self.data.capabilities[common_attribute] = catalog_item[0].capability_info
+                self.data.capabilities[common_attribute] = catalog_item.capability_info
                 entity = self.get_entity(common_attribute)
                 entities.append(entity)
 
@@ -463,15 +457,14 @@ class Appliance:
             catalog_items = cast(list[ElectroluxDevice], Catalog.get(entity_name, None))
 
             # Handle the case where the capabilities defined in catalog are richer than provided one from server
-            if catalog_items:
-                for catalog_item in catalog_items:
-                    if capability_info is None:
-                        capability_info = catalog_item.capability_info
-                    elif catalog_item.capability_info:
-                        for key, item in catalog_item.capability_info.items():
-                            if capability_info.get(key, None) is None:
-                                capability_info[key] = item
-                    device_class = catalog_item.device_class
+            if catalog_item:
+                if capability_info is None:
+                    capability_info = catalog_item.capability_info
+                elif catalog_item.capability_info:
+                    for key, item in catalog_item.capability_info.items():
+                        if capability_info.get(key, None) is None:
+                            capability_info[key] = item
+                device_class = catalog_item.device_class
 
             if capability == "executeCommand":
                 commands: dict[str, str] = capability_info["values"]
