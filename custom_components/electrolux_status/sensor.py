@@ -28,7 +28,7 @@ async def async_setup_entry(
                 entity for entity in appliance.entities if entity.entity_type == SENSOR
             ]
             _LOGGER.debug(
-                "Electrolux add %d sensors to registry for appliance %s",
+                "Electrolux add %d SENSOR entities to registry for appliance %s",
                 len(entities),
                 appliance_id,
             )

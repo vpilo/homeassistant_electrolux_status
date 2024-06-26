@@ -30,7 +30,7 @@ async def async_setup_entry(
                 entity for entity in appliance.entities if entity.entity_type == BUTTON
             ]
             _LOGGER.debug(
-                "Electrolux add %d buttons to registry for appliance %s",
+                "Electrolux add %d BUTTON entities to registry for appliance %s",
                 len(entities),
                 appliance_id,
             )
@@ -106,10 +106,13 @@ class ElectroluxButtonEntity(ElectroluxEntity, ButtonEntity):
     async def send_command(self) -> bool:
         """Send a command to the device."""
         client: OneAppApi = self.api
-        _LOGGER.debug("Electrolux send command %s", self.val_to_send)
-        result = await client.execute_appliance_command(
-            self.pnc_id, {"executeCommand": self.val_to_send}
-        )
+        value = self.val_to_send
+        if self.entity_source:
+            command = {self.entity_source: {self.entity_attr: value}}
+        else:
+            command = {self.entity_attr: value}
+        _LOGGER.debug("Electrolux send command %s", command)
+        result = await client.execute_appliance_command(self.pnc_id, command)
         _LOGGER.debug("Electrolux send command result %s", result)
         return True
 

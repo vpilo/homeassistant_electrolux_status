@@ -438,12 +438,15 @@ class Appliance:
                     found = True
                     break
             if found:
+                _LOGGER.debug("Electrolux common_attribute found %s", common_attribute)
                 continue
             catalog_item = Catalog.get(entity_name, None)
             if catalog_item:
                 self.data.capabilities[common_attribute] = catalog_item.capability_info
                 entity = self.get_entity(common_attribute)
-                entities.append(entity)
+                _LOGGER.debug(
+                    "Electrolux common_attribute created %s", common_attribute
+                )
 
         # For each capability src
         for capability in capabilities_names:

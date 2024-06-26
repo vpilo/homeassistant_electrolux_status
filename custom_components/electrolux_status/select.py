@@ -31,7 +31,7 @@ async def async_setup_entry(
                 entity for entity in appliance.entities if entity.entity_type == SELECT
             ]
             _LOGGER.debug(
-                "Electrolux add %d selects to registry for appliance %s",
+                "Electrolux add %d SELECT entities to registry for appliance %s",
                 len(entities),
                 appliance_id,
             )
@@ -134,7 +134,7 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
             command = {self.entity_source: {self.entity_attr: value}}
         else:
             command = {self.entity_attr: value}
-        _LOGGER.debug("Electrolux select option %s", json.dumps(command))
+        _LOGGER.debug("Electrolux select option %s", command)
         result = await client.execute_appliance_command(self.pnc_id, command)
         _LOGGER.debug("Electrolux select option result %s", result)
 

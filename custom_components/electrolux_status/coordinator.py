@@ -162,7 +162,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                     "Electrolux unable to retrieve appliances list. Cancelling setup"
                 )
             _LOGGER.debug(
-                "Electrolux update appliances %s %s",
+                "Electrolux get_appliances_list %s %s",
                 self.api,
                 json.dumps(appliances_list),
             )
@@ -176,9 +176,13 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                     "applianceName"
                 )
                 appliance_infos = await self.api.get_appliances_info([appliance_id])
+                _LOGGER.debug(
+                    "Electrolux get_appliances_info result: %s",
+                    json.dumps(appliance_infos),
+                )
                 appliance_state = await self.api.get_appliance_state(appliance_id)
                 _LOGGER.debug(
-                    "Electrolux get_appliance_status result %s",
+                    "Electrolux get_appliance_state result: %s",
                     json.dumps(appliance_state),
                 )
                 try:
@@ -186,7 +190,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                         appliance_id
                     )
                     _LOGGER.debug(
-                        "Electrolux appliance capabilities %s",
+                        "Electrolux get_appliance_capabilities result: %s",
                         json.dumps(appliance_capabilities),
                     )
                 except Exception as exception:  # noqa: BLE001

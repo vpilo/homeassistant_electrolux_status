@@ -29,7 +29,7 @@ async def async_setup_entry(
                 entity for entity in appliance.entities if entity.entity_type == SWITCH
             ]
             _LOGGER.debug(
-                "Electrolux add %d sensors to registry for appliance %s",
+                "Electrolux add %d SENSOR entities to registry for appliance %s",
                 len(entities),
                 appliance_id,
             )
@@ -70,7 +70,7 @@ class ElectroluxSwitch(ElectroluxEntity, SwitchEntity):
             command = {self.entity_source: {self.entity_attr: value}}
         else:
             command = {self.entity_attr: value}
-        _LOGGER.debug("Electrolux set value %f", value)
+        _LOGGER.debug("Electrolux set value %s", value)
         result = await client.execute_appliance_command(self.pnc_id, command)
         _LOGGER.debug("Electrolux set value result %s", result)
 
