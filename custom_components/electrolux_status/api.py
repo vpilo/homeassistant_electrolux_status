@@ -49,7 +49,7 @@ class ElectroluxLibraryEntity:
         status: str,
         state: ApplienceStatusResponse,
         appliance_info: ApplianceInfoResponse,
-        capabilities: dict[str, any],
+        capabilities: dict[str, Any],
     ) -> None:
         """Initaliaze the entity."""
         self.name = name
@@ -133,7 +133,7 @@ class ElectroluxLibraryEntity:
         """
         return attr_name.rpartition("/")[0]
 
-    def get_capability(self, attr_name: str) -> dict[str, any] | None:
+    def get_capability(self, attr_name: str) -> dict[str, Any] | None:
         """Retrieve the capability from self.capabilities using the attribute name.
 
         May contain slashes for nested keys.
@@ -156,7 +156,7 @@ class ElectroluxLibraryEntity:
 
     def get_entity_unit(self, attr_name: str):
         """Get entity unit type."""
-        capability_def: dict[str, any] | None = self.get_capability(attr_name)
+        capability_def: dict[str, Any] | None = self.get_capability(attr_name)
         if not capability_def:
             return None
         # Type : string, int, number, boolean (other values ignored)
@@ -169,7 +169,7 @@ class ElectroluxLibraryEntity:
 
     def get_entity_device_class(self, attr_name: str):
         """Get entity device class."""
-        capability_def: dict[str, any] | None = self.get_capability(attr_name)
+        capability_def: dict[str, Any] | None = self.get_capability(attr_name)
         if not capability_def:
             return None
         # Type : string, int, number, boolean (other values ignored)
@@ -182,7 +182,7 @@ class ElectroluxLibraryEntity:
 
     def get_entity_type(self, attr_name: str):
         """Get entity type."""
-        capability_def: dict[str, any] | None = self.get_capability(attr_name)
+        capability_def: dict[str, Any] | None = self.get_capability(attr_name)
         if not capability_def:
             return None
 
@@ -205,7 +205,7 @@ class ElectroluxLibraryEntity:
             return SWITCH
 
         # List of values ? if values is defined and has at least 1 entry
-        values: dict[str, any] | None = capability_def.get("values", None)
+        values: dict[str, Any] | None = capability_def.get("values", None)
         if (
             values
             and access == "readwrite"
@@ -261,11 +261,11 @@ class Appliance:
     brand: str
     device: str
     entities: list[ElectroluxEntity]
-    coordinator: any
+    coordinator: Any
 
     def __init__(
         self,
-        coordinator: any,
+        coordinator: Any,
         name: str,
         pnc_id: str,
         brand: str,

@@ -2,6 +2,7 @@
 
 import json
 import logging
+from typing import Any
 
 from pyelectroluxocp.oneAppApi import OneAppApi
 
@@ -41,24 +42,16 @@ async def async_setup_entry(
 class ElectroluxSelect(ElectroluxEntity, SelectEntity):
     """Electrolux Status Select class."""
 
-    def format_value(self, value: str) -> str | None:
-        """Format the value."""
-        if value is None:
-            return None
-        if isinstance(value, str):
-            return value.replace("_", " ").title()
-        return str(value)
-
     def __init__(
         self,
-        coordinator: any,
+        coordinator: Any,
         name: str,
         config_entry,
         pnc_id: str,
         entity_type: Platform,
         entity_attr,
         entity_source,
-        capability: dict[str, any],
+        capability: dict[str, Any],
         unit,
         device_class: str,
         entity_category: EntityCategory,
@@ -81,10 +74,10 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
             icon=icon,
             catalog_entry=catalog_entry,
         )
-        values_dict: dict[str, any] | None = self.capability.get("values", None)
+        values_dict: dict[str, Any] | None = self.capability.get("values", None)
         self.options_list: dict[str, str] = {}
         for value in values_dict:
-            entry: dict[str, any] = values_dict[value]
+            entry: dict[str, Any] = values_dict[value]
             if "disabled" in entry:
                 continue
             label = self.format_value(value)
@@ -132,7 +125,7 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
             return
 
         client: OneAppApi = self.api
-        command: dict[str, any] = {}
+        command: dict[str, Any] = {}
         if self.entity_source:
             command = {self.entity_source: {self.entity_attr: value}}
         else:

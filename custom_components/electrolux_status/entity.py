@@ -2,7 +2,7 @@
 
 import logging
 import math
-from typing import cast
+from typing import Any, cast
 
 from pyelectroluxocp import OneAppApi
 from pyelectroluxocp.apiModels import ApplienceStatusResponse
@@ -49,14 +49,14 @@ class ElectroluxEntity(CoordinatorEntity):
 
     def __init__(
         self,
-        coordinator: any,
+        coordinator: Any,
         name: str,
         config_entry,
         pnc_id: str,
         entity_type: Platform,
         entity_attr,
         entity_source,
-        capability: dict[str, any],
+        capability: dict[str, Any],
         unit: str,
         device_class: str,
         entity_category: EntityCategory,
@@ -195,7 +195,7 @@ class ElectroluxEntity(CoordinatorEntity):
                         root = root.get(item, None)
             if root:
                 if self.entity_source:
-                    category: dict[str, any] | None = root.get(self.entity_source, None)
+                    category: dict[str, Any] | None = root.get(self.entity_source, None)
                     if category:
                         return category.get(attribute)
                 else:

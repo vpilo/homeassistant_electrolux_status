@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.button import ButtonDeviceClass
@@ -23,7 +24,7 @@ class ElectroluxDevice:
 
     # dictionary of the device capability
     # override and replace bad api data
-    capability_info: dict[str, any] = field(default_factory=dict)
+    capability_info: dict[str, Any] = field(default_factory=dict)
 
     # possible decommission?
     # the parent json property

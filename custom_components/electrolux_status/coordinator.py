@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+from typing import Any
 
 from aiohttp import ClientResponseError
 from pyelectroluxocp import OneAppApi
@@ -84,7 +85,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
     #             _LOGGER.exception(exception)
     #             raise UpdateFailed() from exception
 
-    def incoming_data(self, data: dict[str, dict[str, any]]):
+    def incoming_data(self, data: dict[str, dict[str, Any]]):
         """Process incoming data."""
         _LOGGER.debug("Electrolux appliance state updated %s", json.dumps(data))
         # Update reported data
