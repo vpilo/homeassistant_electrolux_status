@@ -48,7 +48,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     language = languages.get(entry.data.get(CONF_LANGUAGE, DEFAULT_LANGUAGE), "eng")
     session = async_get_clientsession(hass)
 
-    client = pyelectroluxconnect_util.get_session(username, password, session, language)
+    client = get_electrolux_session(username, password, session, language)
     coordinator = ElectroluxCoordinator(
         hass, client=client, renew_interval=renew_interval
     )

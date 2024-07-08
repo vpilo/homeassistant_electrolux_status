@@ -4,16 +4,18 @@ import logging
 import math
 from typing import cast
 
+from pyelectroluxocp import OneAppApi
 from pyelectroluxocp.apiModels import ApplienceStatusResponse
 
 from homeassistant.components.sensor import ENTITY_ID_FORMAT
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory
+from homeassistant.const import EntityCategory, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
+from .model import ElectroluxDevice
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -25,8 +27,7 @@ async def async_setup_entry(
 ) -> None:
     """Configure entity platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
-    appliances = coordinator.data.get("appliances", None)
-    if appliances is not None:
+    if appliances := coordinator.data.get("appliances", None):
         for appliance_id, appliance in appliances.appliances.items():
             entities = [
                 entity
@@ -41,15 +42,6 @@ async def async_setup_entry(
             async_add_entities(entities)
 
 
-def time_seconds_to_minutes(seconds: float | None) -> int | None:
-    """Convert seconds to minutes."""
-    if seconds is None:
-        return None
-    if seconds == -1:
-        return -1
-    return math.ceil(seconds / 60)
-
-
 class ElectroluxEntity(CoordinatorEntity):
     """Class for Electorolux devices."""
 
@@ -61,7 +53,7 @@ class ElectroluxEntity(CoordinatorEntity):
         name: str,
         config_entry,
         pnc_id: str,
-        entity_type: str,
+        entity_type: Platform,
         entity_attr,
         entity_source,
         capability: dict[str, any],
@@ -69,6 +61,7 @@ class ElectroluxEntity(CoordinatorEntity):
         device_class: str,
         entity_category: EntityCategory,
         icon: str,
+        catalog_entry: ElectroluxDevice | None = None,
     ) -> None:
         """Initaliaze the entity."""
         super().__init__(coordinator)
@@ -77,21 +70,26 @@ class ElectroluxEntity(CoordinatorEntity):
         self.coordinator = coordinator
         self._cached_value = None
         self._name = name
-        self.api = coordinator.api
+        self._icon = icon
+        self._device_class = device_class
+        self._entity_category = entity_category
+        self._catalog_entry = catalog_entry
+        self.api: OneAppApi = coordinator.api
         self.entity_attr = entity_attr
         self.entity_type = entity_type
         self.entity_source = entity_source
         self.config_entry = config_entry
         self.pnc_id = pnc_id
         self.unit = unit
-        self._icon = icon
-        self._device_class = device_class
-        self._entity_category = entity_category
+        self.capability = capability
         _LOGGER.debug("Electrolux new entity %s for appliance %s", name, pnc_id)
         self.entity_id = ENTITY_ID_FORMAT.format(
             f"{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_attr}"
         )
-        self.capability = capability
+        if catalog_entry:
+            self.entity_registry_enabled_default = (
+                catalog_entry.entity_registry_enabled_default
+            )
 
     def setup(self, data):
         """Initialiaze setup."""
@@ -209,3 +207,8 @@ class ElectroluxEntity(CoordinatorEntity):
         self.appliance_status = appliance_status
         # if self.hass:
         #     self.async_write_ha_state()
+
+    @property
+    def catalog_entry(self) -> ElectroluxDevice | None:
+        """Return matched catalog entry."""
+        return self._catalog_entry

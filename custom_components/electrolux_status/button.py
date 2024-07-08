@@ -6,12 +6,13 @@ from pyelectroluxocp.oneAppApi import OneAppApi
 
 from homeassistant.components.button import ENTITY_ID_FORMAT, ButtonEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory
+from homeassistant.const import EntityCategory, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import BUTTON, DOMAIN
 from .entity import ElectroluxEntity
+from .model import ElectroluxDevice
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -23,8 +24,7 @@ async def async_setup_entry(
 ) -> None:
     """Configure button platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
-    appliances = coordinator.data.get("appliances", None)
-    if appliances is not None:
+    if appliances := coordinator.data.get("appliances", None):
         for appliance_id, appliance in appliances.appliances.items():
             entities = [
                 entity for entity in appliance.entities if entity.entity_type == BUTTON
@@ -37,7 +37,7 @@ async def async_setup_entry(
             async_add_entities(entities)
 
 
-class ElectroluxButtonEntity(ElectroluxEntity, ButtonEntity):
+class ElectroluxButton(ElectroluxEntity, ButtonEntity):
     """Electrolux Status button class."""
 
     def __init__(
@@ -46,14 +46,15 @@ class ElectroluxButtonEntity(ElectroluxEntity, ButtonEntity):
         name: str,
         config_entry,
         pnc_id: str,
-        entity_type: str,
+        entity_type: Platform,
         entity_attr,
         entity_source,
         capability: dict[str, any],
         device_class: str,
         entity_category: EntityCategory,
+        icon: str,
+        catalog_entry: ElectroluxDevice | None,
         val_to_send,
-        icon,
     ) -> None:
         """Initialize the Button Entity."""
         super().__init__(
@@ -69,39 +70,19 @@ class ElectroluxButtonEntity(ElectroluxEntity, ButtonEntity):
             device_class=device_class,
             entity_category=entity_category,
             icon=icon,
+            catalog_entry=catalog_entry,
         )
         self.val_to_send = val_to_send
-        self.button_icon = icon
         self.entity_id = ENTITY_ID_FORMAT.format(
             f"{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_attr}_{self.val_to_send}"
         )
 
-    @property
-    def get_appliance(self):
-        """Return the appliance object."""
-        return self.coordinator.data["appliances"].get_appliance(self.pnc_id)
 
     @property
     def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
         return f"{self.config_entry.entry_id}-{self.val_to_send}-{self.entity_attr}-{self.entity_source}-{self.pnc_id}"
 
-    @property
-    def extra_state_attributes(self):
-        """Return the state attributes."""
-        return {
-            "integration": DOMAIN,
-        }
-
-    @property
-    def icon(self):
-        """Return the icon of the button."""
-        return self.button_icon
-
-    @property
-    def available(self):
-        """Available state should depend on connect state."""
-        return True
 
     async def send_command(self) -> bool:
         """Send a command to the device."""

@@ -3,15 +3,19 @@
 import json
 import logging
 import re
-from typing import cast
+from typing import Any
 
 from pyelectroluxocp.apiModels import ApplianceInfoResponse, ApplienceStatusResponse
 
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+from homeassistant.components.button import ButtonDeviceClass
+from homeassistant.components.number import NumberDeviceClass
 from homeassistant.components.sensor import SensorDeviceClass
-from homeassistant.const import UnitOfTemperature
+from homeassistant.components.switch import SwitchDeviceClass
+from homeassistant.const import Platform, UnitOfTemperature
 
 from .binary_sensor import ElectroluxBinarySensor
-from .button import ElectroluxButtonEntity
+from .button import ElectroluxButton
 from .const import (
     BINARY_SENSOR,
     BUTTON,
@@ -19,6 +23,7 @@ from .const import (
     NUMBER,
     SELECT,
     SENSOR,
+    STATIC_ATTRIBUTES,
     SWITCH,
     Catalog,
     icon_mapping,
@@ -72,6 +77,8 @@ class ElectroluxLibraryEntity:
         attr_name = attr_name.rpartition("/")[-1] or attr_name
         attr_name = attr_name[0].upper() + attr_name[1:]
         attr_name = attr_name.replace("_", " ")
+        if container and "/" in container:
+            attr_name = container.rpartition("/")[0] + attr_name
         group = ""
         words = []
         s = attr_name
@@ -126,6 +133,20 @@ class ElectroluxLibraryEntity:
         """
         return attr_name.rpartition("/")[0]
 
+    def get_capability(self, attr_name: str) -> dict[str, any] | None:
+        """Retrieve the capability from self.capabilities using the attribute name.
+
+        May contain slashes for nested keys.
+        """
+        keys = attr_name.split("/")
+        result = self.capabilities
+
+        for key in keys:
+            result = result.get(key)
+            if result is None:
+                return None
+
+        return result
     def get_entity_name(self, attr_name: str, container: str | None = None):
         """Convert Entity Name.
 
@@ -135,7 +156,7 @@ class ElectroluxLibraryEntity:
 
     def get_entity_unit(self, attr_name: str):
         """Get entity unit type."""
-        capability_def: dict[str, any] | None = self.capabilities.get(attr_name, None)
+        capability_def: dict[str, any] | None = self.get_capability(attr_name)
         if not capability_def:
             return None
         # Type : string, int, number, boolean (other values ignored)
@@ -148,7 +169,7 @@ class ElectroluxLibraryEntity:
 
     def get_entity_device_class(self, attr_name: str):
         """Get entity device class."""
-        capability_def: dict[str, any] | None = self.capabilities.get(attr_name, None)
+        capability_def: dict[str, any] | None = self.get_capability(attr_name)
         if not capability_def:
             return None
         # Type : string, int, number, boolean (other values ignored)
@@ -161,13 +182,15 @@ class ElectroluxLibraryEntity:
 
     def get_entity_type(self, attr_name: str):
         """Get entity type."""
-        capability_def: dict[str, any] | None = self.capabilities.get(attr_name, None)
+        capability_def: dict[str, any] | None = self.get_capability(attr_name)
         if not capability_def:
             return None
+
         # Type : string, int, number, boolean (other values ignored)
         type_object = capability_def.get("type", None)
         if not type_object:
             return None
+
         # Access : read, readwrite (other values ignored)
         access = capability_def.get("access", None)
         if not access:
@@ -213,6 +236,12 @@ class ElectroluxLibraryEntity:
                     return SENSOR
                 if type_object in ("int", "number"):
                     return NUMBER
+        _LOGGER.debug(
+            "Electrolux unable to determine type for %s. Type: %s Access: %s",
+            attr_name,
+            type_object,
+            access,
+        )
         return None
 
     def sources_list(self):
@@ -253,7 +282,7 @@ class Appliance:
         self.brand = brand
         self.state: ApplienceStatusResponse = state
 
-    def update_missing_entities(self):
+    def update_missing_entities(self) -> None:
         """Add missing entities when no capabilities returned by the API, do it dynamically."""
         if not self.own_capabilties:
             return
@@ -292,227 +321,185 @@ class Appliance:
                                 if entity:
                                     self.entities.append(entity)
 
-    def get_entity(self, capability: str) -> ElectroluxEntity | None:
+    def get_entity(self, capability: str) -> list[ElectroluxEntity] | None:
         """Return the entity."""
         entity_type = self.data.get_entity_type(capability)
         entity_name = self.data.get_entity_name(capability)
         category = self.data.get_category(capability)
-        capability_info: dict[str, any] = self.data.capabilities[capability]
+        capability_info: dict[str, any] = self.data.get_capability(capability)
         device_class = self.data.get_entity_device_class(capability)
         entity_category = None
         entity_icon = None
         unit = self.data.get_entity_unit(capability)
+        display_name = f"{self.data.get_name()} {self.data.get_sensor_name(entity_name, capability)}"
 
         # item : capability, category, DeviceClass, Unit, EntityCategory
         catalog_item = Catalog.get(capability, None)
         if catalog_item:
             if capability_info is None:
                 capability_info = catalog_item.capability_info
+            elif (
+                "values" not in capability_info
+                and "values" in catalog_item.capability_info
+            ):
+                capability_info["values"] = catalog_item.capability_info["values"]
+
             device_class = catalog_item.device_class
             unit = catalog_item.unit
             entity_category = catalog_item.entity_category
             entity_icon = catalog_item.entity_icon
 
-        if entity_type == SENSOR:
-            return ElectroluxSensor(
-                name=f"{self.data.get_name()} {self.data.get_sensor_name(entity_name, capability)}",
-                coordinator=self.coordinator,
-                config_entry=self.coordinator.config_entry,
+        if isinstance(device_class, BinarySensorDeviceClass):
+            entity_type = BINARY_SENSOR
+        if isinstance(device_class, ButtonDeviceClass):
+            entity_type = BUTTON
+        if isinstance(device_class, NumberDeviceClass):
+            entity_type = NUMBER
+        if isinstance(device_class, SensorDeviceClass):
+            entity_type = SENSOR
+        if isinstance(device_class, SwitchDeviceClass):
+            entity_type = SWITCH
+
+        if catalog_item and isinstance(catalog_item.entity_platform, Platform):
+            entity_type = catalog_item.entity_platform
+
+        _LOGGER.debug(
+            "Electrolux get_entity. entity_type: %s entity_attr: %s entity_source: %s capability: %s device_class: %s unit: %s",
+            entity_type,
+            entity_name,
+            category,
+            capability_info,
+            device_class,
+            unit,
+        )
+
+        def electrolux_entity_factory(
+            name,
+            entity_type,
+            entity_attr,
+            entity_source,
+            capability,
+            unit,
+            entity_category,
+            device_class,
+            icon,
+            catalog_entry,
+        ):
+            entity_classes = {
+                BINARY_SENSOR: ElectroluxBinarySensor,
+                NUMBER: ElectroluxNumber,
+                SELECT: ElectroluxSelect,
+                SENSOR: ElectroluxSensor,
+                SWITCH: ElectroluxSwitch,
+            }
+
+            entity_class = entity_classes.get(entity_type)
+
+            if entity_class is None:
+                raise ValueError(f"Unknown entity type: {entity_type}")
+
+            return [
+                entity_class(
+                    coordinator=self.coordinator,
+                    config_entry=self.coordinator.config_entry,
+                    pnc_id=self.pnc_id,
+                    name=name,
+                    entity_type=entity_type,
+                    entity_attr=entity_attr,
+                    entity_source=entity_source,
+                    capability=capability,
+                    unit=unit,
+                    entity_category=entity_category,
+                    device_class=device_class,
+                    icon=icon,
+                    catalog_entry=catalog_entry,
+                )
+            ]
+
+        if entity_type in [BINARY_SENSOR, NUMBER, SELECT, SENSOR, SWITCH]:
+            return electrolux_entity_factory(
+                name=display_name,
                 entity_type=entity_type,
                 entity_attr=entity_name,
                 entity_source=category,
-                pnc_id=self.pnc_id,
                 capability=capability_info,
                 unit=unit,
                 entity_category=entity_category,
                 device_class=device_class,
                 icon=entity_icon,
+                catalog_entry=catalog_item,
             )
-        if entity_type == BINARY_SENSOR:
-            return ElectroluxBinarySensor(
-                name=f"{self.data.get_name()} {self.data.get_sensor_name(entity_name, capability)}",
-                coordinator=self.coordinator,
-                config_entry=self.coordinator.config_entry,
-                entity_type=entity_type,
-                entity_attr=entity_name,
-                entity_source=category,
-                pnc_id=self.pnc_id,
-                capability=capability_info,
-                unit=unit,
-                entity_category=entity_category,
-                device_class=device_class,
-                icon=entity_icon,
-            )
-        if entity_type == SELECT:
-            return ElectroluxSelect(
-                name=f"{self.data.get_name()} {self.data.get_sensor_name(entity_name, capability)}",
-                coordinator=self.coordinator,
-                config_entry=self.coordinator.config_entry,
-                entity_type=entity_type,
-                entity_attr=entity_name,
-                entity_source=category,
-                pnc_id=self.pnc_id,
-                capability=capability_info,
-                unit=unit,
-                entity_category=entity_category,
-                device_class=device_class,
-                icon=entity_icon,
-            )
-        if entity_type == NUMBER:
-            return ElectroluxNumber(
-                name=f"{self.data.get_name()} {self.data.get_sensor_name(entity_name, capability)}",
-                coordinator=self.coordinator,
-                config_entry=self.coordinator.config_entry,
-                entity_type=entity_type,
-                entity_attr=entity_name,
-                entity_source=category,
-                pnc_id=self.pnc_id,
-                capability=capability_info,
-                unit=unit,
-                entity_category=entity_category,
-                device_class=device_class,
-                icon=entity_icon,
-            )
-        if entity_type == SWITCH:
-            return ElectroluxSwitch(
-                name=f"{self.data.get_name()} {self.data.get_sensor_name(entity_name, capability)}",
-                coordinator=self.coordinator,
-                config_entry=self.coordinator.config_entry,
-                entity_type=entity_type,
-                entity_attr=entity_name,
-                entity_source=category,
-                pnc_id=self.pnc_id,
-                capability=capability_info,
-                unit=unit,
-                entity_category=entity_category,
-                device_class=device_class,
-                icon=entity_icon,
-            )
-        return None
+
+        if entity_type == BUTTON:
+            commands: dict[str, str] = capability_info.get("values", {})
+            commands_keys = list(commands.keys())
+            return [
+                ElectroluxButton(
+                    name=f"{display_name} {command.lower()}"
+                    if len(commands_keys) > 1
+                    else display_name,
+                    coordinator=self.coordinator,
+                    config_entry=self.coordinator.config_entry,
+                    entity_type=entity_type,
+                    entity_attr=entity_name,
+                    entity_source=category,
+                    pnc_id=self.pnc_id,
+                    capability=capability_info,
+                    entity_category=entity_category,
+                    device_class=device_class,
+                    icon=entity_icon
+                    or icon_mapping.get(command, "mdi:gesture-tap-button"),
+                    val_to_send=command,
+                    catalog_entry=catalog_item,
+                )
+                for command in commands_keys
+            ]
+        return []
 
     def setup(self, data: ElectroluxLibraryEntity):
         """Configure the entity."""
         self.data: ElectroluxLibraryEntity = data
-        self.entities: list = []
-        entities: list = []
+        self.entities: list[ElectroluxEntity] = []
+        entities: list[ElectroluxEntity] = []
         # Extraction of the appliance capabilities & mapping to the known entities of the component
         capabilities_names = self.data.sources_list()  # [ "applianceState", "autoDosing",..., "userSelections/analogTemperature",...]
 
-        # No capabilities returned (unstable API) => rebuild them from catalog + sample data
         if capabilities_names is None and self.state:
-            capabilities_names = []
-            capabilities = {}
-            reported = self.state.get("properties", {}).get("reported")
-            if reported:
-                for key, item in Catalog.items():
-                    category = item.category
-                    if (
-                        (
-                            category
-                            and reported.get(category, None)
-                            and reported.get(category, None).get(key)
-                        )
-                        or (not category and reported.get(key, None))
-                        or key == "executeCommand"
-                    ):
-                        path = f"{category}/{key}" if category else key
-                        capabilities[path] = item.capability_info
-                        capabilities_names.append(path)
-                self.data.capabilities = capabilities
-                _LOGGER.debug(
-                    "Electrolux rebuilt capabilities due to API malfunction: %s",
-                    json.dumps(capabilities),
-                )
-        # Add common entities
-        for common_attribute in COMMON_ATTRIBUTES:
-            entity_name = data.get_entity_name(common_attribute)
-            category = data.get_category(common_attribute)
-            found = False
-            # Check if not reported in capabilities
-            for capability in capabilities_names:
-                entity_name2 = data.get_entity_name(capability)
-                category2 = data.get_category(capability)
-                if entity_name2 == entity_name and (
-                    (category is None and category2 is None) or category == category2
-                ):
-                    found = True
-                    break
-            if found:
-                _LOGGER.debug("Electrolux common_attribute found %s", common_attribute)
+            # No capabilities returned (unstable API)
+            # We could rebuild them from catalog but this creates entities that are
+            # not required by each device type (fridge, dryer, vacumn etc are all different)
+            _LOGGER.warning("Electrolux API returned no capability definition")
+
+        # Add static attribute
+        # these are attributes that are not in the capability entry
+        # but are returned by the api independantly
+        for static_attribute in STATIC_ATTRIBUTES:
+            _LOGGER.debug("Electrolux static_attribute %s", static_attribute)
+            # attr not found in state, next attr
+            if self.get_state(static_attribute) is None:
                 continue
-            catalog_item = Catalog.get(entity_name, None)
-            if catalog_item:
-                self.data.capabilities[common_attribute] = catalog_item.capability_info
-                entity = self.get_entity(common_attribute)
-                _LOGGER.debug(
-                    "Electrolux common_attribute created %s", common_attribute
-                )
+            if catalog_item := Catalog.get(static_attribute, None):
+                if (entity := self.get_entity(static_attribute)) is None:
+                    # catalog definition and automatic checks fail to determine type
+                    _LOGGER.debug(
+                        "Electrolux static_attribute undefined %s", static_attribute
+                    )
+                    continue
+                # add to the capability dict
+                keys = static_attribute.split("/")
+                capabilities = self.data.capabilities
+                for key in keys[:-1]:
+                    capabilities = capabilities.setdefault(key, {})
+                capabilities[keys[-1]] = catalog_item.capability_info
+                _LOGGER.debug("Electrolux adding static_attribute %s", static_attribute)
+                entities.extend(entity)
 
         # For each capability src
         for capability in capabilities_names:
-            capability_info: dict[str, any] = data.capabilities[capability]
-            entity_name = data.get_entity_name(capability)
-            category = data.get_category(capability)
-            device_class = None
-            entity_category = None
-            # unit = None
-            # item : capability, category, DeviceClass, Unit, EntityCategory
-            catalog_items = cast(list[ElectroluxDevice], Catalog.get(entity_name, None))
+            if entity := self.get_entity(capability):
+                entities.extend(entity)
 
-            # Handle the case where the capabilities defined in catalog are richer than provided one from server
-            if catalog_item:
-                if capability_info is None:
-                    capability_info = catalog_item.capability_info
-                elif catalog_item.capability_info:
-                    for key, item in catalog_item.capability_info.items():
-                        if capability_info.get(key, None) is None:
-                            capability_info[key] = item
-                device_class = catalog_item.device_class
-
-            if capability == "executeCommand":
-                commands: dict[str, str] = capability_info["values"]
-                commands_keys = list(commands.keys())
-                entities.extend(
-                    ElectroluxButtonEntity(
-                        name=f"{data.get_name()} {data.get_sensor_name(command, capability)}",
-                        coordinator=self.coordinator,
-                        config_entry=self.coordinator.config_entry,
-                        entity_type=BUTTON,
-                        entity_attr=entity_name,
-                        entity_source=category,
-                        pnc_id=self.pnc_id,
-                        icon=icon_mapping.get(command, "mdi:gesture-tap-button"),
-                        val_to_send=command,
-                        capability=capability_info,
-                        entity_category=entity_category,
-                        device_class=device_class,
-                    )
-                    for command in commands_keys
-                )
-                # for command in commands_keys:
-                #     entities.append(
-                #         ElectroluxButtonEntity(
-                #             name=f"{data.get_name()} {data.get_sensor_name(command, capability)}",
-                #             coordinator=self.coordinator,
-                #             config_entry=self.coordinator.config_entry,
-                #             entity_type=BUTTON,
-                #             entity_attr=entity_name,
-                #             entity_source=category,
-                #             pnc_id=self.pnc_id,
-                #             icon=icon_mapping.get(command, "mdi:gesture-tap-button"),
-                #             val_to_send=command,
-                #             capability=capability_info,
-                #             entity_category=entity_category,
-                #             device_class=device_class,
-                #         )
-                #     )
-                continue
-
-            entity = self.get_entity(capability)
-            if entity:
-                entities.append(entity)
-
-        # Setup each found entities
+        # Setup each found entity
         self.entities = entities
         for entity in entities:
             entity.setup(data)

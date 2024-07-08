@@ -21,8 +21,7 @@ async def async_setup_entry(
 ) -> None:
     """Configure binary sensor platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
-    appliances = coordinator.data.get("appliances", None)
-    if appliances is not None:
+    if appliances := coordinator.data.get("appliances", None):
         for appliance_id, appliance in appliances.appliances.items():
             entities = [
                 entity

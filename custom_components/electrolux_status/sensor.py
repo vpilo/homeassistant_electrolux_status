@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, SENSOR
-from .entity import ElectroluxEntity, time_seconds_to_minutes
+from .entity import ElectroluxEntity
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -21,8 +21,7 @@ async def async_setup_entry(
 ) -> None:
     """Configure sensor platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
-    appliances = coordinator.data.get("appliances", None)
-    if appliances is not None:
+    if appliances := coordinator.data.get("appliances", None):
         for appliance_id, appliance in appliances.appliances.items():
             entities = [
                 entity for entity in appliance.entities if entity.entity_type == SENSOR

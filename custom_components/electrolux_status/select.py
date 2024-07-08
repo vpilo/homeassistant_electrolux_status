@@ -7,12 +7,13 @@ from pyelectroluxocp.oneAppApi import OneAppApi
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory
+from homeassistant.const import EntityCategory, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, SELECT
 from .entity import ElectroluxEntity
+from .model import ElectroluxDevice
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -24,8 +25,7 @@ async def async_setup_entry(
 ) -> None:
     """Configure select platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
-    appliances = coordinator.data.get("appliances", None)
-    if appliances is not None:
+    if appliances := coordinator.data.get("appliances", None):
         for appliance_id, appliance in appliances.appliances.items():
             entities = [
                 entity for entity in appliance.entities if entity.entity_type == SELECT
@@ -55,7 +55,7 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
         name: str,
         config_entry,
         pnc_id: str,
-        entity_type: str,
+        entity_type: Platform,
         entity_attr,
         entity_source,
         capability: dict[str, any],
@@ -63,6 +63,7 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
         device_class: str,
         entity_category: EntityCategory,
         icon: str,
+        catalog_entry: ElectroluxDevice | None = None,
     ) -> None:
         """Initialize the Select entity."""
         super().__init__(
@@ -78,6 +79,7 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
             device_class=device_class,
             entity_category=entity_category,
             icon=icon,
+            catalog_entry=catalog_entry,
         )
         values_dict: dict[str, any] | None = self.capability.get("values", None)
         self.options_list: dict[str, str] = {}
@@ -113,7 +115,7 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
                 self.options_list.values(),
                 ex,
             )
-        # TODO : happens when value not in the catalog -> add the value to the list then
+        # When value not in the catalog -> add the value to the list then
         if label is None:
             label = self.format_value(value)
             self.options_list[label] = value
@@ -128,12 +130,14 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
         value = self.options_list.get(option, None)
         if value is None:
             return
+
         client: OneAppApi = self.api
         command: dict[str, any] = {}
         if self.entity_source:
             command = {self.entity_source: {self.entity_attr: value}}
         else:
             command = {self.entity_attr: value}
+
         _LOGGER.debug("Electrolux select option %s", command)
         result = await client.execute_appliance_command(self.pnc_id, command)
         _LOGGER.debug("Electrolux select option result %s", result)
@@ -142,4 +146,3 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
     def options(self) -> list[str]:
         """Return a set of selectable options."""
         return list(self.options_list.keys())
-        # return [TRANSLATABLE_POWER_OFF] + sorted(self._data.activity_names)
