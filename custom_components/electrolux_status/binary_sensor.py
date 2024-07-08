@@ -9,6 +9,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import BINARY_SENSOR, DOMAIN
 from .entity import ElectroluxEntity
+from .util import string_to_boolean
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -44,6 +45,8 @@ class ElectroluxBinarySensor(ElectroluxEntity, BinarySensorEntity):
     def is_on(self) -> bool:
         """Return true if the binary_sensor is on."""
         value = self.extract_value()
+        if isinstance(value, str):
+            value = string_to_boolean(value, True)
         if value is None:
             return self._cached_value
         self._cached_value = value

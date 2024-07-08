@@ -11,7 +11,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, NUMBER
-from .entity import ElectroluxEntity, time_seconds_to_minutes
+from .entity import ElectroluxEntity
+from .util import time_minutes_to_seconds, time_seconds_to_minutes
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -57,7 +58,7 @@ class ElectroluxNumber(ElectroluxEntity, NumberEntity):
         return value
 
     @property
-    def native_max_value(self) -> float | None:
+    def native_max_value(self) -> float:
         """Return the max value."""
         if self.unit == UnitOfTime.SECONDS:
             return time_seconds_to_minutes(self.capability.get("max", 100))
@@ -79,6 +80,8 @@ class ElectroluxNumber(ElectroluxEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
+        if self.unit == UnitOfTime.SECONDS:
+            value = time_minutes_to_seconds(value)
         client: OneAppApi = self.api
         if self.entity_source:
             command = {self.entity_source: {self.entity_attr: value}}

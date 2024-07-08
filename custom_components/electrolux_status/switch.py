@@ -12,6 +12,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, SWITCH
 from .entity import ElectroluxEntity
+from .util import string_to_boolean
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -47,10 +48,7 @@ class ElectroluxSwitch(ElectroluxEntity, SwitchEntity):
 
         # Electrolux bug
         if value is not None and isinstance(value, str):
-            if value == "ON":
-                value = True
-            else:
-                value = False
+            value = string_to_boolean(value, False)
 
         if value is None:
             return self._cached_value
@@ -60,12 +58,9 @@ class ElectroluxSwitch(ElectroluxEntity, SwitchEntity):
     async def switch(self, value: bool) -> None:
         """Control switch state."""
         client: OneAppApi = self.api
-        # Electrolux bug
+        # Electrolux bug - needs string not bool
         if "values" in self.capability:
-            if value:
-                value = "ON"
-            else:
-                value = "OFF"
+            value = "ON" if value else "OFF"
 
         if self.entity_source:
             command = {self.entity_source: {self.entity_attr: value}}
