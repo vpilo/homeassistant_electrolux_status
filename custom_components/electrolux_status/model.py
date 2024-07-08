@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, TypedDict
+
+from pyelectroluxocp.oneAppApiClient import UserToken
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.button import ButtonDeviceClass
@@ -73,3 +75,10 @@ class ElectroluxDevice:
     # other entities can derive their type via device_class
     # once Select entities have a device_class this is not needed
     entity_platform: Platform | None = None
+
+
+class ElectroluxTokenStore(TypedDict):
+    """Serialized exposed entities storage storage collection."""
+
+    accounts: dict[str, UserToken]
+

@@ -1,24 +1,30 @@
 """electrolux status integration."""
 
 import asyncio
+from datetime import UTC, timedelta
 import json
 import logging
 from typing import Any
 
 from aiohttp import ClientResponseError
 from pyelectroluxocp import OneAppApi
+from pyelectroluxocp.apiModels import UserTokenResponse
+from pyelectroluxocp.oneAppApiClient import UserToken
 
-from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import (
-    ConfigEntryError,
-    ConfigEntryNotReady,
-)
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 from .api import Appliance, Appliances, ElectroluxLibraryEntity
 from .const import DOMAIN
+from .model import ElectroluxTokenStore
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
+
+SAVE_DELAY = 0
+STORAGE_VERSION = 1
 
 
 class ElectroluxCoordinator(DataUpdateCoordinator):
@@ -27,23 +33,152 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
     api: OneAppApi = None
 
     def __init__(
-        self, hass: HomeAssistant, client: OneAppApi, renew_interval: int
+        self,
+        hass: HomeAssistant,
+        client: OneAppApi,
+        renew_interval: int,
+        username: str,
     ) -> None:
         """Initialize."""
         self.api = client
         self.platforms = []
         self.renew_task = None
+        self.token_task = None
         self.renew_interval = renew_interval
+        self._token_expiry = renew_interval
         self._websocket = None
+        self._accountid = username
+        self._token: UserToken | None = None
+        self._token_store: ElectroluxTokenStore | None = None
+        self._store: Store[ElectroluxTokenStore] = Store(hass, STORAGE_VERSION, DOMAIN)
 
         super().__init__(hass, _LOGGER, name=DOMAIN)
+
+    async def load_store(self) -> None:
+        """Load data from file."""
+        self._token_store = await self._store.async_load() or {"accounts": {}}
+
+    async def account_token(self) -> UserToken:
+        """Convert the store token to a usable format."""
+        # ensure store is loaded
+        if self._token_store is None:
+            await self.load_store()
+
+        # search the store for the account we have loaded
+        data = self._token_store
+        if self._accountid in data["accounts"]:
+            entry = data["accounts"][self._accountid]
+            try:
+                response = UserTokenResponse(entry["token"])
+                token = UserToken(response)
+                token.expiresAt = dt_util.parse_datetime(
+                    entry["expiresAt"],
+                    raise_on_error=True,
+                )  # token is UTC, so ensure that context remains
+                self._token = token  # dont save again, we just loaded it
+                await self.update_token_lifetime(token)
+            except Exception as ex:  # noqa: BLE001
+                _LOGGER.debug("Electrolux store retrieval failed: %s", ex)
+                self._store.async_delay_save(self.clear_token, SAVE_DELAY)
+            else:
+                return token
+        return None
+
+    async def update_token_lifetime(self, token: UserToken) -> None:
+        """Store the lifetime of the token into the coordinator."""
+        if token is None:
+            # No token available
+            self._token_expiry = 0
+            self._cancel_token_task()
+
+        if (
+            self._token is None
+            or self._token.token != token.token
+            or self._token.expiresAt != token.expiresAt
+        ):
+            self._token = token
+            _LOGGER.debug("New token to be saved to store")
+            self._store.async_delay_save(self._data_to_save, SAVE_DELAY)
+
+        # Convert the token expiry time to UTC timezone aware then compare
+        # token to time 5 minutes from now so we can renew before expiry
+        utc_expiry = dt_util.utc_from_timestamp(
+            self._token.expiresAt.timestamp(), tz=UTC
+        )
+        utc_in_5_minutes = dt_util.now(time_zone=UTC) + timedelta(minutes=5)
+
+        if utc_expiry <= utc_in_5_minutes:
+            # Token has already expired or will expire within 5 minutes
+            self._token_expiry = 0
+            self._cancel_token_task()
+        else:
+            # Calculate the time remaining until the token expires
+            self._token_expiry = (utc_expiry - utc_in_5_minutes).seconds
+            await self.launch_token_renewal_task()
+
+    @callback
+    def _data_to_save(self) -> ElectroluxTokenStore:
+        """Return token data to store in a file."""
+        data = self._token_store
+
+        data["accounts"][self._accountid] = {
+            "token": self._token.token,
+            "expiresAt": self._token.expiresAt.isoformat(),
+        }
+
+        if self._token is None:
+            del data["accounts"][self._accountid]
+
+        self._token_store = data
+        return data
+
+    @callback
+    def clear_token(self) -> ElectroluxTokenStore:
+        """Return token data to store in a file."""
+        _LOGGER.debug("Clearing the stored token from storage")
+        data = self._token_store
+
+        if self._accountid in data["accounts"]:
+            del data["accounts"][self._accountid]
+        self._token_store = data
+        self._token = None
+        return data
+
+    async def get_stored_token(self) -> None:
+        """Fetch the store token and store into the coordinator."""
+        if self._token is None:
+            self._token = await self.account_token()
+
+        if self._token is None:
+            _LOGGER.debug("Stored token not available")
+            return
+
+        # force renewal 5 minutes before expiry
+        if self._token_expiry <= 300:
+            _LOGGER.debug(
+                "Requesting new login session. Stored token expires at: %s",
+                self._token.expiresAt,
+            )
+            self._store.async_delay_save(self.clear_token, SAVE_DELAY)
+        else:
+            _LOGGER.debug(
+                "Stored token is still valid until %s and will be reused",
+                dt_util.now() + timedelta(seconds=self._token_expiry),
+            )
+            # Load the token into the API
+            self.api._user_token = self._token  # noqa: SLF001
+            await self.api._get_gigya_client()  # noqa: SLF001
 
     async def async_login(self) -> bool:
         """Authenticate with the service."""
         try:
-            # Check that one can extract the appliance list to confirm login
+            # Check that one can extract the appliance list to confirm login?
             token = await self.api.get_user_token()
+
             if token and token.token:
+                if self._token is None or self._token.token != token.token:
+                    # update the token_expiry only if the token changed
+                    await self.update_token_lifetime(token)
                 _LOGGER.debug("Electrolux logged in successfully, %s", token.token)
                 return True
             _LOGGER.debug("Electrolux wrong credentials")
@@ -138,11 +273,46 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                 )
             self.listen_websocket()
 
+    def _cancel_token_task(self):
+        """Cancel the running token renewal task."""
+        if self.token_task:
+            self.token_task.cancel()
+            self.token_task = None
+
+    async def launch_token_renewal_task(self):
+        """Start the renewal of token."""
+        _LOGGER.debug("configuring token_renewal_task")
+        self._cancel_token_task()
+        self.token_task = asyncio.create_task(
+            self.token_renewal_task(), name="Electrolux renewal token"
+        )
+
+    async def token_renewal_task(self):
+        """Renew token."""
+
+        _LOGGER.debug(
+            "Electrolux token_renewal_task will sleep for %s seconds and will start at: %s",
+            self._token_expiry,
+            dt_util.now() + timedelta(seconds=self._token_expiry),
+        )
+
+        # wait until the token is about to expire
+        await asyncio.sleep(self._token_expiry)
+
+        # manipulate the token expiry time to force an early token refresh
+        _LOGGER.debug("Executing Electrolux token_renewal_task")
+        fake_expiry = (dt_util.utcnow() - timedelta(minutes=10)).replace(tzinfo=None)
+        self.api._user_token.expiresAt = fake_expiry  # noqa: SLF001
+        await self.async_login()
+
     async def close_websocket(self):
         """Close websocket."""
         if self.renew_task:
             self.renew_task.cancel()
             self.renew_task = None
+        if self.token_task:
+            self.token_task.cancel()
+            self.token_task = None
         try:
             await self.api.disconnect_websocket()
         except Exception as ex:  # noqa: BLE001
@@ -167,6 +337,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                 self.api,
                 json.dumps(appliances_list),
             )
+
             for appliance_json in appliances_list:
                 appliance_capabilities = None
                 appliance_id = appliance_json.get("applianceId")
@@ -195,14 +366,12 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                         json.dumps(appliance_capabilities),
                     )
                 except Exception as exception:  # noqa: BLE001
-                    _LOGGER.warning(
-                        "Electrolux unable to retrieve capabilities, we are going on our own. %s",
-                        exception,
-                    )
+                    raise ConfigEntryNotReady(
+                        "Electrolux unable to retrieve capabilities. Cancelling setup"
+                    ) from exception
 
-                appliance_info = (
-                    None if len(appliance_infos) == 0 else appliance_infos[0]
-                )
+                appliance_info = appliance_infos[0] if appliance_infos else None
+
                 appliance_model = appliance_info.get("model") if appliance_info else ""
                 brand = appliance_info.get("brand") if appliance_info else ""
                 # appliance_profile not reported
