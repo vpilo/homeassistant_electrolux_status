@@ -1,6 +1,7 @@
 """Switch platform for Electrolux Status."""
 
 import logging
+from typing import Any
 
 from pyelectroluxocp import OneAppApi
 
@@ -19,7 +20,7 @@ async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
-):
+) -> None:
     """Configure switch platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     appliances = coordinator.data.get("appliances", None)
@@ -40,7 +41,7 @@ class ElectroluxSwitch(ElectroluxEntity, SwitchEntity):
     """Electrolux Status switch class."""
 
     @property
-    def is_on(self):
+    def is_on(self) -> bool:
         """Return true if the binary_sensor is on."""
         value = self.extract_value()
 
@@ -56,7 +57,7 @@ class ElectroluxSwitch(ElectroluxEntity, SwitchEntity):
         self._cached_value = value
         return value
 
-    async def switch(self, value: bool):
+    async def switch(self, value: bool) -> None:
         """Control switch state."""
         client: OneAppApi = self.api
         # Electrolux bug
@@ -74,10 +75,10 @@ class ElectroluxSwitch(ElectroluxEntity, SwitchEntity):
         result = await client.execute_appliance_command(self.pnc_id, command)
         _LOGGER.debug("Electrolux set value result %s", result)
 
-    async def async_turn_on(self, **kwargs):
+    async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the entity on."""
         await self.switch(True)
 
-    async def async_turn_off(self, **kwargs):
+    async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the entity off."""
         await self.switch(False)

@@ -18,7 +18,7 @@ async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
-):
+) -> None:
     """Configure sensor platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     appliances = coordinator.data.get("appliances", None)
@@ -48,7 +48,7 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
         return None
 
     @property
-    def native_value(self):
+    def native_value(self) -> str | int | float:
         """Return the state of the sensor."""
         value = self.extract_value()
         if value is not None and self.unit == UnitOfTime.SECONDS:
@@ -66,7 +66,7 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
         return value
 
     @property
-    def native_unit_of_measurement(self):
+    def native_unit_of_measurement(self) -> str | None:
         """Return unit of measurement."""
         if self.unit == UnitOfTime.SECONDS:
             return UnitOfTime.MINUTES

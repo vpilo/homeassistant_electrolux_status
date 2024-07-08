@@ -17,7 +17,7 @@ async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
-):
+) -> None:
     """Configure binary sensor platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     appliances = coordinator.data.get("appliances", None)
@@ -40,7 +40,8 @@ class ElectroluxBinarySensor(ElectroluxEntity, BinarySensorEntity):
     """Electrolux Status binary_sensor class."""
 
     @property
-    def is_on(self):
+    @property
+    def is_on(self) -> bool:
         """Return true if the binary_sensor is on."""
         value = self.extract_value()
         if value is None:

@@ -20,7 +20,7 @@ async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
-):
+) -> None:
     """Configure number platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     appliances = coordinator.data.get("appliances", None)
@@ -64,14 +64,14 @@ class ElectroluxNumber(ElectroluxEntity, NumberEntity):
         return self.capability.get("max", 100)
 
     @property
-    def native_min_value(self) -> float | None:
+    def native_min_value(self) -> float:
         """Return the max value."""
         if self.unit == UnitOfTime.SECONDS:
             return time_seconds_to_minutes(self.capability.get("min", 0))
         return self.capability.get("min", 0)
 
     @property
-    def native_step(self) -> float | None:
+    def native_step(self) -> float:
         """Return the max value."""
         if self.unit == UnitOfTime.SECONDS:
             return time_seconds_to_minutes(self.capability.get("step", 1))
@@ -89,7 +89,7 @@ class ElectroluxNumber(ElectroluxEntity, NumberEntity):
         _LOGGER.debug("Electrolux set value result %s", result)
 
     @property
-    def native_unit_of_measurement(self):
+    def native_unit_of_measurement(self) -> str | None:
         """Return the unit of measurement."""
         if self.unit == UnitOfTime.SECONDS:
             return UnitOfTime.MINUTES
