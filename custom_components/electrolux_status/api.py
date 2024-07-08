@@ -55,9 +55,13 @@ class ElectroluxLibraryEntity:
         self.name = name
         self.status = status
         self.state = state
-        self.reported_state = self.state["properties"]["reported"]
         self.appliance_info = appliance_info
         self.capabilities = capabilities
+
+    @property
+    def reported_state(self) -> dict[str, Any]:
+        """Return the reported state of the appliance."""
+        return self.state.get("properties", {}).get("reported")
 
     def get_name(self):
         """Get entity name."""
@@ -282,44 +286,43 @@ class Appliance:
         self.brand = brand
         self.state: ApplienceStatusResponse = state
 
+    @property
+    def reported_state(self) -> dict[str, Any]:
+        """Return the reported state of the appliance."""
+        return self.state.get("properties", {}).get("reported", {})
+
     def update_missing_entities(self) -> None:
-        """Add missing entities when no capabilities returned by the API, do it dynamically."""
-        if not self.own_capabilties:
+        """Add missing entities when no capabilities returned by the API.
+
+        This is done dynamically but only when the reported state contains the attributes.
+        """
+        if not self.own_capabilties or not self.reported_state:
             return
-        properties = self.state.get("properties")
-        capability = ""
-        if properties:
-            reported = properties.get("reported")
-            if reported:
-                for key, items in Catalog.items():
-                    for item in items:
-                        category = item.category
-                        if (
-                            category
-                            and reported.get(category, None)
-                            and reported.get(category, None).get(key)
-                        ) or (not category and reported.get(key, None)):
-                            found: bool = False
-                            for entity in self.entities:
-                                if (
-                                    entity.entity_attr == key
-                                    and entity.entity_source == category
-                                ):
-                                    found = True
-                                    capability = (
-                                        key if category is None else category + "/" + key
-                                    )
-                                    self.data.capabilities[capability] = item.capability_info
-                                    break
-                            if not found:
-                                _LOGGER.debug(
-                                    "Electrolux discovered new entity from extracted data. Category: %s Key: %s",
-                                    category,
-                                    key,
-                                )
-                                entity = self.get_entity(capability)
-                                if entity:
-                                    self.entities.append(entity)
+
+        for key, catalog_item in Catalog.items():
+            category = self.data.get_category(key)
+            if (
+                category
+                and self.reported_state.get(category, None)
+                and self.reported_state.get(category, None).get(key)
+            ) or (not category and self.reported_state.get(key, None)):
+                found: bool = False
+                for entity in self.entities:
+                    if entity.entity_attr == key and entity.entity_source == category:
+                        found = True
+                        keys = key.split("/")
+                        capabilities = self.data.capabilities
+                        for key in keys[:-1]:
+                            capabilities = capabilities.setdefault(key, {})
+                        capabilities[keys[-1]] = catalog_item.capability_info
+                        break
+                if not found:
+                    _LOGGER.debug(
+                        "Electrolux discovered new entity from extracted data. Key: %s",
+                        key,
+                    )
+                    if entity := self.get_entity(key):
+                        self.entities.extend(entity)
 
     def get_entity(self, capability: str) -> list[ElectroluxEntity] | None:
         """Return the entity."""
@@ -504,14 +507,11 @@ class Appliance:
         for entity in entities:
             entity.setup(data)
 
-    def update_reported_data(self, reported_data: dict[str, any]):
+    def update_reported_data(self, reported_data: dict[str, Any]):
         """Update the reported data."""
         _LOGGER.debug("Electrolux update reported data %s", reported_data)
         try:
-            local_reported_data = self.state.get("properties", None).get(
-                "reported", None
-            )
-            local_reported_data.update(reported_data)
+            self.reported_state.update(reported_data)
             _LOGGER.debug("Electrolux updated reported data %s", self.state)
             self.update_missing_entities()
             for entity in self.entities:
