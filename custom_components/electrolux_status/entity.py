@@ -82,14 +82,14 @@ class ElectroluxEntity(CoordinatorEntity):
         self.pnc_id = pnc_id
         self.unit = unit
         self.capability = capability
-        _LOGGER.debug("Electrolux new entity %s for appliance %s", name, pnc_id)
-        self.entity_id = ENTITY_ID_FORMAT.format(
-            f"{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_attr}"
-        )
         if catalog_entry:
             self.entity_registry_enabled_default = (
                 catalog_entry.entity_registry_enabled_default
             )
+        _LOGGER.debug("Electrolux new entity %s for appliance %s", name, pnc_id)
+        self.entity_id = ENTITY_ID_FORMAT.format(
+            f"{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_attr}"
+        )
 
     def setup(self, data):
         """Initialiaze setup."""
@@ -126,9 +126,28 @@ class ElectroluxEntity(CoordinatorEntity):
             return self.appliance_status.get("connectionState", None)
         return None
 
+    def get_state_attr(self, path: str) -> str | None:
+        """Return value of other appliance attributes.
+
+        Used for the evaluation of state_mapping one property to another.
+        """
+        if "/" in path:
+            source, attr = path.split("/")
+            return self.reported_state.get(source, {}).get(attr, None)
+        return self.reported_state.get(path, None)
+
+    @property
+    def reported_state(self):
+        """Return reported state of the appliance."""
+        return self.appliance_status.get("properties", {}).get("reported", {})
+
     @property
     def name(self) -> str:
         """Return the name of the sensor."""
+        if self.catalog_entry and self.catalog_entry.friendly_name:
+            return (
+                f"{self.get_appliance.name} {self.catalog_entry.friendly_name.lower()}"
+            )
         return self._name
 
     @property
@@ -158,13 +177,6 @@ class ElectroluxEntity(CoordinatorEntity):
             "name": self.get_appliance.name,
             "model": self.get_appliance.model,
             "manufacturer": self.get_appliance.brand,
-        }
-
-    @property
-    def extra_state_attributes(self):
-        """Return the state attributes."""
-        return {
-            "integration": DOMAIN,
         }
 
     @property

@@ -45,7 +45,11 @@ class ElectroluxSwitch(ElectroluxEntity, SwitchEntity):
         """Return true if the binary_sensor is on."""
         value = self.extract_value()
 
-        # Electrolux bug
+        if value is None:
+            if self.catalog_entry and self.catalog_entry.state_mapping:
+                mapping = self.catalog_entry.state_mapping
+                value = self.get_state_attr(mapping)
+        # Electrolux returns strings for some true/false states
         if value is not None and isinstance(value, str):
             value = string_to_boolean(value, False)
 

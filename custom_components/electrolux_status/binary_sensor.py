@@ -40,13 +40,18 @@ class ElectroluxBinarySensor(ElectroluxEntity, BinarySensorEntity):
     """Electrolux Status binary_sensor class."""
 
     @property
+    def invert(self) -> bool:
+        """Determine if the value returned for the entity needs to be reversed."""
+        if self.catalog_entry:
+            return self.catalog_entry.state_invert
+        return False
+
     @property
     def is_on(self) -> bool:
         """Return true if the binary_sensor is on."""
         value = self.extract_value()
         if isinstance(value, str):
             value = string_to_boolean(value, True)
-        if value is None:
-            return self._cached_value
-        self._cached_value = value
-        return value
+        if value is not None:
+            self._cached_value = value
+        return not self._cached_value if self.invert else self._cached_value

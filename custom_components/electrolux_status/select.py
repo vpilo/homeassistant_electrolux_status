@@ -1,6 +1,6 @@
 """Select platform for Electrolux Status."""
 
-import json
+import contextlib
 import logging
 from typing import Any
 
@@ -8,7 +8,7 @@ from pyelectroluxocp.oneAppApi import OneAppApi
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory, Platform
+from homeassistant.const import EntityCategory, Platform, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -80,8 +80,21 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
             entry: dict[str, Any] = values_dict[value]
             if "disabled" in entry:
                 continue
-            label = self.format_value(value)
+
+            label = self.format_label(value)
             self.options_list[label] = value
+
+    def format_label(self, value: str | None) -> str | None:
+        """Convert input to label string value."""
+        if value is None:
+            return None
+        if isinstance(value, str):
+            value = value.replace("_", " ").title()
+        if self.unit == UnitOfTemperature.CELSIUS:
+            value = f"{value} °C"
+        elif self.unit == UnitOfTemperature.FAHRENHEIT:
+            value = f"{value} °F"
+        return str(value)
 
     # @property
     # def icon(self) -> str:
@@ -94,8 +107,16 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
     def current_option(self) -> str:
         """Return the current option."""
         value = self.extract_value()
+
         if value is None:
             return self._cached_value
+
+        if self.catalog_entry and self.catalog_entry.value_mapping:
+            mapping = self.catalog_entry.value_mapping
+            _LOGGER.debug("Mapping %s: %s to %s", self.json_path, value, mapping)
+            if value in mapping:
+                value = mapping.get(value, value)
+
         label = None
         try:
             label = list(self.options_list.keys())[
@@ -110,7 +131,7 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
             )
         # When value not in the catalog -> add the value to the list then
         if label is None:
-            label = self.format_value(value)
+            label = self.format_label(value)
             self.options_list[label] = value
         if label is not None:
             self._cached_value = label
@@ -121,6 +142,13 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
         value = self.options_list.get(option, None)
+        if isinstance(self.unit, UnitOfTemperature) or self.entity_attr.startswith(
+            "targetTemperature"
+        ):
+            # Attempt to convert the option to a float
+            with contextlib.suppress(ValueError):
+                value = float(value)
+
         if value is None:
             return
 

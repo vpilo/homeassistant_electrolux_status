@@ -47,12 +47,16 @@ class ElectroluxNumber(ElectroluxEntity, NumberEntity):
             value = time_seconds_to_minutes(self.extract_value())
         else:
             value = self.extract_value()
+
         if not value:
             value = self.capability.get("default", None)
         if not value:
             return self._cached_value
-        if self.unit == UnitOfTemperature.CELSIUS:
+        if isinstance(self.unit, UnitOfTemperature):
             value = round(value, 2)
+        elif isinstance(self.unit, UnitOfTime):
+            # Electrolux bug - prevent negative/disabled timers
+            value = max(value, 0)
         self._cached_value = value
         return value
 

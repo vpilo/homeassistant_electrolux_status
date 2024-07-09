@@ -1,16 +1,17 @@
 """Button platform for Electrolux Status."""
 
 import logging
+from typing import Any
 
 from pyelectroluxocp.oneAppApi import OneAppApi
 
 from homeassistant.components.button import ENTITY_ID_FORMAT, ButtonEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory, Platform
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import BUTTON, DOMAIN
+from .const import BUTTON, DOMAIN, icon_mapping
 from .entity import ElectroluxEntity
 from .model import ElectroluxDevice
 
@@ -42,19 +43,20 @@ class ElectroluxButton(ElectroluxEntity, ButtonEntity):
 
     def __init__(
         self,
-        coordinator: any,
+        coordinator: Any,
         name: str,
         config_entry,
         pnc_id: str,
-        entity_type: Platform,
+        entity_type: str,
         entity_attr,
         entity_source,
-        capability: dict[str, any],
+        capability: dict[str, Any],
+        unit: str,
         device_class: str,
         entity_category: EntityCategory,
         icon: str,
         catalog_entry: ElectroluxDevice | None,
-        val_to_send,
+        val_to_send: str,
     ) -> None:
         """Initialize the Button Entity."""
         super().__init__(
@@ -77,12 +79,33 @@ class ElectroluxButton(ElectroluxEntity, ButtonEntity):
             f"{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_attr}_{self.val_to_send}"
         )
 
-
     @property
     def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
         return f"{self.config_entry.entry_id}-{self.val_to_send}-{self.entity_attr}-{self.entity_source}-{self.pnc_id}"
 
+    @property
+    def name(self) -> str:
+        """Return the name of the sensor."""
+        name = self._name
+        if self.catalog_entry and self.catalog_entry.friendly_name:
+            name = (
+                f"{self.get_appliance.name} {self.catalog_entry.friendly_name.lower()}"
+            )
+        # Get the last word from the 'name' variable
+        # and compare to the command we are sending duplicate names
+        # "air filter state reset reset" for instance
+        last_word = name.split()[-1]
+        if last_word.lower() == str(self.val_to_send).lower():
+            return name
+        return f"{name} {self.val_to_send}"
+
+    @property
+    def icon(self) -> str | None:
+        """Return the icon of the entity."""
+        return self._icon or icon_mapping.get(
+            self.val_to_send, "mdi:gesture-tap-button"
+        )
 
     async def send_command(self) -> bool:
         """Send a command to the device."""

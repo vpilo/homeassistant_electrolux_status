@@ -1,10 +1,11 @@
 """Switch platform for Electrolux Status."""
 
+import contextlib
 import logging
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfTemperature, UnitOfTime
+from homeassistant.const import UnitOfTemperature, UnitOfTime, UnitOfVolume
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -42,6 +43,10 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
         """Get the display precision."""
         if self.unit == UnitOfTemperature.CELSIUS:
             return 2
+        if self.unit == UnitOfTemperature.FAHRENHEIT:
+            return 2
+        if self.unit == UnitOfVolume.LITERS:
+            return 0
         if self.unit == UnitOfTime.SECONDS:
             return 0
         return None
@@ -50,10 +55,14 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
     def native_value(self) -> str | int | float:
         """Return the state of the sensor."""
         value = self.extract_value()
-        if value is not None and self.unit == UnitOfTime.SECONDS:
-            value = time_seconds_to_minutes(value)
-            if value is not None and value < 0:
-                value = 0
+        if value is not None and isinstance(self.unit, UnitOfTime):
+            # Electrolux bug - prevent negative/disabled timers
+            value = max(value, 0)
+        if self.catalog_entry and self.catalog_entry.value_mapping:
+            # Electrolux presents as string but returns an int
+            mapping = self.catalog_entry.value_mapping
+            if value in mapping:
+                value = mapping.get(value, value)
         if isinstance(value, str):
             if "_" in value:
                 value = value.replace("_", " ")
@@ -67,6 +76,17 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
     @property
     def native_unit_of_measurement(self) -> str | None:
         """Return unit of measurement."""
+        # store the value of the sensor in the native format
+        return self.unit
+
+    @property
+    def suggested_unit_of_measurement(self) -> str | None:
+        """Return suggested unit of measurement."""
+        # change the display unit in the HA frontend
         if self.unit == UnitOfTime.SECONDS:
             return UnitOfTime.MINUTES
-        return self.unit
+        with contextlib.suppress(ValueError):
+            if self._is_valid_suggested_unit(self.unit):
+                return self.unit
+        return None
+
