@@ -1,6 +1,5 @@
 """API for Electrolux Status."""
 
-import json
 import logging
 import re
 from typing import Any

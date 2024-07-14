@@ -10,7 +10,6 @@ from pyelectroluxocp.oneAppApiClient import UserToken
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.button import ButtonDeviceClass
 from homeassistant.components.number import NumberDeviceClass
-from homeassistant.components.select import SelectEntity
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.switch import SwitchDeviceClass
 from homeassistant.const import EntityCategory, Platform
@@ -27,10 +26,6 @@ class ElectroluxDevice:
     # dictionary of the device capability
     # override and replace bad api data
     capability_info: dict[str, Any] = field(default_factory=dict)
-
-    # possible decommission?
-    # the parent json property
-    category: str | None = None
 
     # type used here will override internal definitions / guesstimates
     # entity_platform will override the device_class specified
@@ -81,4 +76,3 @@ class ElectroluxTokenStore(TypedDict):
     """Serialized exposed entities storage storage collection."""
 
     accounts: dict[str, UserToken]
-

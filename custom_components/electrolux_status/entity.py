@@ -1,13 +1,11 @@
 """Entity platform for Electrolux Status."""
 
 import logging
-import math
 from typing import Any, cast
 
 from pyelectroluxocp import OneAppApi
 from pyelectroluxocp.apiModels import ApplienceStatusResponse
 
-from homeassistant.components.sensor import ENTITY_ID_FORMAT
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory, Platform
 from homeassistant.core import HomeAssistant
@@ -87,9 +85,6 @@ class ElectroluxEntity(CoordinatorEntity):
                 catalog_entry.entity_registry_enabled_default
             )
         _LOGGER.debug("Electrolux new entity %s for appliance %s", name, pnc_id)
-        self.entity_id = ENTITY_ID_FORMAT.format(
-            f"{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_attr}"
-        )
 
     def setup(self, data):
         """Initialiaze setup."""
@@ -221,6 +216,24 @@ class ElectroluxEntity(CoordinatorEntity):
         #     self.async_write_ha_state()
 
     @property
+    def json_path(self) -> str | None:
+        """Return the path to the entry."""
+        if self.entity_source:
+            return f"{self.entity_source}/{self.entity_attr}"
+        return self.entity_attr
+
+    @property
     def catalog_entry(self) -> ElectroluxDevice | None:
         """Return matched catalog entry."""
         return self._catalog_entry
+
+    # @property
+    # def extra_state_attributes(self) -> dict[str, Any]:
+    #     """Return the state attributes of the sensor."""
+    #     return {
+    #         "Path": self.json_path,
+    #         "entity_type": str(self.entity_type),
+    #         "entity_category": str(self.entity_category),
+    #         "device_class": str(self.device_class),
+    #         "capability": str(self.capability),
+    #     }

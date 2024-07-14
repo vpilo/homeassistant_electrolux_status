@@ -5,7 +5,7 @@ from typing import Any
 
 from pyelectroluxocp.oneAppApi import OneAppApi
 
-from homeassistant.components.button import ENTITY_ID_FORMAT, ButtonEntity
+from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
@@ -75,9 +75,6 @@ class ElectroluxButton(ElectroluxEntity, ButtonEntity):
             catalog_entry=catalog_entry,
         )
         self.val_to_send = val_to_send
-        self.entity_id = ENTITY_ID_FORMAT.format(
-            f"{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_attr}_{self.val_to_send}"
-        )
 
     @property
     def unique_id(self) -> str:
