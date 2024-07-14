@@ -247,12 +247,49 @@ class ElectroluxLibraryEntity:
     def sources_list(self):
         """List the capability types."""
         if self.capabilities is None:
+            _LOGGER.warning("Electrolux capabilities list is empty")
             return None
-        return [
+
+        # dont load these entities by default as they are not useful
+        # we do load some of these directly via STATIC_ATTRIBUTES
+        exclude_list: tuple[str, ...] = (
+            "applianceCareAndMaintenance",
+            "applianceMainBoardSwVersion",
+            "coolingValveState",
+            "networkInterface",
+            "temperatureRepresentation",
+        )
+
+        sources = [
             key
             for key in list(self.capabilities.keys())
-            if not key.startswith("applianceCareAndMaintenance")
+            if not key.startswith(exclude_list)
         ]
+
+        for key, value in self.capabilities.items():
+            if key.startswith(exclude_list):
+                continue
+
+            if isinstance(value, dict):
+                for sub_key, sub_value in value.items():
+                    if (
+                        isinstance(sub_value, dict)
+                        and "access" in sub_value
+                        and "type" in sub_value
+                    ):
+                        sources.append(f"{key}/{sub_key}")
+            elif "access" in value and "type" in value:
+                sources.append(key)
+
+        return sources
+
+    # def sources_list_old(self):
+    #     _LOGGER.warning(self.capabilities)
+    #     return [
+    #         key
+    #         for key in list(self.capabilities.keys())
+    #         if not key.startswith("applianceCareAndMaintenance")
+    #     ]
 
 
 class Appliance:
@@ -341,7 +378,7 @@ class Appliance:
         entity_type = self.data.get_entity_type(capability)
         entity_name = self.data.get_entity_name(capability)
         category = self.data.get_category(capability)
-        capability_info: dict[str, Any] = self.data.get_capability(capability)
+        capability_info = self.data.get_capability(capability)
         device_class = self.data.get_entity_device_class(capability)
         entity_category = None
         entity_icon = None
