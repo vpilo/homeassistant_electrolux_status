@@ -1,7 +1,5 @@
 """electrolux status integration."""
 
-import asyncio
-import base64
 import logging
 
 from homeassistant.config_entries import ConfigEntry
@@ -55,7 +53,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass,
         client=client,
         renew_interval=renew_interval,
-        username=base64.b64encode(username.encode("utf-8")).decode("utf-8"),
+        username=username,
     )
 
     await coordinator.get_stored_token()
@@ -80,6 +78,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, coordinator.api.close)
     )
 
+    entry.async_on_unload(entry.add_update_listener(update_listener))
+
     _LOGGER.debug("async_setup_entry async_config_entry_first_refresh")
     # Fill in the values for first time
     await coordinator.async_config_entry_first_refresh()
@@ -89,32 +89,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     _LOGGER.debug("async_setup_entry extend PLATFORMS")
     coordinator.platforms.extend(PLATFORMS)
+
     # Call async_setup_entry in entity files
     _LOGGER.debug("async_setup_entry async_forward_entry_setups")
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    _LOGGER.debug("async_setup_entry add_update_listener")
-    entry.add_update_listener(async_reload_entry)
+
     _LOGGER.debug("async_setup_entry OVER")
     return True
+
+
+async def update_listener(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
+    """Update listener."""
+    await hass.config_entries.async_reload(config_entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Handle removal of an entry."""
     coordinator: ElectroluxCoordinator = hass.data[DOMAIN][entry.entry_id]
     await coordinator.close_websocket()
-    unloaded = all(
-        await asyncio.gather(
-            *[
-                hass.config_entries.async_forward_entry_unload(entry, platform)
-                for platform in PLATFORMS
-                if platform in coordinator.platforms
-            ]
-        )
-    )
-    if unloaded:
-        hass.data[DOMAIN].pop(entry.entry_id)
-
-    return unloaded
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:

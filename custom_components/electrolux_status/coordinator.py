@@ -1,6 +1,7 @@
 """electrolux status integration."""
 
 import asyncio
+import base64
 from datetime import UTC, timedelta
 import json
 import logging
@@ -54,6 +55,11 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
 
         super().__init__(hass, _LOGGER, name=DOMAIN)
 
+    @property
+    def accountid(self) -> str:
+        """Encode the accountid to base64 for storage."""
+        return base64.b64encode(self._accountid.encode("utf-8")).decode("utf-8")
+
     async def load_store(self) -> None:
         """Load data from file."""
         self._token_store = await self._store.async_load() or {"accounts": {}}
@@ -66,8 +72,8 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
 
         # search the store for the account we have loaded
         data = self._token_store
-        if self._accountid in data["accounts"]:
-            entry = data["accounts"][self._accountid]
+        if self.accountid in data["accounts"]:
+            entry = data["accounts"][self.accountid]
             try:
                 response = UserTokenResponse(entry["token"])
                 token = UserToken(response)
@@ -79,26 +85,20 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                 await self.update_token_lifetime(token)
             except Exception as ex:  # noqa: BLE001
                 _LOGGER.debug("Electrolux store retrieval failed: %s", ex)
-                self._store.async_delay_save(self.clear_token, SAVE_DELAY)
+                self._store.async_delay_save(self._clear_token, SAVE_DELAY)
             else:
                 return token
         return None
 
     async def update_token_lifetime(self, token: UserToken) -> None:
         """Store the lifetime of the token into the coordinator."""
-        if token is None:
-            # No token available
-            self._token_expiry = 0
-            self._cancel_token_task()
-
         if (
             self._token is None
             or self._token.token != token.token
             or self._token.expiresAt != token.expiresAt
         ):
             self._token = token
-            _LOGGER.debug("New token to be saved to store")
-            self._store.async_delay_save(self._data_to_save, SAVE_DELAY)
+            self._store.async_delay_save(self._save_token, SAVE_DELAY)
 
         # Convert the token expiry time to UTC timezone aware then compare
         # token to time 5 minutes from now so we can renew before expiry
@@ -117,29 +117,31 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
             await self.launch_token_renewal_task()
 
     @callback
-    def _data_to_save(self) -> ElectroluxTokenStore:
+    def _save_token(self) -> ElectroluxTokenStore:
         """Return token data to store in a file."""
+        _LOGGER.debug("Saving token to store for %s", self._accountid)
         data = self._token_store
 
-        data["accounts"][self._accountid] = {
+        data["accounts"][self.accountid] = {
             "token": self._token.token,
             "expiresAt": self._token.expiresAt.isoformat(),
         }
 
         if self._token is None:
-            del data["accounts"][self._accountid]
+            del data["accounts"][self.accountid]
 
         self._token_store = data
         return data
 
     @callback
-    def clear_token(self) -> ElectroluxTokenStore:
+    def _clear_token(self) -> ElectroluxTokenStore:
         """Return token data to store in a file."""
-        _LOGGER.debug("Clearing the stored token from storage")
+        _LOGGER.debug("Clearing the stored token '%s' from storage", self._accountid)
         data = self._token_store
 
-        if self._accountid in data["accounts"]:
-            del data["accounts"][self._accountid]
+        if self.accountid in data["accounts"]:
+            del data["accounts"][self.accountid]
+
         self._token_store = data
         self._token = None
         return data
@@ -156,13 +158,15 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
         # force renewal 5 minutes before expiry
         if self._token_expiry <= 300:
             _LOGGER.debug(
-                "Requesting new login session. Stored token expires at: %s",
+                "Requesting new login session. %s stored token expires at: %s",
+                self._accountid,
                 self._token.expiresAt,
             )
-            self._store.async_delay_save(self.clear_token, SAVE_DELAY)
+            self._store.async_delay_save(self._clear_token, SAVE_DELAY)
         else:
             _LOGGER.debug(
-                "Stored token is still valid until %s and will be reused",
+                "Stored token for %s is still valid until %s and will be reused",
+                self._accountid,
                 dt_util.now() + timedelta(seconds=self._token_expiry),
             )
             # Load the token into the API
@@ -186,6 +190,7 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
             _LOGGER.debug(
                 "HTTP error occurred during login to ElectroluxStatus: %s", ex
             )
+            self._store.async_delay_save(self._clear_token, SAVE_DELAY)
             if ex.status == 429:
                 raise ConfigEntryNotReady(
                     "You have exceeded the maximum number of active sessions. "
