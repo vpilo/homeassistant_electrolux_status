@@ -55,12 +55,16 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
     def native_value(self) -> str | int | float:
         """Return the state of the sensor."""
         value = self.extract_value()
-        if value is not None and isinstance(self.unit, UnitOfTime):
+        if self.capability.get("access") == "constant":
+            value = self.capability.get("default")
+        elif value is not None and isinstance(self.unit, UnitOfTime):
             # Electrolux bug - prevent negative/disabled timers
             value = max(value, 0)
         if self.catalog_entry and self.catalog_entry.value_mapping:
             # Electrolux presents as string but returns an int
+            # the mapping entry allows us to correctly display this to the frontend
             mapping = self.catalog_entry.value_mapping
+            _LOGGER.debug("Mapping %s: %s to %s", self.json_path, value, mapping)
             if value in mapping:
                 value = mapping.get(value, value)
         if isinstance(value, str):

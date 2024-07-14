@@ -211,7 +211,10 @@ class ElectroluxLibraryEntity:
             and isinstance(values, dict)
             and len(values) > 0
         ):
-            if type_object != "number" or capability_def.get("min", None) is None:
+            if (
+                type_object not in ["number", "temperature"]
+                or capability_def.get("min", None) is None
+            ):
                 return SELECT
 
         match type_object:
@@ -226,6 +229,10 @@ class ElectroluxLibraryEntity:
                 if access == "readwrite":
                     return NUMBER
             case _:
+                if access == "write":
+                    return BUTTON
+                if access == "constant":
+                    return SENSOR
                 if access == "read" and type_object in [
                     "number",
                     "int",
