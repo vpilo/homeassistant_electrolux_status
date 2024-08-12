@@ -1,5 +1,6 @@
 """API for Electrolux Status."""
 
+import copy
 import logging
 import re
 from typing import Any
@@ -15,6 +16,7 @@ from homeassistant.const import Platform, UnitOfTemperature
 
 from .binary_sensor import ElectroluxBinarySensor
 from .button import ElectroluxButton
+from .catalog_core import CATALOG_BASE, CATALOG_MODEL
 from .const import (
     BINARY_SENSOR,
     BUTTON,
@@ -24,10 +26,8 @@ from .const import (
     SENSOR,
     STATIC_ATTRIBUTES,
     SWITCH,
-    Catalog,
 )
 from .entity import ElectroluxEntity
-from .model import ElectroluxDevice
 from .number import ElectroluxNumber
 from .select import ElectroluxSelect
 from .sensor import ElectroluxSensor
@@ -330,6 +330,36 @@ class Appliance:
         """Return the reported state of the appliance."""
         return self.state.get("properties", {}).get("reported", {})
 
+    @property
+    def appliance_type(self) -> dict[str, Any]:
+        """Return the reported type of the appliance.
+
+        CR: Refridgerator
+        WM: Washing Machine
+        """
+        return self.reported_state.get("applianceInfo", {}).get(
+            "applianceType"
+        ) or self.state.get("applianceData", {}).get("modelName")
+
+    @property
+    def catalog(self) -> dict[str, Any]:
+        """Return the defined catalog for the appliance."""
+        # TODO: Use appliance_type as opposed to model?
+        if self.model in CATALOG_MODEL:
+            _LOGGER.debug("Extending catalog for %s", self.model)
+            # Make a deep copy of the base catalog to preserve it
+            new_catalog = copy.deepcopy(CATALOG_BASE)
+
+            # Get the specific model's extended catalog
+            model_catalog = CATALOG_MODEL[self.model]
+
+            # Update the existing catalog with the extended information for this model
+            for key, device in model_catalog.items():
+                new_catalog[key] = device
+
+            return new_catalog
+        return CATALOG_BASE
+
     def update_missing_entities(self) -> None:
         """Add missing entities when no capabilities returned by the API.
 
@@ -338,7 +368,7 @@ class Appliance:
         if not self.own_capabilties or not self.reported_state:
             return
 
-        for key, catalog_item in Catalog.items():
+        for key, catalog_item in self.catalog.items():
             category = self.data.get_category(key)
             if (
                 category
@@ -392,7 +422,7 @@ class Appliance:
         display_name = f"{self.data.get_name()} {self.data.get_sensor_name(capability)}"
 
         # get the item definition from the catalog
-        catalog_item = Catalog.get(capability, None)
+        catalog_item = self.catalog.get(capability, None)
         if catalog_item:
             if capability_info is None:
                 capability_info = catalog_item.capability_info
@@ -527,7 +557,7 @@ class Appliance:
             # attr not found in state, next attr
             if self.get_state(static_attribute) is None:
                 continue
-            if catalog_item := Catalog.get(static_attribute, None):
+            if catalog_item := self.catalog.get(static_attribute, None):
                 if (entity := self.get_entity(static_attribute)) is None:
                     # catalog definition and automatic checks fail to determine type
                     _LOGGER.debug(
