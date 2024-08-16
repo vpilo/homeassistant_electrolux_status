@@ -12,6 +12,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, SENSOR
 from .entity import ElectroluxEntity
+from .util import create_notification
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -102,6 +103,7 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
         """Return the state attributes of the sensor."""
         if self.entity_attr == "alerts":
             alert_types = self.capability.get("values", {})
+            # default is nullable - set a value for display to user
             alert_types = {key: "OFF" for key in alert_types}
             if current_alerts := self.extract_value():
                 for alert in current_alerts:
@@ -109,4 +111,10 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
                     code = alert.get("code", "Unknown")
                     status = alert.get("acknowledgeStatus", "")
                     alert_types[code] = f"{severity}-{status}"
+                    create_notification(
+                        self.hass,
+                        self.config_entry,
+                        message=f"Alert: {code}</br>Severity: {severity}</br>Status: {status}",
+                        title=self.name,
+                    )
             return alert_types

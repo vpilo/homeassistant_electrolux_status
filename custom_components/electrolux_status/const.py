@@ -19,6 +19,7 @@ PLATFORMS = [BINARY_SENSOR, BUTTON, NUMBER, SELECT, SENSOR, SWITCH]
 # Configuration and options
 CONF_LANGUAGE = "language"
 CONF_RENEW_INTERVAL = "renew_interval"
+CONF_NOTIFICATIONS = "notifications"
 
 # Defaults
 DEFAULT_LANGUAGE = "English"

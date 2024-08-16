@@ -13,6 +13,7 @@
             "user": {
                 "data": {
                     "language": "Jezik",
+                    "notifications": "Pošaljite obavijesti za povišena upozorenja",
                     "password": "Lozinka",
                     "username": "Korisničko ime"
                 },
@@ -26,6 +27,7 @@
             "user": {
                 "data": {
                     "language": "Jezik",
+                    "notifications": "Pošaljite obavijesti za povišena upozorenja",
                     "password": "Lozinka",
                     "renew_interval": "Interval obnavljanja web mjesta (sekunde)"
                 }

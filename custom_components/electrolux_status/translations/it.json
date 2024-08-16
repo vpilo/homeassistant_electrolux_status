@@ -13,7 +13,8 @@
             "user": {
                 "data": {
                     "language": "Lingua",
-                    "password": "Parola d'ordine",
+                    "notifications": "Invia notifiche per gli avvisi rialzati",
+                    "password": "Password",
                     "username": "Nome utente"
                 },
                 "description": "Se hai bisogno di aiuto con la visita di configurazione: https://github.com/albaintor/homeeasistant_electrolux_status",
@@ -26,7 +27,8 @@
             "user": {
                 "data": {
                     "language": "Lingua",
-                    "password": "Parola d'ordine",
+                    "notifications": "Invia notifiche per gli avvisi rialzati",
+                    "password": "Password",
                     "renew_interval": "Intervallo di rinnovo di WebSocket (secondi)"
                 }
             }

@@ -13,6 +13,7 @@
             "user": {
                 "data": {
                     "language": "Språk",
+                    "notifications": "Send varsler for hevede varsler",
                     "password": "Passord",
                     "username": "Brukernavn"
                 },
@@ -26,6 +27,7 @@
             "user": {
                 "data": {
                     "language": "Språk",
+                    "notifications": "Send varsler for hevede varsler",
                     "password": "Passord",
                     "renew_interval": "Fornyelsesintervall av WebSocket (sekunder)"
                 }

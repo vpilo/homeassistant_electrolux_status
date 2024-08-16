@@ -13,7 +13,8 @@
             "user": {
                 "data": {
                     "language": "Γλώσσα",
-                    "password": "Κωδικός πρόσβασης",
+                    "notifications": "Αποστολή ειδοποιήσεων για αυξημένες ειδοποιήσεις",
+                    "password": "Σύνθημα",
                     "username": "Όνομα χρήστη"
                 },
                 "description": "Εάν χρειάζεστε βοήθεια με την επίσκεψη διαμόρφωσης: https://github.com/albaintor/homeassistant_electrolux_status",
@@ -26,7 +27,8 @@
             "user": {
                 "data": {
                     "language": "Γλώσσα",
-                    "password": "Κωδικός πρόσβασης",
+                    "notifications": "Αποστολή ειδοποιήσεων για αυξημένες ειδοποιήσεις",
+                    "password": "Σύνθημα",
                     "renew_interval": "Διάστημα ανανέωσης του websocket (δευτερόλεπτα)"
                 }
             }

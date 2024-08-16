@@ -13,6 +13,7 @@
             "user": {
                 "data": {
                     "language": "Език",
+                    "notifications": "Изпратете известия за повдигнати сигнали",
                     "password": "Парола",
                     "username": "Потребителско име"
                 },
@@ -26,6 +27,7 @@
             "user": {
                 "data": {
                     "language": "Език",
+                    "notifications": "Изпратете известия за повдигнати сигнали",
                     "password": "Парола",
                     "renew_interval": "Интервал на подновяване на WebSocket (секунди)"
                 }

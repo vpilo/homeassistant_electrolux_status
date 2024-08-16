@@ -5,7 +5,7 @@
 # JSON file to translate to the supported language types
 
 # To update translations run the below in terminal
-# uv pip install googletrans
+# uv pip install googletrans==4.0.0-rc1
 # cd homeassistant/components/electrolux_status/translations
 # python translate.py
 

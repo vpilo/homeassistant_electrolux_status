@@ -13,6 +13,7 @@
             "user": {
                 "data": {
                     "language": "Taal",
+                    "notifications": "Stuur meldingen voor verhoogde meldingen",
                     "password": "Wachtwoord",
                     "username": "Gebruikersnaam"
                 },
@@ -26,6 +27,7 @@
             "user": {
                 "data": {
                     "language": "Taal",
+                    "notifications": "Stuur meldingen voor verhoogde meldingen",
                     "password": "Wachtwoord",
                     "renew_interval": "Vernieuwingsinterval van Websocket (seconden)"
                 }

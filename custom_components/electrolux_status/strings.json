@@ -7,7 +7,8 @@
         "data": {
           "username": "[%key:common::config_flow::data::username%]",
           "password": "[%key:common::config_flow::data::password%]",
-          "language": "[%key:common::config_flow::data::language%]"
+          "language": "[%key:common::config_flow::data::language%]",
+          "notifications": "Send notifications for raised alerts"
         }
       }
     },
@@ -27,7 +28,8 @@
         "data": {
           "password": "[%key:common::config_flow::data::password%]",
           "language": "[%key:common::config_flow::data::language%]",
-          "renew_interval": "Renewal interval of websocket (seconds)"
+          "renew_interval": "Renewal interval of websocket (seconds)",
+          "notifications": "Send notifications for raised alerts"
         }
       }
     }

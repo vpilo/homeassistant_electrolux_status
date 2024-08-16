@@ -13,6 +13,7 @@
             "user": {
                 "data": {
                     "language": "Kalba",
+                    "notifications": "Siųsti pranešimus apie iškeltus perspėjimus",
                     "password": "Slaptažodis",
                     "username": "Vartotojo vardas"
                 },
@@ -26,6 +27,7 @@
             "user": {
                 "data": {
                     "language": "Kalba",
+                    "notifications": "Siųsti pranešimus apie iškeltus perspėjimus",
                     "password": "Slaptažodis",
                     "renew_interval": "„WebSocket“ atnaujinimo intervalas (sekundės)"
                 }

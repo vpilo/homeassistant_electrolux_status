@@ -13,8 +13,9 @@
             "user": {
                 "data": {
                     "language": "Sprache",
+                    "notifications": "Senden Sie Benachrichtigungen für erhöhte Warnungen",
                     "password": "Passwort",
-                    "username": "Nutzername"
+                    "username": "Benutzername"
                 },
                 "description": "Wenn Sie bei der Konfiguration Hilfe benötigen",
                 "title": "Elektroluxstatus"
@@ -26,8 +27,9 @@
             "user": {
                 "data": {
                     "language": "Sprache",
+                    "notifications": "Senden Sie Benachrichtigungen für erhöhte Warnungen",
                     "password": "Passwort",
-                    "renew_interval": "Erneuerungsintervall von Websocket (Sekunden)"
+                    "renew_interval": "Erneuerungsintervall von WebSocket (Sekunden)"
                 }
             }
         }

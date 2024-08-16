@@ -13,6 +13,7 @@
             "user": {
                 "data": {
                     "language": "Jezik",
+                    "notifications": "Pošljite obvestila za dvignjena opozorila",
                     "password": "Geslo",
                     "username": "Uporabniško ime"
                 },
@@ -26,6 +27,7 @@
             "user": {
                 "data": {
                     "language": "Jezik",
+                    "notifications": "Pošljite obvestila za dvignjena opozorila",
                     "password": "Geslo",
                     "renew_interval": "Interval obnove WebSocket (sekunde)"
                 }

@@ -13,6 +13,7 @@
             "user": {
                 "data": {
                     "language": "Språk",
+                    "notifications": "Skicka aviseringar för upphöjda varningar",
                     "password": "Lösenord",
                     "username": "Användarnamn"
                 },
@@ -26,6 +27,7 @@
             "user": {
                 "data": {
                     "language": "Språk",
+                    "notifications": "Skicka aviseringar för upphöjda varningar",
                     "password": "Lösenord",
                     "renew_interval": "Förnyelseintervall för WebSocket (sekunder)"
                 }

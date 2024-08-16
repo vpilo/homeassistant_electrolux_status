@@ -13,6 +13,7 @@
             "user": {
                 "data": {
                     "language": "Sprooche",
+                    "notifications": "Schéckt Notifikatiounen fir opgehuewe Alarmer",
                     "password": "Passwuert",
                     "username": "Benotzernumm"
                 },
@@ -26,6 +27,7 @@
             "user": {
                 "data": {
                     "language": "Sprooche",
+                    "notifications": "Schéckt Notifikatiounen fir opgehuewe Alarmer",
                     "password": "Passwuert",
                     "renew_interval": "Erneierungsintervall vun der WebShetket (Sekonnen)"
                 }

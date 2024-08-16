@@ -15,6 +15,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import callback
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
     TextSelector,
@@ -23,7 +24,13 @@ from homeassistant.helpers.selector import (
     selector,
 )
 
-from .const import CONF_LANGUAGE, DEFAULT_LANGUAGE, DOMAIN, languages
+from .const import (
+    CONF_LANGUAGE,
+    CONF_NOTIFICATIONS,
+    DEFAULT_LANGUAGE,
+    DOMAIN,
+    languages,
+)
 from .util import get_electrolux_session
 
 _LOGGER = logging.getLogger(__name__)
@@ -101,26 +108,21 @@ class ElectroluxStatusFlowHandler(ConfigFlow, domain=DOMAIN):
                     type=TextSelectorType.PASSWORD, autocomplete="current-password"
                 )
             ),
-            vol.Optional(CONF_LANGUAGE, default=DEFAULT_LANGUAGE): selector(
-                {"select": {"options": list(languages.keys()), "mode": "dropdown"}}
-            ),
         }
         if self.show_advanced_options:
-            data_schema = {
-                vol.Required(CONF_USERNAME): TextSelector(
-                    TextSelectorConfig(
-                        type=TextSelectorType.EMAIL, autocomplete="username"
-                    )
-                ),
-                vol.Required(CONF_PASSWORD): TextSelector(
-                    TextSelectorConfig(
-                        type=TextSelectorType.PASSWORD, autocomplete="current-password"
-                    )
-                ),
-                vol.Optional(CONF_LANGUAGE, default=DEFAULT_LANGUAGE): selector(
-                    {"select": {"options": list(languages.keys()), "mode": "dropdown"}}
-                ),
-            }
+            data_schema.update(
+                {
+                    vol.Optional(CONF_LANGUAGE, default=DEFAULT_LANGUAGE): selector(
+                        {
+                            "select": {
+                                "options": list(languages.keys()),
+                                "mode": "dropdown",
+                            }
+                        }
+                    ),
+                    vol.Optional(CONF_NOTIFICATIONS, default=True): cv.boolean,
+                }
+            )
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(data_schema),
@@ -160,6 +162,7 @@ class ElectroluxStatusOptionsFlowHandler(OptionsFlow):
 
         selected_language = self.config_entry.data.get(CONF_LANGUAGE, DEFAULT_LANGUAGE)
         current_password = self.config_entry.data.get(CONF_PASSWORD, None)
+        send_notifications = self.config_entry.data.get(CONF_NOTIFICATIONS, True)
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(
@@ -178,6 +181,9 @@ class ElectroluxStatusOptionsFlowHandler(OptionsFlow):
                             }
                         }
                     ),
+                    vol.Optional(
+                        CONF_NOTIFICATIONS, default=send_notifications
+                    ): cv.boolean,
                     # vol.Optional(
                     #     CONF_RENEW_INTERVAL,
                     #     default=self.config_entry.options.get(
@@ -195,6 +201,7 @@ class ElectroluxStatusOptionsFlowHandler(OptionsFlow):
             **self.config_entry.data,
             CONF_PASSWORD: self.options[CONF_PASSWORD],
             CONF_LANGUAGE: self.options[CONF_LANGUAGE],
+            CONF_NOTIFICATIONS: self.options[CONF_NOTIFICATIONS],
         }
         self.hass.config_entries.async_update_entry(self.config_entry, data=data)
         return self.async_create_entry(

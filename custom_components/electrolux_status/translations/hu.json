@@ -13,6 +13,7 @@
             "user": {
                 "data": {
                     "language": "Nyelv",
+                    "notifications": "Értesítések küldése az emelt riasztásokért",
                     "password": "Jelszó",
                     "username": "Felhasználónév"
                 },
@@ -26,6 +27,7 @@
             "user": {
                 "data": {
                     "language": "Nyelv",
+                    "notifications": "Értesítések küldése az emelt riasztásokért",
                     "password": "Jelszó",
                     "renew_interval": "A WebSocket megújítási intervalluma (másodperc)"
                 }

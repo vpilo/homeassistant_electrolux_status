@@ -13,6 +13,7 @@
             "user": {
                 "data": {
                     "language": "Мова",
+                    "notifications": "Надішліть сповіщення про підняті сповіщення",
                     "password": "Пароль",
                     "username": "Ім'я користувача"
                 },
@@ -26,6 +27,7 @@
             "user": {
                 "data": {
                     "language": "Мова",
+                    "notifications": "Надішліть сповіщення про підняті сповіщення",
                     "password": "Пароль",
                     "renew_interval": "Інтервал відновлення WebSocket (секунди)"
                 }

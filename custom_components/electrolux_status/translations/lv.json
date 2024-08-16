@@ -13,6 +13,7 @@
             "user": {
                 "data": {
                     "language": "Valoda",
+                    "notifications": "Nosūtiet paziņojumus par paaugstinātiem brīdinājumiem",
                     "password": "Parole",
                     "username": "Lietotājvārds"
                 },
@@ -26,6 +27,7 @@
             "user": {
                 "data": {
                     "language": "Valoda",
+                    "notifications": "Nosūtiet paziņojumus par paaugstinātiem brīdinājumiem",
                     "password": "Parole",
                     "renew_interval": "WebSocket atjaunošanas intervāls (sekundes)"
                 }

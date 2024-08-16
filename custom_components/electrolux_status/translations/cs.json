@@ -13,6 +13,7 @@
             "user": {
                 "data": {
                     "language": "Jazyk",
+                    "notifications": "Odeslat oznámení pro zvýšená upozornění",
                     "password": "Heslo",
                     "username": "Uživatelské jméno"
                 },
@@ -26,6 +27,7 @@
             "user": {
                 "data": {
                     "language": "Jazyk",
+                    "notifications": "Odeslat oznámení pro zvýšená upozornění",
                     "password": "Heslo",
                     "renew_interval": "Interval obnovy WebSocket (sekundy)"
                 }

@@ -1,10 +1,17 @@
 """Utlities for the Electrolux Status platform."""
 
+import base64
 import logging
 import math
 import re
 
 from pyelectroluxocp import OneAppApi
+
+from homeassistant.components.persistent_notification import async_create
+from homeassistant.core import HomeAssistant
+from homeassistant.config_entries import ConfigEntry
+
+from .const import CONF_NOTIFICATIONS, NAME
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -14,6 +21,37 @@ def get_electrolux_session(
 ) -> OneAppApi:
     """Return OneAppApi Session."""
     return OneAppApi(username, password, client_session)
+
+
+def create_notification(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    message: str,
+    title: str = NAME,
+):
+    """Create a notification."""
+    if config_entry.data.get(CONF_NOTIFICATIONS, True) is False:
+        _LOGGER.debug(
+            "Discarding notification.\nTitle: %s\nMessage: %s",
+            title,
+            message,
+        )
+        return
+
+    input_string = f"{title}-{message}"
+
+    # Convert the string to base64
+    bytes_string = input_string.encode("utf-8")
+    base64_bytes = base64.b64encode(bytes_string)
+    base64_string = base64_bytes.decode("utf-8")
+
+    # send notification with crafted notification id so we dont spam notifications
+    _LOGGER.debug(
+        "Sending notification.\nTitle: %s\nMessage: %s",
+        title,
+        message,
+    )
+    async_create(hass, message, title=title, notification_id=base64_string)
 
 
 def time_seconds_to_minutes(seconds: float | None) -> int | None:

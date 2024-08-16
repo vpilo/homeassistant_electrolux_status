@@ -13,6 +13,7 @@
             "user": {
                 "data": {
                     "language": "Język",
+                    "notifications": "Wyślij powiadomienia o podniesionych alertach",
                     "password": "Hasło",
                     "username": "Nazwa użytkownika"
                 },
@@ -26,6 +27,7 @@
             "user": {
                 "data": {
                     "language": "Język",
+                    "notifications": "Wyślij powiadomienia o podniesionych alertach",
                     "password": "Hasło",
                     "renew_interval": "Odnowienie odnowienia WebSocket (sekundy)"
                 }

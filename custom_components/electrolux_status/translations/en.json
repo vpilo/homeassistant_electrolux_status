@@ -13,6 +13,7 @@
             "user": {
                 "data": {
                     "language": "Language",
+                    "notifications": "Send notifications for raised alerts",
                     "password": "Password",
                     "username": "Username"
                 },
@@ -26,6 +27,7 @@
             "user": {
                 "data": {
                     "language": "Language",
+                    "notifications": "Send notifications for raised alerts",
                     "password": "Password",
                     "renew_interval": "Renewal interval of websocket (seconds)"
                 }

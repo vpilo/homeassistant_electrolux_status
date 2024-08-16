@@ -13,6 +13,7 @@
             "user": {
                 "data": {
                     "language": "Dil",
+                    "notifications": "Yükseltilmiş uyarılar için bildirimler gönderin",
                     "password": "Şifre",
                     "username": "Kullanıcı adı"
                 },
@@ -26,6 +27,7 @@
             "user": {
                 "data": {
                     "language": "Dil",
+                    "notifications": "Yükseltilmiş uyarılar için bildirimler gönderin",
                     "password": "Şifre",
                     "renew_interval": "WebSocket (saniye) yenileme aralığı"
                 }

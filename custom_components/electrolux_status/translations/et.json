@@ -13,6 +13,7 @@
             "user": {
                 "data": {
                     "language": "Keel",
+                    "notifications": "Saada teatised tõstetud hoiatuste kohta",
                     "password": "Parool",
                     "username": "Kasutajanimi"
                 },
@@ -26,6 +27,7 @@
             "user": {
                 "data": {
                     "language": "Keel",
+                    "notifications": "Saada teatised tõstetud hoiatuste kohta",
                     "password": "Parool",
                     "renew_interval": "WebSocketi pikendamise intervall (sekundid)"
                 }

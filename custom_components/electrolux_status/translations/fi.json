@@ -13,6 +13,7 @@
             "user": {
                 "data": {
                     "language": "Kieli",
+                    "notifications": "Lähetä ilmoituksia korotetuista hälytyksistä",
                     "password": "Salasana",
                     "username": "Käyttäjänimi"
                 },
@@ -26,6 +27,7 @@
             "user": {
                 "data": {
                     "language": "Kieli",
+                    "notifications": "Lähetä ilmoituksia korotetuista hälytyksistä",
                     "password": "Salasana",
                     "renew_interval": "WebSockin (sekuntien) uusintaväli (sekuntia)"
                 }
