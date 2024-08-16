@@ -258,8 +258,9 @@ class ElectroluxLibraryEntity:
             _LOGGER.warning("Electrolux capabilities list is empty")
             return None
 
-        # dont load these entities by default as they are not useful
-        # we do load some of these directly via STATIC_ATTRIBUTES
+        # dont load these entities by as they are not useful
+        # we do load some of these directly via STATIC_ATTRIBUTES as
+        # one or another are useful, but not all child values are
         exclude_list: tuple[str, ...] = (
             "applianceCareAndMaintenance",
             "applianceMainBoardSwVersion",

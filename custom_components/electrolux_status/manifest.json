@@ -7,7 +7,7 @@
   "documentation": "https://github.com/albaintor/homeassistant_electrolux_status",
   "homekit": {},
   "integration_type": "hub",
-  "iot_class": "cloud_polling",
+  "iot_class": "cloud_push",
   "issue_tracker": "https://github.com/albaintor/homeassistant_electrolux_status/issues",
   "requirements": ["pyelectroluxocp==0.0.16"],
   "ssdp": [],

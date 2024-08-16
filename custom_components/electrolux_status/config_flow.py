@@ -7,7 +7,7 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant.config_entries import (
-    CONN_CLASS_CLOUD_POLL,
+    CONN_CLASS_CLOUD_PUSH,
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
@@ -40,7 +40,7 @@ class ElectroluxStatusFlowHandler(ConfigFlow, domain=DOMAIN):
     """Config flow for Electrolux Status."""
 
     VERSION = 1
-    CONNECTION_CLASS = CONN_CLASS_CLOUD_POLL
+    CONNECTION_CLASS = CONN_CLASS_CLOUD_PUSH
 
     def __init__(self) -> None:
         """Initialize."""
