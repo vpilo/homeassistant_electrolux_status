@@ -94,6 +94,7 @@ CATALOG_BASE: dict[str, ElectroluxDevice] = {
         unit=None,
         entity_category=None,
         entity_icon="mdi:state-machine",
+        entity_registry_enabled_default=False,
     ),
     "applianceTotalWorkingTime": ElectroluxDevice(
         capability_info={"access": "read", "type": "number"},
@@ -236,7 +237,8 @@ CATALOG_BASE: dict[str, ElectroluxDevice] = {
         device_class=BinarySensorDeviceClass.RUNNING,
         unit=None,
         entity_category=EntityCategory.DIAGNOSTIC,
-        entity_icon="mdi:fridge-variant",
+        entity_icon="mdi:state-machine",
+        entity_registry_enabled_default=False,
     ),
     "extraCavity/cloneTargetTemperatureMode": ElectroluxDevice(
         capability_info={
@@ -339,7 +341,8 @@ CATALOG_BASE: dict[str, ElectroluxDevice] = {
         device_class=BinarySensorDeviceClass.RUNNING,
         unit=None,
         entity_category=EntityCategory.DIAGNOSTIC,
-        entity_icon="mdi:fridge-variant",
+        entity_icon="mdi:state-machine",
+        entity_registry_enabled_default=False,
     ),
     "freezer/doorState": ElectroluxDevice(
         capability_info={
@@ -413,7 +416,8 @@ CATALOG_BASE: dict[str, ElectroluxDevice] = {
         device_class=BinarySensorDeviceClass.RUNNING,
         unit=None,
         entity_category=EntityCategory.DIAGNOSTIC,
-        entity_icon="mdi:fridge-variant",
+        entity_icon="mdi:state-machine",
+        entity_registry_enabled_default=False,
     ),
     "fridge/doorState": ElectroluxDevice(
         capability_info={
@@ -485,7 +489,7 @@ CATALOG_BASE: dict[str, ElectroluxDevice] = {
         device_class=BinarySensorDeviceClass.RUNNING,
         unit=None,
         entity_category=EntityCategory.DIAGNOSTIC,
-        entity_icon="mdi:snowflake",
+        entity_icon="mdi:state-machine",
         entity_registry_enabled_default=False,  # sister entity for iceMaker/executeCommand
     ),
     "iceMaker/defrostTemperatureC": ElectroluxDevice(

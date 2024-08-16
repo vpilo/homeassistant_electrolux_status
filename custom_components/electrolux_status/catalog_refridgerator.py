@@ -15,7 +15,7 @@ EHE6899SA = {
         unit=None,
         entity_category=None,
         entity_icon="mdi:lock",
-        friendly_name="Child Lock",
+        friendly_name="Child Lock Internal",
     ),
     "ui2LockMode": ElectroluxDevice(
         capability_info={
@@ -27,6 +27,6 @@ EHE6899SA = {
         unit=None,
         entity_category=None,
         entity_icon="mdi:lock",
-        friendly_name="Child Lock 2",
+        friendly_name="Child Lock External",
     ),
 }
