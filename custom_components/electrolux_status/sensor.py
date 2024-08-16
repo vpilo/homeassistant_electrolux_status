@@ -2,6 +2,7 @@
 
 import contextlib
 import logging
+from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -57,6 +58,8 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
         value = self.extract_value()
         if self.capability.get("access") == "constant":
             value = self.capability.get("default")
+        elif self.entity_attr == "alerts":
+            value = len(value) if value is not None else 0
         elif value is not None and isinstance(self.unit, UnitOfTime):
             # Electrolux bug - prevent negative/disabled timers
             value = max(value, 0)
@@ -94,3 +97,16 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
                 return self.unit
         return None
 
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the state attributes of the sensor."""
+        if self.entity_attr == "alerts":
+            alert_types = self.capability.get("values", {})
+            alert_types = {key: "OFF" for key in alert_types}
+            if current_alerts := self.extract_value():
+                for alert in current_alerts:
+                    severity = alert.get("severity", "Alert")
+                    code = alert.get("code", "Unknown")
+                    status = alert.get("acknowledgeStatus", "")
+                    alert_types[code] = f"{severity}-{status}"
+            return alert_types

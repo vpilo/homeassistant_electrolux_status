@@ -228,6 +228,8 @@ class ElectroluxLibraryEntity:
                     return SENSOR
                 if access == "readwrite":
                     return NUMBER
+            case "alert":
+                return SENSOR
             case _:
                 if access == "write":
                     return BUTTON
