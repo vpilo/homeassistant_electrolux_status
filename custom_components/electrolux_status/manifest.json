@@ -1,6 +1,6 @@
 {
   "domain": "electrolux_status",
-  "name": "Electrolux Care Integration V2",
+  "name": "Electrolux Status",
   "codeowners": ["@albaintor"],
   "config_flow": true,
   "dependencies": [],
@@ -11,6 +11,7 @@
   "issue_tracker": "https://github.com/albaintor/homeassistant_electrolux_status/issues",
   "requirements": ["pyelectroluxocp==0.0.19"],
   "ssdp": [],
+  "version": "2.0.0",
   "zeroconf": [],
   "loggers": ["pyelectroluxocp"]
 }
