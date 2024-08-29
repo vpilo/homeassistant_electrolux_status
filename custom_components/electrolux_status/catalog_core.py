@@ -96,6 +96,13 @@ CATALOG_BASE: dict[str, ElectroluxDevice] = {
         entity_icon="mdi:state-machine",
         entity_registry_enabled_default=False,
     ),
+    "ambientTemperatureC": ElectroluxDevice(
+        capability_info={"access": "read","type": "number"},
+        device_class=SensorDeviceClass.TEMPERATURE,
+        unit=UnitOfTemperature.CELSIUS,
+        entity_category=None,
+        entity_icon="mdi:thermometer",
+    ),
     "applianceTotalWorkingTime": ElectroluxDevice(
         capability_info={"access": "read", "type": "number"},
         device_class=SensorDeviceClass.DURATION,
