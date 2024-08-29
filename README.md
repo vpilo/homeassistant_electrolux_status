@@ -36,6 +36,7 @@ If this does not occur the home assistant integration may raise an authenticatio
 **Known issues :**
 - This integration is based on new APIs and may be unstable 
 - Some commands don't work (to be investigated) : several dropdown lists like setting analog temperature...
+- Upstream API does not currently support `language`
 
 ### Supported and tested devices
 
