@@ -41,6 +41,11 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
     """Electrolux Status Sensor class."""
 
     @property
+    def entity_domain(self):
+        """Enitity domain for the entry. Used for consistent entity_id."""
+        return SENSOR
+
+    @property
     def suggested_display_precision(self) -> int | None:
         """Get the display precision."""
         if self.unit == UnitOfTemperature.CELSIUS:

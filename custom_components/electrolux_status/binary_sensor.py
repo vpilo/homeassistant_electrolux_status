@@ -40,6 +40,11 @@ class ElectroluxBinarySensor(ElectroluxEntity, BinarySensorEntity):
     """Electrolux Status binary_sensor class."""
 
     @property
+    def entity_domain(self):
+        """Enitity domain for the entry. Used for consistent entity_id."""
+        return BINARY_SENSOR
+
+    @property
     def invert(self) -> bool:
         """Determine if the value returned for the entity needs to be reversed."""
         if self.catalog_entry:

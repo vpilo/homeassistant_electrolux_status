@@ -41,6 +41,11 @@ class ElectroluxSwitch(ElectroluxEntity, SwitchEntity):
     """Electrolux Status switch class."""
 
     @property
+    def entity_domain(self):
+        """Enitity domain for the entry. Used for consistent entity_id."""
+        return SWITCH
+
+    @property
     def is_on(self) -> bool:
         """Return true if the binary_sensor is on."""
         value = self.extract_value()

@@ -84,6 +84,11 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
             label = self.format_label(value)
             self.options_list[label] = value
 
+    @property
+    def entity_domain(self):
+        """Enitity domain for the entry. Used for consistent entity_id."""
+        return SELECT
+
     def format_label(self, value: str | None) -> str | None:
         """Convert input to label string value."""
         if value is None:

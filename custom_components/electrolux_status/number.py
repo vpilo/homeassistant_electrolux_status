@@ -41,6 +41,11 @@ class ElectroluxNumber(ElectroluxEntity, NumberEntity):
     """Electrolux Status number class."""
 
     @property
+    def entity_domain(self):
+        """Enitity domain for the entry. Used for consistent entity_id."""
+        return NUMBER
+
+    @property
     def native_value(self) -> float | None:
         """Return the value reported by the number."""
         if self.unit == UnitOfTime.SECONDS:

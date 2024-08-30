@@ -77,6 +77,11 @@ class ElectroluxButton(ElectroluxEntity, ButtonEntity):
         self.val_to_send = val_to_send
 
     @property
+    def entity_domain(self):
+        """Enitity domain for the entry. Used for consistent entity_id."""
+        return BUTTON
+
+    @property
     def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
         return f"{self.config_entry.entry_id}-{self.val_to_send}-{self.entity_attr}-{self.entity_source}-{self.pnc_id}"

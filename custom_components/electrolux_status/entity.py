@@ -43,6 +43,8 @@ async def async_setup_entry(
 class ElectroluxEntity(CoordinatorEntity):
     """Class for Electorolux devices."""
 
+    _attr_has_entity_name = True
+
     appliance_status: ApplienceStatusResponse
 
     def __init__(
@@ -80,6 +82,7 @@ class ElectroluxEntity(CoordinatorEntity):
         self.pnc_id = pnc_id
         self.unit = unit
         self.capability = capability
+        self.entity_id = f"{self.entity_domain}.{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_attr}"
         if catalog_entry:
             self.entity_registry_enabled_default = (
                 catalog_entry.entity_registry_enabled_default
@@ -89,6 +92,16 @@ class ElectroluxEntity(CoordinatorEntity):
     def setup(self, data):
         """Initialiaze setup."""
         self.data = data
+
+    @property
+    def entity_domain(self) -> str:
+        """Enitity domain for the entry."""
+        return "sensor"
+
+    @property
+    def unique_id(self) -> str:
+        """Return a unique ID to use for this entity."""
+        return f"{self.config_entry.entry_id}-{self.entity_attr}-{self.entity_source or 'root'}-{self.pnc_id}"
 
     # Disabled this as this removes the value from display : there is no readonly property for entities
     # @property
@@ -158,11 +171,6 @@ class ElectroluxEntity(CoordinatorEntity):
     def get_appliance(self):
         """Return the appliance device."""
         return self.coordinator.data["appliances"].get_appliance(self.pnc_id)
-
-    @property
-    def unique_id(self):
-        """Return a unique ID to use for this entity."""
-        return f"{self.config_entry.entry_id}-{self.entity_attr}-{self.entity_source}-{self.pnc_id}"
 
     @property
     def device_info(self):
