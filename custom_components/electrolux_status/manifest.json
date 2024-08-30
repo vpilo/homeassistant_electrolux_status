@@ -1,7 +1,7 @@
 {
   "domain": "electrolux_status",
   "name": "Electrolux Status",
-  "codeowners": ["@albaintor"],
+  "codeowners": ["@albaintor","@kingy444"],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/albaintor/homeassistant_electrolux_status",
