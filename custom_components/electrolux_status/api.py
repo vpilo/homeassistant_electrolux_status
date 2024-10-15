@@ -25,7 +25,7 @@ from .const import (
     SELECT,
     SENSOR,
     STATIC_ATTRIBUTES,
-    SWITCH,
+    SWITCH, IGNORED_ATTRIBUTES,
 )
 from .entity import ElectroluxEntity
 from .number import ElectroluxNumber
@@ -419,6 +419,10 @@ class Appliance:
 
     def get_entity(self, capability: str) -> list[ElectroluxEntity] | None:
         """Return the entity."""
+        for ignored_partern in IGNORED_ATTRIBUTES:
+            if re.match(ignored_partern, capability):
+                return None
+
         entity_type = self.data.get_entity_type(capability)
         entity_name = self.data.get_entity_name(capability)
         category = self.data.get_category(capability)

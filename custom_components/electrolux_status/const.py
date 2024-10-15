@@ -1,4 +1,5 @@
 """The electrolux Status constants."""
+import re
 
 from homeassistant.const import Platform
 
@@ -74,3 +75,5 @@ languages = {
     "Türk": "tur",
     "Ukrayna": "ukr",
 }
+
+IGNORED_ATTRIBUTES: [str] = [ "^fCMiscellaneous.+", "fcOptisenseLoadWeight"]
