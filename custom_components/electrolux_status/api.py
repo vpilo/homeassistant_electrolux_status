@@ -25,7 +25,8 @@ from .const import (
     SELECT,
     SENSOR,
     STATIC_ATTRIBUTES,
-    SWITCH, IGNORED_ATTRIBUTES,
+    SWITCH,
+    IGNORED_ATTRIBUTES,
 )
 from .entity import ElectroluxEntity
 from .number import ElectroluxNumber
@@ -186,6 +187,7 @@ class ElectroluxLibraryEntity:
 
     def get_entity_type(self, attr_name: str):
         """Get entity type."""
+
         capability_def: dict[str, Any] | None = self.get_capability(attr_name)
         if not capability_def:
             return None
@@ -236,6 +238,11 @@ class ElectroluxLibraryEntity:
             case "alert":
                 return SENSOR
             case _:
+                if (
+                    self.get_entity_name(attr_name) == "executeCommand"
+                    and access == "read"
+                ):  # FIX for https://github.com/albaintor/homeassistant_electrolux_status/issues/74
+                    return BUTTON
                 if access == "write":
                     return BUTTON
                 if access == "constant":
