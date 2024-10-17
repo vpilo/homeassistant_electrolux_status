@@ -60,7 +60,7 @@ def time_seconds_to_minutes(seconds: float | None) -> int | None:
         return None
     if seconds == -1:
         return -1
-    return math.ceil(seconds / 60)
+    return int(math.ceil(int(seconds) / 60))
 
 
 def time_minutes_to_seconds(minutes: float | None) -> int | None:
