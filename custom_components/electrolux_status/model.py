@@ -71,6 +71,11 @@ class ElectroluxDevice:
     # once Select entities have a device_class this is not needed
     entity_platform: Platform | None = None
 
+    # Custom icons map according to values : useful for execute commands buttons
+    entity_icons_value_map: dict[str, str] | None = None
+
+    entity_value_named: bool = False
+
 
 class ElectroluxTokenStore(TypedDict):
     """Serialized exposed entities storage storage collection."""

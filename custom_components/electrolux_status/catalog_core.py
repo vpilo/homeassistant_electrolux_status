@@ -217,6 +217,15 @@ CATALOG_BASE: dict[str, ElectroluxDevice] = {
         unit=None,
         entity_category=None,
         entity_icon="mdi:house",
+        entity_icons_value_map= {
+            "OFF": "mdi:power-off",
+            "ON": "mdi:power-on",
+            "START": "mdi:play",
+            "STOPRESET": "mdi:stop",
+            "PAUSE": "mdi:pause",
+            "RESUME": "mdi:play-pause",
+        },
+        entity_value_named = True
     ),
     "extraCavity/alerts": ElectroluxDevice(
         capability_info={

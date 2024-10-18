@@ -26,9 +26,10 @@ from .const import (
     SENSOR,
     STATIC_ATTRIBUTES,
     SWITCH,
-    IGNORED_ATTRIBUTES,
+    IGNORED_ATTRIBUTES, RENAME_RULES,
 )
 from .entity import ElectroluxEntity
+from .model import ElectroluxDevice
 from .number import ElectroluxNumber
 from .select import ElectroluxSelect
 from .sensor import ElectroluxSensor
@@ -76,6 +77,8 @@ class ElectroluxLibraryEntity:
     def get_sensor_name(self, attr_name: str) -> str:
         """Get the name of the sensor."""
         sensor = attr_name
+        for truncate_rule in RENAME_RULES:
+            sensor = re.sub(truncate_rule, "", sensor)
         sensor = sensor[0].upper() + sensor[1:]
         sensor = sensor.replace("_", " ")
         sensor = sensor.replace("/", " ")
@@ -129,6 +132,9 @@ class ElectroluxLibraryEntity:
 
         ex: Convert format "fCMiscellaneousState/detergentExtradosage" to "detergentExtradosage"
         """
+        for truncate_rule in RENAME_RULES:
+            attr_name = re.sub(truncate_rule, "", attr_name)
+
         return attr_name.rpartition("/")[-1] or attr_name
 
     def get_category(self, attr_name: str) -> str:
@@ -185,7 +191,7 @@ class ElectroluxLibraryEntity:
             return SensorDeviceClass.TEMPERATURE
         return None
 
-    def get_entity_type(self, attr_name: str):
+    def get_entity_type(self, attr_name: str) ->  Platform | None:
         """Get entity type."""
 
         capability_def: dict[str, Any] | None = self.get_capability(attr_name)
@@ -264,7 +270,7 @@ class ElectroluxLibraryEntity:
         )
         return None
 
-    def sources_list(self):
+    def sources_list(self) -> list[str] | None:
         """List the capability types."""
         if self.capabilities is None:
             _LOGGER.warning("Electrolux capabilities list is empty")
@@ -357,7 +363,7 @@ class Appliance:
         ) or self.state.get("applianceData", {}).get("modelName")
 
     @property
-    def catalog(self) -> dict[str, Any]:
+    def catalog(self) -> dict[str, ElectroluxDevice]:
         """Return the defined catalog for the appliance."""
         # TODO: Use appliance_type as opposed to model?
         if self.model in CATALOG_MODEL:
@@ -483,17 +489,17 @@ class Appliance:
         )
 
         def electrolux_entity_factory(
-            name,
-            entity_type,
-            entity_attr,
-            entity_source,
-            capability,
-            unit,
-            entity_category,
-            device_class,
-            icon,
-            catalog_entry,
-            commands=None,
+            name: str,
+            entity_type:Platform | None,
+            entity_attr: str,
+            entity_source: str,
+            capability: str,
+            unit: str,
+            entity_category: str,
+            device_class: str,
+            icon: str,
+            catalog_entry: ElectroluxDevice | None,
+            commands: Any|None =None
         ):
             entity_classes = {
                 BINARY_SENSOR: ElectroluxBinarySensor,
@@ -528,10 +534,19 @@ class Appliance:
             if commands is None:
                 return [entity_class(**entity_params)]
 
-            return [
-                entity_class(**{**entity_params, "val_to_send": command})
-                for command in commands
-            ]
+            entities: list[ElectroluxBinarySensor | ElectroluxNumber | ElectroluxSensor | ElectroluxSwitch |
+                           ElectroluxButton | ElectroluxSelect] = []
+            # Replace entity name and icons for multi-entities attribute (one value = one entity)
+            for command in commands:
+                entity = {**entity_params, "val_to_send": command}
+                if catalog_item:
+                    if catalog_item.entity_value_named:
+                        entity["name"] = command
+                    if catalog_item.entity_icons_value_map and catalog_item.entity_icons_value_map.get(command, None):
+                        entity["icon"] = catalog_item.entity_icons_value_map.get(command)
+                # Instanciate the new entity and append it
+                entities.append(entity_class(**entity))
+            return entities
 
         if entity_type in PLATFORMS:
             commands = (
@@ -548,7 +563,7 @@ class Appliance:
                 device_class=device_class,
                 icon=entity_icon,
                 catalog_entry=catalog_item,
-                commands=commands,
+                commands=commands
             )
 
         return []
@@ -593,9 +608,10 @@ class Appliance:
                 entities.extend(entity)
 
         # For each capability src
-        for capability in capabilities_names:
-            if entity := self.get_entity(capability):
-                entities.extend(entity)
+        if capabilities_names:
+            for capability in capabilities_names:
+                if entity := self.get_entity(capability):
+                    entities.extend(entity)
 
         # Setup each found entity
         self.entities = entities
