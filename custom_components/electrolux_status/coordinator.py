@@ -371,9 +371,10 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                         json.dumps(appliance_capabilities),
                     )
                 except Exception as exception:  # noqa: BLE001
-                    raise ConfigEntryNotReady(
-                        "Electrolux unable to retrieve capabilities. Cancelling setup"
-                    ) from exception
+                    _LOGGER.warning("Electrolux unable to retrieve capabilities, we are going on our own", exception)
+                    # raise ConfigEntryNotReady(
+                    #     "Electrolux unable to retrieve capabilities. Cancelling setup"
+                    # ) from exception
 
                 appliance_info = appliance_infos[0] if appliance_infos else None
 
