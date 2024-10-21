@@ -13,7 +13,9 @@
             "user": {
                 "data": {
                     "language": "Limbă",
-                    "notifications": "Trimiteți notificări pentru alerte ridicate",
+                    "notifications": "Ridicați notificările pentru avizele la nivel de alertă",
+                    "notifications_diagnostic": "Ridicați notificările pentru notificări la nivel de diagnosticare",
+                    "notifications_warning": "Ridicați notificările pentru avizele la nivel de avertizare",
                     "password": "Parolă",
                     "username": "Nume de utilizator"
                 },
@@ -27,7 +29,9 @@
             "user": {
                 "data": {
                     "language": "Limbă",
-                    "notifications": "Trimiteți notificări pentru alerte ridicate",
+                    "notifications": "Ridicați notificările pentru avizele la nivel de alertă",
+                    "notifications_diagnostic": "Ridicați notificările pentru notificări la nivel de diagnosticare",
+                    "notifications_warning": "Ridicați notificările pentru avizele la nivel de avertizare",
                     "password": "Parolă",
                     "renew_interval": "Intervalul de reînnoire a WebSocket (secunde)"
                 }

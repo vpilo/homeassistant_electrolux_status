@@ -13,7 +13,9 @@
             "user": {
                 "data": {
                     "language": "Kalba",
-                    "notifications": "Siųsti pranešimus apie iškeltus perspėjimus",
+                    "notifications": "Padidinkite pranešimus apie įspėjimo lygio pranešimus",
+                    "notifications_diagnostic": "Padidinkite pranešimus apie diagnostikos lygio pranešimus",
+                    "notifications_warning": "Padidinkite pranešimus apie įspėjimo lygio pranešimus",
                     "password": "Slaptažodis",
                     "username": "Vartotojo vardas"
                 },
@@ -27,7 +29,9 @@
             "user": {
                 "data": {
                     "language": "Kalba",
-                    "notifications": "Siųsti pranešimus apie iškeltus perspėjimus",
+                    "notifications": "Padidinkite pranešimus apie įspėjimo lygio pranešimus",
+                    "notifications_diagnostic": "Padidinkite pranešimus apie diagnostikos lygio pranešimus",
+                    "notifications_warning": "Padidinkite pranešimus apie įspėjimo lygio pranešimus",
                     "password": "Slaptažodis",
                     "renew_interval": "„WebSocket“ atnaujinimo intervalas (sekundės)"
                 }

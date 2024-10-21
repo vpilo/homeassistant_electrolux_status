@@ -13,7 +13,9 @@
             "user": {
                 "data": {
                     "language": "Sprog",
-                    "notifications": "Send meddelelser til hævede alarmer",
+                    "notifications": "Hæv meddelelser om meddelelser om alarmniveau",
+                    "notifications_diagnostic": "Hæv underretninger om meddelelser om diagnostisk niveau",
+                    "notifications_warning": "Hæv underretninger om meddelelser om advarselsniveau",
                     "password": "Adgangskode",
                     "username": "Brugernavn"
                 },
@@ -27,7 +29,9 @@
             "user": {
                 "data": {
                     "language": "Sprog",
-                    "notifications": "Send meddelelser til hævede alarmer",
+                    "notifications": "Hæv meddelelser om meddelelser om alarmniveau",
+                    "notifications_diagnostic": "Hæv underretninger om meddelelser om diagnostisk niveau",
+                    "notifications_warning": "Hæv underretninger om meddelelser om advarselsniveau",
                     "password": "Adgangskode",
                     "renew_interval": "Fornyelsesinterval på WebSocket (sekunder)"
                 }

@@ -13,7 +13,9 @@
             "user": {
                 "data": {
                     "language": "Dil",
-                    "notifications": "Yükseltilmiş uyarılar için bildirimler gönderin",
+                    "notifications": "Uyarı seviyesi bildirimleri için bildirimleri artırın",
+                    "notifications_diagnostic": "Teşhis Seviyesi Bildirimleri için Bildirimler Artırın",
+                    "notifications_warning": "Uyarı seviyesi bildirimleri için bildirimleri artırın",
                     "password": "Şifre",
                     "username": "Kullanıcı adı"
                 },
@@ -27,7 +29,9 @@
             "user": {
                 "data": {
                     "language": "Dil",
-                    "notifications": "Yükseltilmiş uyarılar için bildirimler gönderin",
+                    "notifications": "Uyarı seviyesi bildirimleri için bildirimleri artırın",
+                    "notifications_diagnostic": "Teşhis Seviyesi Bildirimleri için Bildirimler Artırın",
+                    "notifications_warning": "Uyarı seviyesi bildirimleri için bildirimleri artırın",
                     "password": "Şifre",
                     "renew_interval": "WebSocket (saniye) yenileme aralığı"
                 }

@@ -13,7 +13,9 @@
             "user": {
                 "data": {
                     "language": "Jazyk",
-                    "notifications": "Pošlite upozornenia na zvýšené upozornenia",
+                    "notifications": "Zvýšiť oznámenia o upozorneniach na úrovni výstrahy",
+                    "notifications_diagnostic": "Zvýšte upozornenia pre oznámenia o diagnostickej úrovni",
+                    "notifications_warning": "Zvýšte oznámenia o upozorneniach na úrovni varovania",
                     "password": "Heslo",
                     "username": "Užívateľské meno"
                 },
@@ -27,7 +29,9 @@
             "user": {
                 "data": {
                     "language": "Jazyk",
-                    "notifications": "Pošlite upozornenia na zvýšené upozornenia",
+                    "notifications": "Zvýšiť oznámenia o upozorneniach na úrovni výstrahy",
+                    "notifications_diagnostic": "Zvýšte upozornenia pre oznámenia o diagnostickej úrovni",
+                    "notifications_warning": "Zvýšte oznámenia o upozorneniach na úrovni varovania",
                     "password": "Heslo",
                     "renew_interval": "Interval obnovy WebSocket (sekundy)"
                 }

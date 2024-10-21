@@ -13,7 +13,9 @@
             "user": {
                 "data": {
                     "language": "Nyelv",
-                    "notifications": "Értesítések küldése az emelt riasztásokért",
+                    "notifications": "Növelje az értesítéseket a riasztási szintű értesítésekről",
+                    "notifications_diagnostic": "Emelje fel a diagnosztikai szintű értesítések értesítését",
+                    "notifications_warning": "Növelje a figyelmeztető szintű értesítések értesítéseit",
                     "password": "Jelszó",
                     "username": "Felhasználónév"
                 },
@@ -27,7 +29,9 @@
             "user": {
                 "data": {
                     "language": "Nyelv",
-                    "notifications": "Értesítések küldése az emelt riasztásokért",
+                    "notifications": "Növelje az értesítéseket a riasztási szintű értesítésekről",
+                    "notifications_diagnostic": "Emelje fel a diagnosztikai szintű értesítések értesítését",
+                    "notifications_warning": "Növelje a figyelmeztető szintű értesítések értesítéseit",
                     "password": "Jelszó",
                     "renew_interval": "A WebSocket megújítási intervalluma (másodperc)"
                 }

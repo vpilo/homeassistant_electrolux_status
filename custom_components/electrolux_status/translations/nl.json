@@ -13,7 +13,9 @@
             "user": {
                 "data": {
                     "language": "Taal",
-                    "notifications": "Stuur meldingen voor verhoogde meldingen",
+                    "notifications": "Ken meldingen op voor kennisgevingen op alert niveau",
+                    "notifications_diagnostic": "Ken meldingen op voor kennisgevingen op diagnostische niveau",
+                    "notifications_warning": "Ken meldingen op voor waarschuwingsniveau -kennisgevingen",
                     "password": "Wachtwoord",
                     "username": "Gebruikersnaam"
                 },
@@ -27,7 +29,9 @@
             "user": {
                 "data": {
                     "language": "Taal",
-                    "notifications": "Stuur meldingen voor verhoogde meldingen",
+                    "notifications": "Ken meldingen op voor kennisgevingen op alert niveau",
+                    "notifications_diagnostic": "Ken meldingen op voor kennisgevingen op diagnostische niveau",
+                    "notifications_warning": "Ken meldingen op voor waarschuwingsniveau -kennisgevingen",
                     "password": "Wachtwoord",
                     "renew_interval": "Vernieuwingsinterval van Websocket (seconden)"
                 }

@@ -13,7 +13,9 @@
             "user": {
                 "data": {
                     "language": "Language",
-                    "notifications": "Send notifications for raised alerts",
+                    "notifications": "Raise notifications for ALERT level notices",
+                    "notifications_diagnostic": "Raise notifications for DIAGNOSTIC level notices",
+                    "notifications_warning": "Raise notifications for WARNING level notices",
                     "password": "Password",
                     "username": "Username"
                 },
@@ -27,7 +29,9 @@
             "user": {
                 "data": {
                     "language": "Language",
-                    "notifications": "Send notifications for raised alerts",
+                    "notifications": "Raise notifications for ALERT level notices",
+                    "notifications_diagnostic": "Raise notifications for DIAGNOSTIC level notices",
+                    "notifications_warning": "Raise notifications for WARNING level notices",
                     "password": "Password",
                     "renew_interval": "Renewal interval of websocket (seconds)"
                 }

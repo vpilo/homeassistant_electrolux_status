@@ -13,7 +13,9 @@
             "user": {
                 "data": {
                     "language": "Sprache",
-                    "notifications": "Senden Sie Benachrichtigungen für erhöhte Warnungen",
+                    "notifications": "Erhöhen Sie Benachrichtigungen für Benachrichtigungen auf Warnstufe",
+                    "notifications_diagnostic": "Erhöhen Sie Benachrichtigungen für Diagnosebereich Hinweise",
+                    "notifications_warning": "Erhöhen Sie Benachrichtigungen für Warnniveaus -Mitteilungen",
                     "password": "Passwort",
                     "username": "Benutzername"
                 },
@@ -27,7 +29,9 @@
             "user": {
                 "data": {
                     "language": "Sprache",
-                    "notifications": "Senden Sie Benachrichtigungen für erhöhte Warnungen",
+                    "notifications": "Erhöhen Sie Benachrichtigungen für Benachrichtigungen auf Warnstufe",
+                    "notifications_diagnostic": "Erhöhen Sie Benachrichtigungen für Diagnosebereich Hinweise",
+                    "notifications_warning": "Erhöhen Sie Benachrichtigungen für Warnniveaus -Mitteilungen",
                     "password": "Passwort",
                     "renew_interval": "Erneuerungsintervall von WebSocket (Sekunden)"
                 }
