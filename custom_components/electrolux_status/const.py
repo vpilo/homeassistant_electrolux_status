@@ -77,10 +77,10 @@ languages = {
 }
 
 # List of attributes to ignore and that won't be added as entities (regex format)
-IGNORED_ATTRIBUTES: [str] = [ "^fCMiscellaneous.+", "fcOptisenseLoadWeight"]
+IGNORED_ATTRIBUTES: list[str] = ["^fCMiscellaneous.+", "fcOptisenseLoadWeight"]
 
 # Rules to simplify the naming of entities
-RENAME_RULES: [str] = [r"^userSelections\/[^_]+_", r"^userSelections\/"]
+RENAME_RULES: list[str] = [r"^userSelections\/[^_]+_", r"^userSelections\/"]
 
 # List of entity names that need to be updated to 0 manually when they are close to 0
 TIME_ENTITIES_TO_UPDATE = ["timeToEnd"]
