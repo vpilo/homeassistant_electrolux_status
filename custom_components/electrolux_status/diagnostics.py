@@ -15,7 +15,7 @@ from homeassistant.helpers.device_registry import DeviceEntry
 from .const import DOMAIN
 from .coordinator import ElectroluxCoordinator
 
-REDACT_CONFIG = {"pnc", "applianceId", "unique_id"}
+REDACT_CONFIG = {}
 
 
 async def async_get_config_entry_diagnostics(

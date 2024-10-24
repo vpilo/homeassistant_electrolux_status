@@ -54,6 +54,7 @@ class ElectroluxEntity(CoordinatorEntity):
         config_entry,
         pnc_id: str,
         entity_type: Platform,
+        entity_name,
         entity_attr,
         entity_source,
         capability: dict[str, Any],
@@ -75,6 +76,7 @@ class ElectroluxEntity(CoordinatorEntity):
         self._entity_category = entity_category
         self._catalog_entry = catalog_entry
         self.api: OneAppApi = coordinator.api
+        self.entity_name = entity_name
         self.entity_attr = entity_attr
         self.entity_type = entity_type
         self.entity_source = entity_source
@@ -82,7 +84,7 @@ class ElectroluxEntity(CoordinatorEntity):
         self.pnc_id = pnc_id
         self.unit = unit
         self.capability = capability
-        self.entity_id = f"{self.entity_domain}.{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_attr}"
+        self.entity_id = f"{self.entity_domain}.{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_name}"
         if catalog_entry:
             self.entity_registry_enabled_default = (
                 catalog_entry.entity_registry_enabled_default
@@ -101,7 +103,7 @@ class ElectroluxEntity(CoordinatorEntity):
     @property
     def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
-        return f"{self.config_entry.entry_id}-{self.entity_attr}-{self.entity_source or 'root'}-{self.pnc_id}"
+        return f"{self.config_entry.entry_id}-{self.entity_name}-{self.entity_source or 'root'}-{self.pnc_id}"
 
     # Disabled this as this removes the value from display : there is no readonly property for entities
     # @property
