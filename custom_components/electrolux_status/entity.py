@@ -142,6 +142,8 @@ class ElectroluxEntity(CoordinatorEntity):
         Used for the evaluation of state_mapping one property to another.
         """
         if "/" in path:
+            if self.reported_state.get(path, None):
+                return self.reported_state.get(path)
             source, attr = path.split("/")
             return self.reported_state.get(source, {}).get(attr, None)
         return self.reported_state.get(path, None)

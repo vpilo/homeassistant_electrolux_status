@@ -57,6 +57,10 @@ class ElectroluxBinarySensor(ElectroluxEntity, BinarySensorEntity):
         value = self.extract_value()
         if isinstance(value, str):
             value = string_to_boolean(value, True)
+        if value is None:
+            if self.catalog_entry and self.catalog_entry.state_mapping:
+                mapping = self.catalog_entry.state_mapping
+                value = self.get_state_attr(mapping)
         if value is not None:
             self._cached_value = value
         return not self._cached_value if self.invert else self._cached_value
