@@ -62,16 +62,12 @@ async def _async_get_diagnostics(
         "appliances_list": appliances_list,
         "appliances_detail": {},
     }
-    counter = 1
     for appliance in appliances_list:
-        applianceId = appliance["applianceId"]
-        applianceName = appliance["applianceData"]["applianceName"]
-        key = f"{counter}-{applianceName}"
-        data["appliances_detail"][key] = {
-            "capabilities": await app_entry.api.get_appliance_capabilities(applianceId),
-            "state": await app_entry.api.get_appliance_state(applianceId),
+        appliance_id = appliance["applianceId"]
+        data["appliances_detail"][appliance_id] = {
+            "capabilities": await app_entry.api.get_appliance_capabilities(appliance_id),
+            "state": await app_entry.api.get_appliance_state(appliance_id),
         }
-        counter += 1
     return async_redact_data(data, REDACT_CONFIG)
 
 
