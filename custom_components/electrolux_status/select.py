@@ -49,6 +49,7 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
         config_entry,
         pnc_id: str,
         entity_type: Platform,
+        entity_name,
         entity_attr,
         entity_source,
         capability: dict[str, Any],
@@ -66,6 +67,7 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
             config_entry=config_entry,
             pnc_id=pnc_id,
             entity_type=entity_type,
+            entity_name=entity_name,
             entity_attr=entity_attr,
             entity_source=entity_source,
             unit=unit,
@@ -147,8 +149,10 @@ class ElectroluxSelect(ElectroluxEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
         value = self.options_list.get(option, None)
-        if isinstance(self.unit, UnitOfTemperature) or self.entity_attr.startswith(
-            "targetTemperature"
+        if (
+            isinstance(self.unit, UnitOfTemperature)
+            or self.entity_attr.startswith("targetTemperature")
+            or self.entity_name.startswith("targetTemperature")
         ):
             # Attempt to convert the option to a float
             with contextlib.suppress(ValueError):

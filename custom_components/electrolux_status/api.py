@@ -131,11 +131,18 @@ class ElectroluxLibraryEntity:
     def get_entity_name(self, attr_name: str) -> str:
         """Extract Entity Name.
 
-        ex: Convert format "fCMiscellaneousState/detergentExtradosage" to "detergentExtradosage"
+        ex: Convert format "fCMiscellaneousState/EWX1493A_detergentExtradosage" to "XdetergentExtradosage"
         """
         for truncate_rule in RENAME_RULES:
             attr_name = re.sub(truncate_rule, "", attr_name)
 
+        return attr_name.rpartition("/")[-1] or attr_name
+
+    def get_entity_attr(self, attr_name: str) -> str:
+        """Extract Entity attr in raw format.
+
+        ex: Convert format "fCMiscellaneousState/EWX1493A_detergentExtradosage" to "EWX1493A_detergentExtradosage"
+        """
         return attr_name.rpartition("/")[-1] or attr_name
 
     def get_category(self, attr_name: str) -> str:
@@ -439,6 +446,7 @@ class Appliance:
 
         entity_type = self.data.get_entity_type(capability)
         entity_name = self.data.get_entity_name(capability)
+        entity_attr = self.data.get_entity_attr(capability)
         category = self.data.get_category(capability)
         capability_info = self.data.get_capability(capability)
         device_class = self.data.get_entity_device_class(capability)
@@ -480,9 +488,10 @@ class Appliance:
             entity_type = catalog_item.entity_platform
 
         _LOGGER.debug(
-            "Electrolux get_entity. entity_type: %s entity_attr: %s entity_source: %s capability: %s device_class: %s unit: %s",
+            "Electrolux get_entity. entity_type: %s entity_name: %s entity_attr: %s entity_source: %s capability: %s device_class: %s unit: %s",
             entity_type,
             entity_name,
+            entity_attr,
             category,
             capability_info,
             device_class,
@@ -522,6 +531,7 @@ class Appliance:
                 "pnc_id": self.pnc_id,
                 "name": name,
                 "entity_type": entity_type,
+                "entity_name": entity_name,
                 "entity_attr": entity_attr,
                 "entity_source": entity_source,
                 "capability": capability,
@@ -567,7 +577,8 @@ class Appliance:
             return electrolux_entity_factory(
                 name=display_name,
                 entity_type=entity_type,
-                entity_attr=entity_name,
+                entity_name=entity_name,
+                entity_attr=entity_attr,
                 entity_source=category,
                 capability=capability_info,
                 unit=unit,
