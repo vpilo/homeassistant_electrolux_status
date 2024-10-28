@@ -48,6 +48,7 @@ class ElectroluxButton(ElectroluxEntity, ButtonEntity):
         config_entry,
         pnc_id: str,
         entity_type: str,
+        entity_name,
         entity_attr,
         entity_source,
         capability: dict[str, Any],
@@ -66,6 +67,7 @@ class ElectroluxButton(ElectroluxEntity, ButtonEntity):
             config_entry=config_entry,
             pnc_id=pnc_id,
             entity_type=entity_type,
+            entity_name=entity_name,
             entity_attr=entity_attr,
             entity_source=entity_source,
             unit=None,
@@ -84,7 +86,7 @@ class ElectroluxButton(ElectroluxEntity, ButtonEntity):
     @property
     def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
-        return f"{self.config_entry.entry_id}-{self.val_to_send}-{self.entity_attr}-{self.entity_source}-{self.pnc_id}"
+        return f"{self.config_entry.entry_id}-{self.val_to_send}-{self.entity_name}-{self.entity_source}-{self.pnc_id}"
 
     @property
     def name(self) -> str:

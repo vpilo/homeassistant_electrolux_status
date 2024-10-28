@@ -203,11 +203,16 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
         return False
 
     async def deferred_update(self, appliance_id: str, delay: int) -> None:
-        """Deferred update due to Electrolux not sending updated data at the end of the appliance program/cycle"""
-        _LOGGER.debug("Electrolux scheduling deferred update for appliance %s", appliance_id)
+        """Deferred update due to Electrolux not sending updated data at the end of the appliance program/cycle."""
+        _LOGGER.debug(
+            "Electrolux scheduling deferred update for appliance %s", appliance_id
+        )
         await asyncio.sleep(delay)
-        _LOGGER.debug("Electrolux scheduled deferred update for appliance %s running", appliance_id)
-        appliances: Appliances = self.data.get('appliances', None)
+        _LOGGER.debug(
+            "Electrolux scheduled deferred update for appliance %s running",
+            appliance_id,
+        )
+        appliances: Appliances = self.data.get("appliances", None)
         # Should not happen : wonder if this is not the cause of infinite loop of integrations creations => disabled
         # if appliances is None or len(appliances.get_appliances()) == 0:
         #     await self.setup_entities()
@@ -222,8 +227,8 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                 appliance.update(appliance_status)
                 self.async_set_updated_data(self.data)
             except Exception as exception:
-                _LOGGER.exception(exception)
-                raise UpdateFailed() from exception
+                _LOGGER.exception(exception)  # noqa: TRY401
+                raise UpdateFailed from exception
 
     def incoming_data(self, data: dict[str, dict[str, Any]]):
         """Process incoming data."""
@@ -371,7 +376,10 @@ class ElectroluxCoordinator(DataUpdateCoordinator):
                         json.dumps(appliance_capabilities),
                     )
                 except Exception as exception:  # noqa: BLE001
-                    _LOGGER.warning("Electrolux unable to retrieve capabilities, we are going on our own", exception)
+                    _LOGGER.warning(
+                        "Electrolux unable to retrieve capabilities, we are going on our own",
+                        exception,
+                    )
                     # raise ConfigEntryNotReady(
                     #     "Electrolux unable to retrieve capabilities. Cancelling setup"
                     # ) from exception
