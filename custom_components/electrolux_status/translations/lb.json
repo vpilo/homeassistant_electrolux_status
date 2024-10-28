@@ -13,7 +13,9 @@
             "user": {
                 "data": {
                     "language": "Sprooche",
-                    "notifications": "Schéckt Notifikatiounen fir opgehuewe Alarmer",
+                    "notifications": "Räichtum Notifikatiounen fir Alarmniveau",
+                    "notifications_diagnostic": "Räichtum Notifikatiounen fir diagnostesch Niveau Notifikatiounen",
+                    "notifications_warning": "Räichtum Notifikatiounen fir Warnungsniveau Notifikatioune",
                     "password": "Passwuert",
                     "username": "Benotzernumm"
                 },
@@ -27,7 +29,9 @@
             "user": {
                 "data": {
                     "language": "Sprooche",
-                    "notifications": "Schéckt Notifikatiounen fir opgehuewe Alarmer",
+                    "notifications": "Räichtum Notifikatiounen fir Alarmniveau",
+                    "notifications_diagnostic": "Räichtum Notifikatiounen fir diagnostesch Niveau Notifikatiounen",
+                    "notifications_warning": "Räichtum Notifikatiounen fir Warnungsniveau Notifikatioune",
                     "password": "Passwuert",
                     "renew_interval": "Erneierungsintervall vun der WebShetket (Sekonnen)"
                 }

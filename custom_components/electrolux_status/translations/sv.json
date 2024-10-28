@@ -13,7 +13,9 @@
             "user": {
                 "data": {
                     "language": "Språk",
-                    "notifications": "Skicka aviseringar för upphöjda varningar",
+                    "notifications": "Höj meddelanden för meddelanden om varningsnivå",
+                    "notifications_diagnostic": "Höj meddelanden för meddelanden om diagnostisk nivå",
+                    "notifications_warning": "Höj meddelanden för varningsnivåmeddelanden",
                     "password": "Lösenord",
                     "username": "Användarnamn"
                 },
@@ -27,7 +29,9 @@
             "user": {
                 "data": {
                     "language": "Språk",
-                    "notifications": "Skicka aviseringar för upphöjda varningar",
+                    "notifications": "Höj meddelanden för meddelanden om varningsnivå",
+                    "notifications_diagnostic": "Höj meddelanden för meddelanden om diagnostisk nivå",
+                    "notifications_warning": "Höj meddelanden för varningsnivåmeddelanden",
                     "password": "Lösenord",
                     "renew_interval": "Förnyelseintervall för WebSocket (sekunder)"
                 }

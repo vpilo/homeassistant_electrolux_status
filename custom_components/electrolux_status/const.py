@@ -1,4 +1,5 @@
 """The electrolux Status constants."""
+
 import re
 
 from homeassistant.const import Platform
@@ -20,7 +21,9 @@ PLATFORMS = [BINARY_SENSOR, BUTTON, NUMBER, SELECT, SENSOR, SWITCH]
 # Configuration and options
 CONF_LANGUAGE = "language"
 CONF_RENEW_INTERVAL = "renew_interval"
-CONF_NOTIFICATIONS = "notifications"
+CONF_NOTIFICATION_DEFAULT = "notifications"
+CONF_NOTIFICATION_DIAG = "notifications_diagnostic"
+CONF_NOTIFICATION_WARNING = "notifications_warning"
 
 # Defaults
 DEFAULT_LANGUAGE = "English"
@@ -77,10 +80,10 @@ languages = {
 }
 
 # List of attributes to ignore and that won't be added as entities (regex format)
-IGNORED_ATTRIBUTES: [str] = [ "^fCMiscellaneous.+", "fcOptisenseLoadWeight"]
+IGNORED_ATTRIBUTES: list[str] = ["^fCMiscellaneous.+", "fcOptisenseLoadWeight"]
 
 # Rules to simplify the naming of entities
-RENAME_RULES: [str] = [r"^userSelections\/[^_]+_", r"^userSelections\/"]
+RENAME_RULES: list[str] = [r"^userSelections\/[^_]+_", r"^userSelections\/"]
 
 # List of entity names that need to be updated to 0 manually when they are close to 0
 TIME_ENTITIES_TO_UPDATE = ["timeToEnd"]

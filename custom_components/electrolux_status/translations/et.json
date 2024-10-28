@@ -13,7 +13,9 @@
             "user": {
                 "data": {
                     "language": "Keel",
-                    "notifications": "Saada teatised tõstetud hoiatuste kohta",
+                    "notifications": "Tõsta märguandeid häirete teadete kohta",
+                    "notifications_diagnostic": "Tõsta teatisi diagnostiliste teadete kohta",
+                    "notifications_warning": "Tõsta teatisi hoiatustaseme teadete kohta",
                     "password": "Parool",
                     "username": "Kasutajanimi"
                 },
@@ -27,7 +29,9 @@
             "user": {
                 "data": {
                     "language": "Keel",
-                    "notifications": "Saada teatised tõstetud hoiatuste kohta",
+                    "notifications": "Tõsta märguandeid häirete teadete kohta",
+                    "notifications_diagnostic": "Tõsta teatisi diagnostiliste teadete kohta",
+                    "notifications_warning": "Tõsta teatisi hoiatustaseme teadete kohta",
                     "password": "Parool",
                     "renew_interval": "WebSocketi pikendamise intervall (sekundid)"
                 }

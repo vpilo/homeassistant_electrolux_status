@@ -13,7 +13,9 @@
             "user": {
                 "data": {
                     "language": "Språk",
-                    "notifications": "Send varsler for hevede varsler",
+                    "notifications": "Hev varsler for varslingsnivåvarsler",
+                    "notifications_diagnostic": "Hev varsler for varsler om diagnostisk nivå",
+                    "notifications_warning": "Hev varsler for varsler om advarselsnivå",
                     "password": "Passord",
                     "username": "Brukernavn"
                 },
@@ -27,7 +29,9 @@
             "user": {
                 "data": {
                     "language": "Språk",
-                    "notifications": "Send varsler for hevede varsler",
+                    "notifications": "Hev varsler for varslingsnivåvarsler",
+                    "notifications_diagnostic": "Hev varsler for varsler om diagnostisk nivå",
+                    "notifications_warning": "Hev varsler for varsler om advarselsnivå",
                     "password": "Passord",
                     "renew_interval": "Fornyelsesintervall av WebSocket (sekunder)"
                 }

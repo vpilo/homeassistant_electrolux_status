@@ -13,7 +13,9 @@
             "user": {
                 "data": {
                     "language": "Valoda",
-                    "notifications": "Nosūtiet paziņojumus par paaugstinātiem brīdinājumiem",
+                    "notifications": "Paaugstiniet paziņojumus par brīdinājuma līmeņa paziņojumiem",
+                    "notifications_diagnostic": "Paaugstiniet paziņojumus par diagnostikas līmeņa paziņojumiem",
+                    "notifications_warning": "Paaugstiniet paziņojumus par brīdinājuma līmeņa paziņojumiem",
                     "password": "Parole",
                     "username": "Lietotājvārds"
                 },
@@ -27,7 +29,9 @@
             "user": {
                 "data": {
                     "language": "Valoda",
-                    "notifications": "Nosūtiet paziņojumus par paaugstinātiem brīdinājumiem",
+                    "notifications": "Paaugstiniet paziņojumus par brīdinājuma līmeņa paziņojumiem",
+                    "notifications_diagnostic": "Paaugstiniet paziņojumus par diagnostikas līmeņa paziņojumiem",
+                    "notifications_warning": "Paaugstiniet paziņojumus par brīdinājuma līmeņa paziņojumiem",
                     "password": "Parole",
                     "renew_interval": "WebSocket atjaunošanas intervāls (sekundes)"
                 }

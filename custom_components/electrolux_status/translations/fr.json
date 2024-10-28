@@ -13,11 +13,13 @@
             "user": {
                 "data": {
                     "language": "Langue",
-                    "notifications": "Envoyer des notifications pour les alertes surélevées",
+                    "notifications": "Augmenter les notifications pour les avis de niveau d'alerte",
+                    "notifications_diagnostic": "Augmenter les notifications pour les avis de diagnostic",
+                    "notifications_warning": "Augmenter les notifications pour les avis d'avertissement",
                     "password": "Mot de passe",
                     "username": "Nom d'utilisateur"
                 },
-                "description": "Si vous avez besoin d'aide pour la configuration, visitez: https://github.com/albaintor/homeassistant_electrolux_status",
+                "description": "Si vous avez besoin d'aide pour la configuration, visitez: https://github.com/albaintor/HomeasSistant_electrolux_status",
                 "title": "Electrolux Status"
             }
         }
@@ -27,7 +29,9 @@
             "user": {
                 "data": {
                     "language": "Langue",
-                    "notifications": "Envoyer des notifications pour les alertes surélevées",
+                    "notifications": "Augmenter les notifications pour les avis de niveau d'alerte",
+                    "notifications_diagnostic": "Augmenter les notifications pour les avis de diagnostic",
+                    "notifications_warning": "Augmenter les notifications pour les avis d'avertissement",
                     "password": "Mot de passe",
                     "renew_interval": "Intervalle de renouvellement de WebSocket (secondes)"
                 }

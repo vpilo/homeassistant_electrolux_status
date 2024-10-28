@@ -112,14 +112,17 @@ class ElectroluxSensor(ElectroluxEntity, SensorEntity):
             alert_types = {key: "OFF" for key in alert_types}
             if current_alerts := self.extract_value():
                 for alert in current_alerts:
+                    name = alert.get("code", "Unknown")
                     severity = alert.get("severity", "Alert")
-                    code = alert.get("code", "Unknown")
                     status = alert.get("acknowledgeStatus", "")
-                    alert_types[code] = f"{severity}-{status}"
+                    alert_types[name] = f"{severity}-{status}"
                     create_notification(
                         self.hass,
                         self.config_entry,
-                        message=f"Alert: {code}</br>Severity: {severity}</br>Status: {status}",
+                        alert_name=name,
+                        alert_severity=severity,
+                        alert_status=status,
                         title=self.name,
                     )
             return alert_types
+        return {}

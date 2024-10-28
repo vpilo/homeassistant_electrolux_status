@@ -11,7 +11,12 @@ from homeassistant.components.persistent_notification import async_create
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 
-from .const import CONF_NOTIFICATIONS, NAME
+from .const import (
+    CONF_NOTIFICATION_DEFAULT,
+    CONF_NOTIFICATION_DIAG,
+    CONF_NOTIFICATION_WARNING,
+    NAME,
+)
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -23,14 +28,33 @@ def get_electrolux_session(
     return OneAppApi(username, password, client_session)
 
 
+def should_send_notification(config_entry, alert_severity, alert_status):
+    """Determine if the notification should be sent based on severity and config."""
+    if alert_status == "NOT_NEEDED":
+        return False
+    if alert_severity == "DIAGNOSTIC":
+        return config_entry.data.get(CONF_NOTIFICATION_DIAG, False)
+    elif alert_severity == "WARNING":
+        return config_entry.data.get(CONF_NOTIFICATION_WARNING, False)
+    else:
+        return config_entry.data.get(CONF_NOTIFICATION_DEFAULT, True)
+
+
 def create_notification(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    message: str,
+    alert_name: str,
+    alert_severity: str,
+    alert_status: str,
     title: str = NAME,
 ):
     """Create a notification."""
-    if config_entry.data.get(CONF_NOTIFICATIONS, True) is False:
+
+    message = (
+        f"Alert: {alert_name}</br>Severity: {alert_severity}</br>Status: {alert_status}"
+    )
+
+    if should_send_notification(config_entry, alert_severity, alert_status) is False:
         _LOGGER.debug(
             "Discarding notification.\nTitle: %s\nMessage: %s",
             title,
@@ -38,9 +62,8 @@ def create_notification(
         )
         return
 
+    # Convert the string to base64 - this prevents the same alert being spammed
     input_string = f"{title}-{message}"
-
-    # Convert the string to base64
     bytes_string = input_string.encode("utf-8")
     base64_bytes = base64.b64encode(bytes_string)
     base64_string = base64_bytes.decode("utf-8")

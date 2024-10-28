@@ -26,7 +26,9 @@ from homeassistant.helpers.selector import (
 
 from .const import (
     CONF_LANGUAGE,
-    CONF_NOTIFICATIONS,
+    CONF_NOTIFICATION_DEFAULT,
+    CONF_NOTIFICATION_DIAG,
+    CONF_NOTIFICATION_WARNING,
     DEFAULT_LANGUAGE,
     DOMAIN,
     languages,
@@ -120,7 +122,9 @@ class ElectroluxStatusFlowHandler(ConfigFlow, domain=DOMAIN):
                             }
                         }
                     ),
-                    vol.Optional(CONF_NOTIFICATIONS, default=True): cv.boolean,
+                    vol.Optional(CONF_NOTIFICATION_DEFAULT, default=True): cv.boolean,
+                    vol.Optional(CONF_NOTIFICATION_WARNING, default=False): cv.boolean,
+                    vol.Optional(CONF_NOTIFICATION_DIAG, default=False): cv.boolean,
                 }
             )
         return self.async_show_form(
@@ -162,7 +166,9 @@ class ElectroluxStatusOptionsFlowHandler(OptionsFlow):
 
         selected_language = self.config_entry.data.get(CONF_LANGUAGE, DEFAULT_LANGUAGE)
         current_password = self.config_entry.data.get(CONF_PASSWORD, None)
-        send_notifications = self.config_entry.data.get(CONF_NOTIFICATIONS, True)
+        notify_alert = self.config_entry.data.get(CONF_NOTIFICATION_DEFAULT, True)
+        notify_warning = self.config_entry.data.get(CONF_NOTIFICATION_WARNING, False)
+        notify_diagnostic = self.config_entry.data.get(CONF_NOTIFICATION_DIAG, False)
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(
@@ -182,7 +188,13 @@ class ElectroluxStatusOptionsFlowHandler(OptionsFlow):
                         }
                     ),
                     vol.Optional(
-                        CONF_NOTIFICATIONS, default=send_notifications
+                        CONF_NOTIFICATION_DEFAULT, default=notify_alert
+                    ): cv.boolean,
+                    vol.Optional(
+                        CONF_NOTIFICATION_WARNING, default=notify_warning
+                    ): cv.boolean,
+                    vol.Optional(
+                        CONF_NOTIFICATION_DIAG, default=notify_diagnostic
                     ): cv.boolean,
                     # vol.Optional(
                     #     CONF_RENEW_INTERVAL,
@@ -201,7 +213,9 @@ class ElectroluxStatusOptionsFlowHandler(OptionsFlow):
             **self.config_entry.data,
             CONF_PASSWORD: self.options[CONF_PASSWORD],
             CONF_LANGUAGE: self.options[CONF_LANGUAGE],
-            CONF_NOTIFICATIONS: self.options[CONF_NOTIFICATIONS],
+            CONF_NOTIFICATION_DEFAULT: self.options[CONF_NOTIFICATION_DEFAULT],
+            CONF_NOTIFICATION_WARNING: self.options[CONF_NOTIFICATION_WARNING],
+            CONF_NOTIFICATION_DIAG: self.options[CONF_NOTIFICATION_DIAG],
         }
         self.hass.config_entries.async_update_entry(self.config_entry, data=data)
         return self.async_create_entry(

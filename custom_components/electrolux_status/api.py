@@ -20,13 +20,14 @@ from .catalog_core import CATALOG_BASE, CATALOG_MODEL
 from .const import (
     BINARY_SENSOR,
     BUTTON,
+    IGNORED_ATTRIBUTES,
     NUMBER,
     PLATFORMS,
+    RENAME_RULES,
     SELECT,
     SENSOR,
     STATIC_ATTRIBUTES,
     SWITCH,
-    IGNORED_ATTRIBUTES, RENAME_RULES,
 )
 from .entity import ElectroluxEntity
 from .model import ElectroluxDevice
@@ -198,7 +199,7 @@ class ElectroluxLibraryEntity:
             return SensorDeviceClass.TEMPERATURE
         return None
 
-    def get_entity_type(self, attr_name: str) ->  Platform | None:
+    def get_entity_type(self, attr_name: str) -> Platform | None:
         """Get entity type."""
 
         capability_def: dict[str, Any] | None = self.get_capability(attr_name)
@@ -500,7 +501,6 @@ class Appliance:
         def electrolux_entity_factory(
             name: str,
             entity_type: Platform | None,
-            entity_name: str,
             entity_attr: str,
             entity_source: str,
             capability: str,
@@ -509,7 +509,7 @@ class Appliance:
             device_class: str,
             icon: str,
             catalog_entry: ElectroluxDevice | None,
-            commands: Any|None =None
+            commands: Any | None = None,
         ):
             entity_classes = {
                 BINARY_SENSOR: ElectroluxBinarySensor,
@@ -545,16 +545,27 @@ class Appliance:
             if commands is None:
                 return [entity_class(**entity_params)]
 
-            entities: list[ElectroluxBinarySensor | ElectroluxNumber | ElectroluxSensor | ElectroluxSwitch |
-                           ElectroluxButton | ElectroluxSelect] = []
+            entities: list[
+                ElectroluxBinarySensor
+                | ElectroluxNumber
+                | ElectroluxSensor
+                | ElectroluxSwitch
+                | ElectroluxButton
+                | ElectroluxSelect
+            ] = []
             # Replace entity name and icons for multi-entities attribute (one value = one entity)
             for command in commands:
                 entity = {**entity_params, "val_to_send": command}
                 if catalog_item:
                     if catalog_item.entity_value_named:
                         entity["name"] = command
-                    if catalog_item.entity_icons_value_map and catalog_item.entity_icons_value_map.get(command, None):
-                        entity["icon"] = catalog_item.entity_icons_value_map.get(command)
+                    if (
+                        catalog_item.entity_icons_value_map
+                        and catalog_item.entity_icons_value_map.get(command, None)
+                    ):
+                        entity["icon"] = catalog_item.entity_icons_value_map.get(
+                            command
+                        )
                 # Instanciate the new entity and append it
                 entities.append(entity_class(**entity))
             return entities
@@ -575,7 +586,7 @@ class Appliance:
                 device_class=device_class,
                 icon=entity_icon,
                 catalog_entry=catalog_item,
-                commands=commands
+                commands=commands,
             )
 
         return []
