@@ -501,6 +501,7 @@ class Appliance:
         def electrolux_entity_factory(
             name: str,
             entity_type: Platform | None,
+            entity_name: str,
             entity_attr: str,
             entity_source: str,
             capability: str,
