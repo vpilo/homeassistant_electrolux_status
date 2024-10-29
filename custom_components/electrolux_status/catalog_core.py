@@ -899,4 +899,20 @@ CATALOG_BASE: dict[str, ElectroluxDevice] = {
         entity_category=None,
         entity_icon="mdi:water",
     ),
+    "fCMiscellaneousState/tankAReserve": ElectroluxDevice(
+        friendly_name="Tank A reserve",
+        capability_info={"access": "read", "type": "boolean"},
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        unit=None,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_icon="mdi:cup-outline",
+    ),
+    "fCMiscellaneousState/tankBReserve": ElectroluxDevice(
+        friendly_name="Tank B reserve",
+        capability_info={"access": "read", "type": "boolean"},
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        unit=None,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_icon="mdi:cup-outline",
+    ),
 }

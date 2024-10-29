@@ -30,7 +30,7 @@ DEFAULT_LANGUAGE = "English"
 DEFAULT_WEBSOCKET_RENEWAL_DELAY = 43200  # 12 hours
 
 # these are attributes that appear in the state file but not in the capabilities.
-# defining them here and in the catalog will allow these devices to be added dynamicaly
+# defining them here and in the catalog will allow these devices to be added dynamically
 STATIC_ATTRIBUTES = [
     "connectivityState",
     "networkInterface/linkQualityIndicator",
@@ -80,10 +80,22 @@ languages = {
 }
 
 # List of attributes to ignore and that won't be added as entities (regex format)
-IGNORED_ATTRIBUTES: list[str] = ["^fCMiscellaneous.+", "fcOptisenseLoadWeight"]
+ATTRIBUTES_BLACKLIST: list[str] = ["^fCMiscellaneous.+",
+                                   "fcOptisenseLoadWeight.*",
+                                   "applianceCareAndMaintenance.*",
+                                   "applianceMainBoardSwVersion",
+                                   "coolingValveState",
+                                   "networkInterface",
+                                   "temperatureRepresentation",
+                                   ]
+
+ATTRIBUTES_WHITELIST: list[str] = [".*waterUsage",
+                                   ".*tankAReserve",
+                                   ".*tankBReserve"]
 
 # Rules to simplify the naming of entities
-RENAME_RULES: list[str] = [r"^userSelections\/[^_]+_", r"^userSelections\/"]
+RENAME_RULES: list[str] = [r"^userSelections\/[^_]+_", r"^userSelections\/",
+                           r"^fCMiscellaneousState\/[^_]+_", r"^fCMiscellaneousState\/"]
 
 # List of entity names that need to be updated to 0 manually when they are close to 0
 TIME_ENTITIES_TO_UPDATE = ["timeToEnd"]

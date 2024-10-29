@@ -20,14 +20,14 @@ from .catalog_core import CATALOG_BASE, CATALOG_MODEL
 from .const import (
     BINARY_SENSOR,
     BUTTON,
-    IGNORED_ATTRIBUTES,
+    ATTRIBUTES_BLACKLIST,
     NUMBER,
     PLATFORMS,
     RENAME_RULES,
     SELECT,
     SENSOR,
     STATIC_ATTRIBUTES,
-    SWITCH,
+    SWITCH, ATTRIBUTES_WHITELIST,
 )
 from .entity import ElectroluxEntity
 from .model import ElectroluxDevice
@@ -287,22 +287,25 @@ class ElectroluxLibraryEntity:
         # dont load these entities by as they are not useful
         # we do load some of these directly via STATIC_ATTRIBUTES as
         # one or another are useful, but not all child values are
-        exclude_list: tuple[str, ...] = (
-            "applianceCareAndMaintenance",
-            "applianceMainBoardSwVersion",
-            "coolingValveState",
-            "networkInterface",
-            "temperatureRepresentation",
-        )
+
+        def keep_source(source: str) -> bool:
+            for ignored_pattern in ATTRIBUTES_BLACKLIST:
+                if re.match(ignored_pattern, source):
+                    for whitelist_pattern in ATTRIBUTES_WHITELIST:
+                        if re.match(whitelist_pattern, source):
+                            return True
+                    _LOGGER.debug("Exclude source %s from list", source)
+                    return False
+            return True
 
         sources = [
             key
             for key in list(self.capabilities.keys())
-            if not key.startswith(exclude_list)
+            if keep_source(key)
         ]
 
         for key, value in self.capabilities.items():
-            if key.startswith(exclude_list):
+            if not keep_source(key):
                 continue
 
             if isinstance(value, dict):
@@ -440,10 +443,6 @@ class Appliance:
 
     def get_entity(self, capability: str) -> list[ElectroluxEntity] | None:
         """Return the entity."""
-        for ignored_partern in IGNORED_ATTRIBUTES:
-            if re.match(ignored_partern, capability):
-                return None
-
         entity_type = self.data.get_entity_type(capability)
         entity_name = self.data.get_entity_name(capability)
         entity_attr = self.data.get_entity_attr(capability)
@@ -488,7 +487,7 @@ class Appliance:
             entity_type = catalog_item.entity_platform
 
         _LOGGER.debug(
-            "Electrolux get_entity. entity_type: %s entity_name: %s entity_attr: %s entity_source: %s capability: %s device_class: %s unit: %s",
+            "Electrolux get_entity. entity_type: %s entity_name: %s entity_attr: %s entity_source: %s capability: %s device_class: %s unit: %s, catalog: %s",
             entity_type,
             entity_name,
             entity_attr,
@@ -496,6 +495,7 @@ class Appliance:
             capability_info,
             device_class,
             unit,
+            catalog_item,
         )
 
         def electrolux_entity_factory(
@@ -524,6 +524,7 @@ class Appliance:
             entity_class = entity_classes.get(entity_type)
 
             if entity_class is None:
+                _LOGGER.debug("Unknown entity type %s for %s", entity_type, name)
                 raise ValueError(f"Unknown entity type: {entity_type}")
 
             entity_params = {
@@ -636,6 +637,8 @@ class Appliance:
             for capability in capabilities_names:
                 if entity := self.get_entity(capability):
                     entities.extend(entity)
+                else:
+                    _LOGGER.debug("Could not create entity for capability %s", capability)
 
         # Setup each found entity
         self.entities = entities
