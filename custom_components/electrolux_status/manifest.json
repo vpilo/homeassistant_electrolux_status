@@ -3,7 +3,6 @@
   "name": "Electrolux Status",
   "codeowners": ["@albaintor","@kingy444"],
   "config_flow": true,
-  "dependencies": [],
   "documentation": "https://github.com/albaintor/homeassistant_electrolux_status",
   "homekit": {},
   "integration_type": "hub",
