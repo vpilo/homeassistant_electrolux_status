@@ -37,6 +37,9 @@ If this does not occur the home assistant integration may raise an authenticatio
 - This integration is based on new APIs and may be unstable 
 - Some commands don't work (to be investigated) : several dropdown lists like setting analog temperature...
 - Upstream API does not currently support `language`
+- Issues with authentication, if the integration can't start and you see a "403 forbidden" error in the logs, there is a workaround : try to login to the website of your appliance (eg aeg.fr, aeg.nl, electrolux...) with the account and password from the app. If the website reports that the password is wrong : change it using "forgot password" link and try again to configure the integration
+
+Maybe changing the password through the aeg-website into your app-password can help you as well?
 
 ### Supported and tested devices
 
