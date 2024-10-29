@@ -84,7 +84,7 @@ class ElectroluxEntity(CoordinatorEntity):
         self.pnc_id = pnc_id
         self.unit = unit
         self.capability = capability
-        self.entity_id = f"{self.entity_domain}.{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_name}"
+        self.entity_id = f"{self.entity_domain}.{self.get_appliance.brand}_{self.get_appliance.name}_{self.entity_source}_{self.entity_attr}"
         if catalog_entry:
             self.entity_registry_enabled_default = (
                 catalog_entry.entity_registry_enabled_default
@@ -103,7 +103,7 @@ class ElectroluxEntity(CoordinatorEntity):
     @property
     def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
-        return f"{self.config_entry.entry_id}-{self.entity_name}-{self.entity_source or 'root'}-{self.pnc_id}"
+        return f"{self.config_entry.entry_id}-{self.entity_attr}-{self.entity_source or 'root'}-{self.pnc_id}"
 
     # Disabled this as this removes the value from display : there is no readonly property for entities
     # @property
