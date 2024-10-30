@@ -97,7 +97,7 @@ CATALOG_BASE: dict[str, ElectroluxDevice] = {
         entity_registry_enabled_default=False,
     ),
     "ambientTemperatureC": ElectroluxDevice(
-        capability_info={"access": "read","type": "number"},
+        capability_info={"access": "read", "type": "number"},
         device_class=SensorDeviceClass.TEMPERATURE,
         unit=UnitOfTemperature.CELSIUS,
         entity_category=None,
@@ -217,7 +217,7 @@ CATALOG_BASE: dict[str, ElectroluxDevice] = {
         unit=None,
         entity_category=None,
         entity_icon="mdi:house",
-        entity_icons_value_map= {
+        entity_icons_value_map={
             "OFF": "mdi:power-off",
             "ON": "mdi:power-on",
             "START": "mdi:play",
@@ -225,7 +225,7 @@ CATALOG_BASE: dict[str, ElectroluxDevice] = {
             "PAUSE": "mdi:pause",
             "RESUME": "mdi:play-pause",
         },
-        entity_value_named = True
+        entity_value_named=True,
     ),
     "extraCavity/alerts": ElectroluxDevice(
         capability_info={
@@ -687,7 +687,7 @@ CATALOG_BASE: dict[str, ElectroluxDevice] = {
             "min": 0,
             "step": 5.0,
         },
-        device_class=SensorDeviceClass.TEMPERATURE,
+        device_class=NumberDeviceClass.TEMPERATURE,  # readwrite needs NumberDeviceClass / read is SensorDeviceClass
         unit=UnitOfTemperature.CELSIUS,
         entity_category=None,
         entity_icon="mdi:thermometer",
