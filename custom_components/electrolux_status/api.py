@@ -196,6 +196,8 @@ class ElectroluxLibraryEntity:
         if not type_class:
             return None
         if type_class == "temperature":
+            if capability_def.get("access", None) == "readwrite":
+                return NumberDeviceClass.TEMPERATURE
             return SensorDeviceClass.TEMPERATURE
         return None
 
