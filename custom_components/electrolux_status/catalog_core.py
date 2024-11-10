@@ -15,12 +15,15 @@ from homeassistant.const import (
 from homeassistant.helpers.entity import EntityCategory
 
 from .catalog_refridgerator import EHE6899SA
+from .catalog_oven import BSK999330T
+from .const import CAMERA
 from .model import ElectroluxDevice
 
 # definitions of model explicit overrides. These will be used to
 # create a new catalog with a merged definition of properties
 CATALOG_MODEL: dict[str, dict[str, ElectroluxDevice]] = {
     "EHE6899SA": EHE6899SA,
+    "BSK999330T": BSK999330T,
 }
 
 CATALOG_BASE: dict[str, ElectroluxDevice] = {
@@ -109,6 +112,19 @@ CATALOG_BASE: dict[str, ElectroluxDevice] = {
         unit=UnitOfTime.SECONDS,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_icon="mdi:clock-time-eight-outline",
+    ),
+    "camera": ElectroluxDevice(
+        friendly_name="CookView Camera",
+        capability_info={
+            "access": "readwrite",
+            "type": "string",
+            "values": {"ERROR": {}, "OFF": {}, "ON": {}},
+        },
+        entity_platform=CAMERA,
+        device_class=None,
+        unit=None,
+        entity_category=None,
+        entity_icon="mdi:camera",
     ),
     "connectivityState": ElectroluxDevice(
         capability_info={"access": "read", "type": "string"},

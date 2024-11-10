@@ -12,6 +12,8 @@ from homeassistant.components.button import ButtonDeviceClass
 from homeassistant.components.number import NumberDeviceClass
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.switch import SwitchDeviceClass
+
+
 from homeassistant.const import Platform, UnitOfTemperature
 
 from .binary_sensor import ElectroluxBinarySensor
@@ -20,6 +22,7 @@ from .catalog_core import CATALOG_BASE, CATALOG_MODEL
 from .const import (
     BINARY_SENSOR,
     BUTTON,
+    CAMERA,
     ATTRIBUTES_BLACKLIST,
     NUMBER,
     PLATFORMS,
@@ -27,7 +30,8 @@ from .const import (
     SELECT,
     SENSOR,
     STATIC_ATTRIBUTES,
-    SWITCH, ATTRIBUTES_WHITELIST,
+    SWITCH,
+    ATTRIBUTES_WHITELIST,
 )
 from .entity import ElectroluxEntity
 from .model import ElectroluxDevice
@@ -35,6 +39,7 @@ from .number import ElectroluxNumber
 from .select import ElectroluxSelect
 from .sensor import ElectroluxSensor
 from .switch import ElectroluxSwitch
+from .camera import ElectroluxCamera
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -158,19 +163,26 @@ class ElectroluxLibraryEntity:
 
         May contain slashes for nested keys.
         """
-
+        # VALE here need to figure out if this is used
+        _LOGGER.debug(f"VALERIO get capability for {attr_name}:")
         # Some capabilities are not stored in hierarchy but directly in a key with format "a/b" like useSelections
         if self.capabilities.get(attr_name, None):
+            _LOGGER.debug(
+                f"VALERIO YES, {attr_name}: {self.capabilities.get(attr_name)} type {type(self.capabilities.get(attr_name))}"
+            )
             return self.capabilities.get(attr_name)
 
         keys = attr_name.split("/")
         result = self.capabilities
 
+        _LOGGER.debug(f"VALERIO NO, {attr_name}: {keys}")
         for key in keys:
             result = result.get(key)
             if result is None:
+                _LOGGER.debug(f"VALERIO RETURNING NONE")
                 return None
 
+        _LOGGER.debug(f"VALERIO RETURNING {result}")
         return result
 
     def get_entity_unit(self, attr_name: str):
@@ -188,7 +200,9 @@ class ElectroluxLibraryEntity:
 
     def get_entity_device_class(self, attr_name: str):
         """Get entity device class."""
+
         capability_def: dict[str, Any] | None = self.get_capability(attr_name)
+        _LOGGER.debug(f"VALERIO get class for {attr_name}: {capability_def}")
         if not capability_def:
             return None
         # Type : string, int, number, boolean (other values ignored)
@@ -206,16 +220,21 @@ class ElectroluxLibraryEntity:
 
         capability_def: dict[str, Any] | None = self.get_capability(attr_name)
         if not capability_def:
+            _LOGGER.debug(f"VALERIO get entity type {attr_name}: caps NONE!")
             return None
 
         # Type : string, int, number, boolean (other values ignored)
         type_object = capability_def.get("type", None)
         if not type_object:
+            _LOGGER.debug(
+                f"VALERIO get entity type {attr_name}: type NONE! {capability_def}"
+            )
             return None
 
         # Access : read, readwrite (other values ignored)
         access = capability_def.get("access", None)
         if not access:
+            _LOGGER.debug(f"VALERIO get entity type {attr_name}: access NONE!")
             return None
 
         # Exception (Electrolux bug)
@@ -300,11 +319,7 @@ class ElectroluxLibraryEntity:
                     return False
             return True
 
-        sources = [
-            key
-            for key in list(self.capabilities.keys())
-            if keep_source(key)
-        ]
+        sources = [key for key in list(self.capabilities.keys()) if keep_source(key)]
 
         for key, value in self.capabilities.items():
             if not keep_source(key):
@@ -517,6 +532,7 @@ class Appliance:
             entity_classes = {
                 BINARY_SENSOR: ElectroluxBinarySensor,
                 BUTTON: ElectroluxButton,
+                CAMERA: ElectroluxCamera,
                 NUMBER: ElectroluxNumber,
                 SELECT: ElectroluxSelect,
                 SENSOR: ElectroluxSensor,
@@ -556,6 +572,7 @@ class Appliance:
                 | ElectroluxSwitch
                 | ElectroluxButton
                 | ElectroluxSelect
+                | ElectroluxCamera
             ] = []
             # Replace entity name and icons for multi-entities attribute (one value = one entity)
             for command in commands:
@@ -640,7 +657,9 @@ class Appliance:
                 if entity := self.get_entity(capability):
                     entities.extend(entity)
                 else:
-                    _LOGGER.debug("Could not create entity for capability %s", capability)
+                    _LOGGER.debug(
+                        "Could not create entity for capability %s", capability
+                    )
 
         # Setup each found entity
         self.entities = entities

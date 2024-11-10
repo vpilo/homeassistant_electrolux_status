@@ -1,7 +1,5 @@
 """The electrolux Status constants."""
 
-import re
-
 from homeassistant.const import Platform
 
 # Base component constants
@@ -12,11 +10,12 @@ DOMAIN_DATA = f"{DOMAIN}_data"
 # Platforms
 BINARY_SENSOR = Platform.BINARY_SENSOR
 BUTTON = Platform.BUTTON
+CAMERA = Platform.CAMERA
 NUMBER = Platform.NUMBER
 SELECT = Platform.SELECT
 SENSOR = Platform.SENSOR
 SWITCH = Platform.SWITCH
-PLATFORMS = [BINARY_SENSOR, BUTTON, NUMBER, SELECT, SENSOR, SWITCH]
+PLATFORMS = [BINARY_SENSOR, BUTTON, CAMERA, NUMBER, SELECT, SENSOR, SWITCH]
 
 # Configuration and options
 CONF_LANGUAGE = "language"
@@ -80,22 +79,25 @@ languages = {
 }
 
 # List of attributes to ignore and that won't be added as entities (regex format)
-ATTRIBUTES_BLACKLIST: list[str] = ["^fCMiscellaneous.+",
-                                   "fcOptisenseLoadWeight.*",
-                                   "applianceCareAndMaintenance.*",
-                                   "applianceMainBoardSwVersion",
-                                   "coolingValveState",
-                                   "networkInterface",
-                                   "temperatureRepresentation",
-                                   ]
+ATTRIBUTES_BLACKLIST: list[str] = [
+    "^fCMiscellaneous.+",
+    "fcOptisenseLoadWeight.*",
+    "applianceCareAndMaintenance.*",
+    "applianceMainBoardSwVersion",
+    "coolingValveState",
+    "networkInterface",
+    "temperatureRepresentation",
+]
 
-ATTRIBUTES_WHITELIST: list[str] = [".*waterUsage",
-                                   ".*tankAReserve",
-                                   ".*tankBReserve"]
+ATTRIBUTES_WHITELIST: list[str] = [".*waterUsage", ".*tankAReserve", ".*tankBReserve"]
 
 # Rules to simplify the naming of entities
-RENAME_RULES: list[str] = [r"^userSelections\/[^_]+_", r"^userSelections\/",
-                           r"^fCMiscellaneousState\/[^_]+_", r"^fCMiscellaneousState\/"]
+RENAME_RULES: list[str] = [
+    r"^userSelections\/[^_]+_",
+    r"^userSelections\/",
+    r"^fCMiscellaneousState\/[^_]+_",
+    r"^fCMiscellaneousState\/",
+]
 
 # List of entity names that need to be updated to 0 manually when they are close to 0
 TIME_ENTITIES_TO_UPDATE = ["timeToEnd"]
