@@ -16,7 +16,7 @@ from homeassistant.helpers.entity import EntityCategory
 
 from .catalog_refridgerator import EHE6899SA
 from .catalog_oven import BSK999330T
-from .const import CAMERA
+from .const import IMAGE
 from .model import ElectroluxDevice
 
 # definitions of model explicit overrides. These will be used to
@@ -120,7 +120,7 @@ CATALOG_BASE: dict[str, ElectroluxDevice] = {
             "type": "string",
             "values": {"ERROR": {}, "OFF": {}, "ON": {}},
         },
-        entity_platform=CAMERA,
+        entity_platform=IMAGE,
         device_class=None,
         unit=None,
         entity_category=None,

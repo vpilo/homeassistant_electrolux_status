@@ -22,7 +22,7 @@ from .catalog_core import CATALOG_BASE, CATALOG_MODEL
 from .const import (
     BINARY_SENSOR,
     BUTTON,
-    CAMERA,
+    IMAGE,
     ATTRIBUTES_BLACKLIST,
     NUMBER,
     PLATFORMS,
@@ -39,7 +39,7 @@ from .number import ElectroluxNumber
 from .select import ElectroluxSelect
 from .sensor import ElectroluxSensor
 from .switch import ElectroluxSwitch
-from .camera import ElectroluxCamera
+from .image import ElectroluxCamera
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -532,7 +532,7 @@ class Appliance:
             entity_classes = {
                 BINARY_SENSOR: ElectroluxBinarySensor,
                 BUTTON: ElectroluxButton,
-                CAMERA: ElectroluxCamera,
+                IMAGE: ElectroluxCamera,
                 NUMBER: ElectroluxNumber,
                 SELECT: ElectroluxSelect,
                 SENSOR: ElectroluxSensor,
